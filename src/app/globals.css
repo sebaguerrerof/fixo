@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --primary: 196 78% 34%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 196 38% 93%;
+    --secondary-foreground: 197 78% 23%;
+    --muted: 210 30% 94%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 196 38% 93%;
+    --accent-foreground: 197 78% 23%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 24% 88%;
+    --input: 214 24% 88%;
+    --ring: 196 78% 34%;
+    --success: 152 56% 34%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 30 50% 15%;
+    --info: 201 82% 42%;
+    --info-foreground: 0 0% 100%;
+    --radius: 0.85rem;
+  }
+
+  * { @apply border-border; }
+
+  html { @apply scroll-smooth; }
+
+  body { @apply min-h-screen bg-background text-foreground antialiased; }
+
+  button, input, select, textarea { font: inherit; }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+
+  .text-gradient { @apply bg-gradient-to-r from-primary via-cyan-600 to-sky-700 bg-clip-text text-transparent; }
+
+  .section-space { @apply py-16 lg:py-24; }
+
+  .surface-grid { background-image: linear-gradient(hsl(0 0% 100% / 0.6) 1px, transparent 1px), linear-gradient(90deg, hsl(0 0% 100% / 0.6) 1px, transparent 1px); background-size: 32px 32px; }
+
+  .hero-shell { background: radial-gradient(circle at 80% 12%, hsl(189 78% 91%), transparent 27rem), radial-gradient(circle at 10% 96%, hsl(215 80% 95%), transparent 26rem), hsl(var(--background)); }
+
+  .login-showcase { background-color: hsl(222 47% 11%); background-image: radial-gradient(circle at 20% 15%, hsl(187 85% 50% / 0.30), transparent 30%), radial-gradient(circle at 80% 85%, hsl(196 78% 45% / 0.35), transparent 30%), linear-gradient(145deg, hsl(222 47% 11%), hsl(221 39% 16%)); }
+
+  .hero-orb { @apply pointer-events-none absolute rounded-full blur-3xl; animation: drift 16s ease-in-out infinite alternate; }
+  .hero-orb-one { @apply -right-20 top-10 size-72 bg-cyan-300/25; }
+  .hero-orb-two { @apply -bottom-28 left-[42%] size-80 bg-sky-200/35; animation-delay: -8s; }
+
+  .eyebrow { @apply inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5 text-sm font-semibold text-primary; }
+
+  .search-command { @apply rounded-2xl border border-border/80 bg-card/90 shadow-[0_18px_46px_-26px_hsl(215_31%_25%_/_0.45)] backdrop-blur; }
+
+  .work-card { @apply rounded-[1.75rem] border border-white/70 bg-card/90 shadow-[0_28px_70px_-30px_hsl(215_31%_25%_/_0.48)] backdrop-blur; }
+
+  .live-indicator { @apply inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700; }
+  .live-indicator::before { content: ""; @apply size-1.5 rounded-full bg-emerald-500; animation: pulse-dot 1.8s ease-in-out infinite; }
+
+  .timeline-step { @apply flex items-center gap-3 rounded-xl px-2 py-2.5 text-sm font-medium transition-colors hover:bg-muted/70; }
+  .timeline-number { @apply flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary; }
+
+  .motion-card { @apply transition duration-300 ease-out hover:-translate-y-1 hover:border-primary/25 hover:shadow-lift; }
+  .section-reveal { animation: reveal 700ms both; }
+  .animate-enter { animation: enter 650ms both; }
+  .animate-enter-delay { animation-delay: 140ms; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 1ms !important; }
+  }
+}
+
+@keyframes enter { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes reveal { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes drift { from { transform: translate3d(-1rem, -0.5rem, 0) scale(0.95); } to { transform: translate3d(1rem, 0.75rem, 0) scale(1.05); } }
+@keyframes pulse-dot { 50% { opacity: 0.35; transform: scale(0.7); } }
