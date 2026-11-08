@@ -1,0 +1,8 @@
+{
+  "date": "2026-11-08",
+  "timezone": "America/Santiago",
+  "baseline": "9af3a648f4de319041609a36917d8db357b9ca79",
+  "trackedFiles": 173,
+  "heuristicCredentialFindings": [],
+  "scope": "pattern scan of tracked files; does not replace a dedicated secret scanner"
+}

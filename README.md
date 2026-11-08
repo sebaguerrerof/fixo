@@ -1,5 +1,7 @@
 # fixo — Marketplace de técnicos
 
+> Estado de producción: **BLOCKED**. Consulta la [auditoría Sprint 00](docs/production/SPRINT_00_AUDIT.md) y su [reporte](docs/production/SPRINT_00_REPORT.md). Cotizaciones, trabajos y urgencias aún no tienen persistencia Supabase implementada. No activar demo para recibir clientes reales ni repetir la migración inicial en una base existente sin revisar su estado.
+
 Plataforma para encontrar, contratar y gestionar servicios de técnicos y especialistas. Usa Supabase como fuente de verdad para cuentas, perfiles, técnicos, solicitudes y acciones administrativas.
 
 ## Inicio rápido

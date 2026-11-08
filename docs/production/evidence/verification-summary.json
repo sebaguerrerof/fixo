@@ -1,0 +1,54 @@
+{
+  "date": "2026-11-08",
+  "timezone": "America/Santiago",
+  "baseline": "9af3a648f4de319041609a36917d8db357b9ca79",
+  "checks": {
+    "lint": {
+      "status": "PASS",
+      "exit_code": 0
+    },
+    "typecheck": {
+      "status": "PASS",
+      "exit_code": 0
+    },
+    "test": {
+      "status": "PASS",
+      "exit_code": 0,
+      "files": 10,
+      "tests": 43,
+      "scope": "domain and mock-backed service/repository tests"
+    },
+    "build": {
+      "status": "PASS",
+      "exit_code": 0,
+      "next": "15.5.23"
+    },
+    "npm_audit": {
+      "status": "FAIL",
+      "exit_code": 1,
+      "affected_packages": {
+        "info": 0,
+        "low": 0,
+        "moderate": 10,
+        "high": 7,
+        "critical": 3,
+        "total": 20
+      }
+    },
+    "npm_audit_production": {
+      "status": "FAIL",
+      "exit_code": 1,
+      "affected_packages": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 4,
+        "critical": 1,
+        "total": 5
+      }
+    }
+  },
+  "remote_integration_tests": "NOT TESTED",
+  "remote_catalog_vercel_configuration": "BLOCKED",
+  "remote_mutations": false
+}

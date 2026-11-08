@@ -1,0 +1,23 @@
+
+> fixo-marketplace-tecnicos@0.1.0 test
+> vitest run
+
+The CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.
+
+ RUN  v2.1.9 C:/Git/fixo
+
+ ✓ src/domain/enums/job-status.test.ts (2 tests) 4ms
+ ✓ src/domain/enums/service-request-status.test.ts (2 tests) 5ms
+ ✓ src/domain/enums/technician-status.test.ts (2 tests) 5ms
+ ✓ src/domain/enums/quote-status.test.ts (6 tests) 5ms
+ ✓ src/domain/enums/emergency-status.test.ts (11 tests) 8ms
+ ✓ src/services/admin/admin-technician-management-service.test.ts (2 tests) 7ms
+ ✓ src/config/demo-mode.test.ts (4 tests) 6ms
+ ✓ src/repositories/mock/mock-technician-repository.test.ts (6 tests) 9ms
+ ✓ src/services/quotes/quote-service.test.ts (4 tests) 5ms
+ ✓ src/services/emergencies/emergency-service.test.ts (4 tests) 8ms
+
+ Test Files  10 passed (10)
+      Tests  43 passed (43)
+   Start at  18:49:57
+   Duration  3.09s (transform 1.27s, setup 0ms, collect 3.40s, tests 60ms, environment 3ms, prepare 15.80s)

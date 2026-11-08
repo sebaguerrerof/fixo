@@ -1,0 +1,37 @@
+{
+  "date": "2026-11-08",
+  "timezone": "America/Santiago",
+  "scope": "Read-only observations; no credentials, personal records or environment values included",
+  "github": {
+    "repository": "sebaguerrerof/fixo",
+    "visibility": "private",
+    "default_branch_metadata": "main",
+    "branches": [],
+    "commits_http_status": 409,
+    "commits_error": "Git Repository is empty.",
+    "source": "GitHub connector GET repository metadata, branches and commits"
+  },
+  "supabase": {
+    "connected_accounts_inspected": 2,
+    "configured_project_matches_connected_projects": false,
+    "remote_schema_rls_auth_storage": "BLOCKED",
+    "privileged_read": "Rejected by automatic approval review: account/destination authorization unverified",
+    "remote_mutations": false
+  },
+  "vercel": {
+    "local_project_name": "fixo-marketplace",
+    "git_link_production_branch_deployed_commit_environment": "BLOCKED",
+    "privileged_read": "Rejected by automatic approval review: account/destination authorization unverified"
+  },
+  "public_http": [
+    { "url": "https://fixo-marketplace.vercel.app/", "status": 200 },
+    { "url": "https://fixo-marketplace.vercel.app/tecnicos", "status": 200 },
+    { "url": "https://fixo-marketplace.vercel.app/login", "status": 200 },
+    { "url": "https://soyfixo.cl/", "error": "ENOTFOUND" }
+  ],
+  "limitations": [
+    "HTTP 200 does not prove database persistence or identify the deployed source revision",
+    "DNS resolution failure is an observation from this environment, not an authoritative Cloudflare audit",
+    "No remote users, requests, state transitions, mail, payments, deployments or migrations were created"
+  ]
+}

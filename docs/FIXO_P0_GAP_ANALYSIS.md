@@ -1,5 +1,7 @@
 # Fixo — Análisis de brechas P0 (Gap Analysis)
 
+> Documento histórico de la etapa demo. La [auditoría Sprint 00](production/SPRINT_00_AUDIT.md) reemplaza su evaluación de preparación productiva. La recomendación de activar demo en Vercel no es válida para operar con clientes reales: hay identidad editable y persistencia en memoria.
+
 Fecha de este corte: sesión de implementación de cotizaciones y urgencias (quotes + emergencies) sobre la base de Demo Mode y marketplace ya estabilizados.
 Referencia: `marketplace_tecnicos_master.md`.
 

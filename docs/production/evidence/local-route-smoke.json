@@ -1,0 +1,21 @@
+{
+  "scope": "production build; unauthenticated; read-only HTTP; no cookies or credentials sent",
+  "results": [
+    {
+      "path": "/admin",
+      "error": "ETIMEDOUT"
+    },
+    {
+      "path": "/cliente",
+      "error": "ETIMEDOUT"
+    },
+    {
+      "path": "/tecnico",
+      "error": "ETIMEDOUT"
+    },
+    {
+      "path": "/login",
+      "error": "ETIMEDOUT"
+    }
+  ]
+}
