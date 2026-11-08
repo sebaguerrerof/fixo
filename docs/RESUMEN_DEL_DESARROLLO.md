@@ -1,5 +1,7 @@
 # Fixo — Resumen del desarrollo actual
 
+> Corte histórico anterior a estabilización. Para el estado vigente consultar [Sprint 00.5](production/SPRINT_00_5_REPORT.md); las descripciones de fallback demo y publicación de este documento ya no son instrucciones operativas válidas.
+
 **Corte de verificación:** 8 de noviembre de 2026
 
 **Alcance:** estado presente en el repositorio local y comprobaciones de solo lectura realizadas sobre los servicios conectados.

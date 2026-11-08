@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
 import { isDemoModeEnabled } from "@/config/demo-mode";
+import { assertServerEnvironment } from "@/config/server-environment";
 import type { UserRole } from "@/domain/enums/roles";
 import type { AuthenticatedUser } from "@/integrations/auth/auth-provider";
 import { DEMO_SESSION_COOKIE, decodeDemoSession } from "@/integrations/auth/demo-session-cookie";
@@ -13,6 +14,7 @@ async function getDemoAuthenticatedUser(): Promise<AuthenticatedUser | null> {
 }
 
 export async function getServerAuthenticatedUser(): Promise<AuthenticatedUser | null> {
+  assertServerEnvironment();
   if (isDemoModeEnabled()) return getDemoAuthenticatedUser();
 
   const supabase = await getSupabaseServerClient();

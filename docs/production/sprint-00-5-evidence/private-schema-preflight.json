@@ -1,0 +1,10 @@
+[
+  {
+    "preflight": {
+      "private_functions": [],
+      "private_schema_exists": false,
+      "data_api_schema_role_settings": [],
+      "data_api_schema_db_role_settings": []
+    }
+  }
+]

@@ -14,8 +14,7 @@ import { getSupabaseBrowserClient } from "@/integrations/supabase/browser-client
 
 function readableAuthError(message: string): string {
   if (message.toLowerCase().includes("invalid login credentials")) return "Revisa tu correo y contraseña.";
-  if (message.toLowerCase().includes("already registered")) return "Ya existe una cuenta con este correo.";
-  return message;
+  return "No pudimos completar la solicitud. Puedes intentar ingresar si ya tienes una cuenta.";
 }
 
 function profileName(user: User, profile: Record<string, unknown> | null): string {
@@ -47,7 +46,7 @@ export class SupabaseAuthProvider implements AuthProvider {
     if (userError || !userData.user) return null;
 
     const { data: profile, error: profileError } = await supabase.from("profiles").select("full_name, role").eq("id", userData.user.id).maybeSingle();
-    if (profileError) throw new Error("No pudimos cargar tu perfil de acceso.");
+    if (profileError || !profile) return null;
 
     return {
       user: {

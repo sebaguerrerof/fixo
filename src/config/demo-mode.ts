@@ -1,14 +1,9 @@
-import { isSupabaseConfigured } from "@/integrations/supabase/config";
-
 /**
- * Demo Mode se activa explícitamente con NEXT_PUBLIC_DEMO_MODE=true, o
- * automáticamente cuando Supabase no está configurado (fallback seguro para
- * previews/deploys sin credenciales). NEXT_PUBLIC_DEMO_MODE=false fuerza
- * producción real aunque falten credenciales (falla explícita, no silenciosa).
+ * Explicit, isolated development only. Next builds (including previews) are
+ * production builds and must never trust a demo identity or return fixtures.
  */
 export function isDemoModeEnabled(): boolean {
-  const flag = process.env.NEXT_PUBLIC_DEMO_MODE;
-  if (flag === "false") return false;
-  if (flag === "true") return true;
-  return !isSupabaseConfigured();
+  return (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test")
+    && !process.env.VERCEL_ENV
+    && process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 }

@@ -1,7 +1,7 @@
 import type { Quote } from "@/domain/entities/quote";
 import type { CreateQuoteInput, QuoteRepository, UpdateQuoteDraftInput } from "@/repositories/contracts/quote-repository";
 
-const NOT_IMPLEMENTED = "SupabaseQuoteRepository no está implementado todavía. Usa NEXT_PUBLIC_DEMO_MODE=true mientras se agrega la persistencia real (próximo milestone).";
+const NOT_IMPLEMENTED = "Esta función todavía no está disponible en Fixo.";
 
 /**
  * Deja preparada la arquitectura (contrato + factory) sin acoplar la UI a

@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { isDemoModeEnabled } from "@/config/demo-mode";
+import { EmptyState } from "@/components/shared/empty-state";
 
 import { AcceptQuoteButton } from "@/components/service-requests/accept-quote-button";
 import { StatusBadge } from "@/components/shared/status-badge";
@@ -8,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Quote } from "@/domain/entities/quote";
 import type { Technician } from "@/domain/entities/technician";
 import { formatClp } from "@/lib/utils";
-import { getTechnicianRepository } from "@/repositories/repository-factory";
+import { getTechnicianRepository, getServiceRequestRepository } from "@/repositories/repository-factory";
 import { getServerAuthenticatedUser } from "@/services/auth/server-authentication-service";
 import { QuoteService } from "@/services/quotes/quote-service";
 
@@ -17,7 +19,6 @@ const dateFormatter = new Intl.DateTimeFormat("es-CL", { dateStyle: "medium", ti
 const customerNavigation = [
   { href: "/cliente", label: "Resumen" },
   { href: "/cliente#solicitudes", label: "Mis solicitudes" },
-  { href: "/cliente#historial", label: "Historial" },
   { href: "/cliente#pagos", label: "Pagos" },
 ];
 
@@ -29,6 +30,12 @@ export default async function CustomerServiceRequestDetailPage({ params }: { rea
   const { id } = await params;
   const user = await getServerAuthenticatedUser();
   if (!user) return null;
+
+  if (!isDemoModeEnabled()) {
+    const request = await getServiceRequestRepository().findById(id);
+    if (!request || request.customerId !== user.id) notFound();
+    return <DashboardShell activeHref="/cliente" navigation={customerNavigation} requiredRole="customer" roleLabel="Espacio cliente" userName={user.name}><h1 className="text-3xl font-bold">{request.title}</h1><div className="my-4"><StatusBadge status={request.status} /></div><p className="mb-7 text-muted-foreground">{request.description}</p><EmptyState title="Cotizaciones aún no disponibles" description="Tu solicitud está registrada. La recepción y aceptación de propuestas todavía no está habilitada." /></DashboardShell>;
+  }
 
   let data: { request: Awaited<ReturnType<QuoteService["listForServiceRequestAsCustomer"]>>["request"]; quotes: readonly Quote[] };
   try {

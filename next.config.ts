@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+import { assertServerEnvironment } from "./src/config/server-environment";
+
+assertServerEnvironment();
 
 const nextConfig: NextConfig = {
   // Keep development chunks apart from production builds. This prevents an

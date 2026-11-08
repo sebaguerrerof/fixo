@@ -1,10 +1,9 @@
-import { ArrowUpRight, BadgeCheck, MapPin, Zap } from "lucide-react";
+import { ArrowUpRight, BadgeCheck, MapPin } from "lucide-react";
 import Link from "next/link";
 
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Rating } from "@/components/shared/rating";
 import type { Technician } from "@/domain/entities/technician";
 import { formatClp } from "@/lib/utils";
 
@@ -18,7 +17,7 @@ export function TechnicianCard({ technician }: { readonly technician: Technician
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
                 <h3 className="truncate font-bold text-foreground">{technician.displayName}</h3>
-                <BadgeCheck className="size-4 shrink-0 text-primary" aria-label="Perfil verificado" />
+                {["verified", "active"].includes(technician.status) ? <BadgeCheck className="size-4 shrink-0 text-primary" aria-label="Perfil aprobado" /> : null}
               </div>
               <p className="mt-0.5 truncate text-sm text-muted-foreground">{technician.headline}</p>
             </div>
@@ -31,15 +30,14 @@ export function TechnicianCard({ technician }: { readonly technician: Technician
           {technician.specialties.slice(0, 2).map((specialty) => <Badge key={specialty} variant="secondary">{specialty}</Badge>)}
         </div>
         <div className="mt-5 grid grid-cols-2 gap-3 border-y border-border/70 py-4">
-          <div><Rating rating={technician.metrics.rating} reviewCount={technician.metrics.reviewCount} /></div>
-          <p className="text-right text-sm text-muted-foreground">{technician.yearsOfExperience} años exp.</p>
+          <p className="text-sm text-muted-foreground">Experiencia declarada</p>
+          <p className="text-right text-sm text-muted-foreground">{technician.yearsOfExperience} años</p>
         </div>
         <div className="mt-4 flex items-center justify-between gap-2 text-sm">
           <span className="inline-flex items-center gap-1 text-muted-foreground"><MapPin className="size-4" />{technician.city}</span>
-          {technician.emergencyEnabled ? <span className="inline-flex items-center gap-1 font-semibold text-rose-600"><Zap className="size-4 fill-current" />Urgencias</span> : null}
         </div>
         <div className="mt-5 flex items-center justify-between border-t border-border/70 pt-4">
-          <p className="text-sm text-muted-foreground">Desde <span className="font-semibold text-foreground">{formatClp(technician.startingPriceClp)}</span></p>
+          <p className="text-sm text-muted-foreground">Referencia <span className="font-semibold text-foreground">{technician.startingPriceClp > 0 ? formatClp(technician.startingPriceClp) : "A convenir"}</span></p>
           <Link className="text-sm font-semibold text-primary hover:underline" href={`/tecnicos/${technician.slug}`}>Ver perfil</Link>
         </div>
       </CardContent>

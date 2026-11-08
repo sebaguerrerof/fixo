@@ -8,13 +8,13 @@ import { useForm } from "react-hook-form";
 
 import { createAndSubmitQuote, saveQuoteDraft } from "@/app/tecnico/oportunidades/[id]/cotizar/actions";
 import { Button } from "@/components/ui/button";
-import { quoteInputSchema, type QuoteInput } from "@/domain/validation/quote-input";
+import { quoteInputSchema, type QuoteInput, type QuoteFormInput } from "@/domain/validation/quote-input";
 
 export function CreateQuoteForm({ serviceRequestId }: { readonly serviceRequestId: string }) {
   const router = useRouter();
   const [feedback, setFeedback] = useState<"success" | "draft" | string | null>(null);
   const [pending, setPending] = useState(false);
-  const form = useForm<QuoteInput>({
+  const form = useForm<QuoteFormInput, unknown, QuoteInput>({
     resolver: zodResolver(quoteInputSchema),
     defaultValues: {
       serviceRequestId,
@@ -50,7 +50,13 @@ export function CreateQuoteForm({ serviceRequestId }: { readonly serviceRequestI
   async function onSaveDraft(): Promise<void> {
     setFeedback(null);
     setPending(true);
-    const result = await saveQuoteDraft(form.getValues());
+    const parsed = quoteInputSchema.safeParse(form.getValues());
+    if (!parsed.success) {
+      setPending(false);
+      setFeedback("Revisa los datos de tu cotización antes de guardar.");
+      return;
+    }
+    const result = await saveQuoteDraft(parsed.data);
     setPending(false);
 
     if (!result.ok) {

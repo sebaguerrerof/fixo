@@ -32,6 +32,7 @@ export const technicianRegistrationInputSchema = customerRegistrationInputSchema
 
 export type CustomerRegistrationInput = z.infer<typeof customerRegistrationInputSchema>;
 export type TechnicianRegistrationInput = z.infer<typeof technicianRegistrationInputSchema>;
+export type TechnicianRegistrationFormInput = z.input<typeof technicianRegistrationInputSchema>;
 
 export const authenticatedUserSchema = z.object({
   id: z.string(),

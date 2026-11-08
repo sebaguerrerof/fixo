@@ -17,7 +17,7 @@ export function AccountAccess() {
 
   useEffect(() => {
     let isMounted = true;
-    void new AuthenticationService().getCurrentSession().then((nextSession) => { if (isMounted) setSession(nextSession); });
+    void new AuthenticationService().getCurrentSession().then((nextSession) => { if (isMounted) setSession(nextSession); }).catch(() => { if (isMounted) setSession(null); });
     return () => { isMounted = false; };
   }, []);
 

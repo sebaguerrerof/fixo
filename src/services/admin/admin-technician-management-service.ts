@@ -15,10 +15,11 @@ export class AdminTechnicianManagementService {
     technician: Technician,
     nextStatus: TechnicianStatus,
     reason: string,
+    actorName: string,
   ): AdminAuditEntry {
     return {
       id: `${technician.id}-${Date.now()}`,
-      actorName: "María Admin",
+      actorName,
       technicianId: technician.id,
       technicianName: technician.displayName,
       action: "technician_status_changed",

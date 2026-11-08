@@ -1,5 +1,7 @@
 "use server";
 
+import { isDemoModeEnabled } from "@/config/demo-mode";
+
 import { serviceRequestInputSchema, type ServiceRequestInput } from "@/domain/validation/service-request-input";
 import { getServiceRequestRepository } from "@/repositories/repository-factory";
 import { getServerAuthenticatedUser } from "@/services/auth/server-authentication-service";
@@ -12,6 +14,7 @@ export interface SubmitServiceRequestResult {
 export async function submitServiceRequest(input: ServiceRequestInput): Promise<SubmitServiceRequestResult> {
   const user = await getServerAuthenticatedUser();
   if (!user) return { ok: false, message: "unauthenticated" };
+  if (user.role !== "customer") return { ok: false, message: "Esta acción requiere una cuenta de cliente." };
 
   const parsed = serviceRequestInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false, message: "No pudimos validar tu solicitud. Revisa los datos ingresados." };
@@ -28,11 +31,13 @@ export async function submitServiceRequest(input: ServiceRequestInput): Promise<
     });
     // En este modo demo no existe un proceso de matching con demora real: la solicitud
     // queda disponible para cotizar de inmediato en lugar de quedar atascada en "submitted".
-    const repository = getServiceRequestRepository();
-    await repository.updateStatus(request.id, "matching");
-    await repository.updateStatus(request.id, "receiving_quotes");
+    if (isDemoModeEnabled()) {
+      const repository = getServiceRequestRepository();
+      await repository.updateStatus(request.id, "matching");
+      await repository.updateStatus(request.id, "receiving_quotes");
+    }
     return { ok: true };
-  } catch (error) {
-    return { ok: false, message: error instanceof Error ? error.message : "No pudimos registrar tu solicitud." };
+  } catch {
+    return { ok: false, message: "No pudimos confirmar el registro. Revisa tus solicitudes antes de volver a intentarlo." };
   }
 }

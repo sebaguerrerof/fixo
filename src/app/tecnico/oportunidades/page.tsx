@@ -10,10 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getServerAuthenticatedUser } from "@/services/auth/server-authentication-service";
 import { EmergencyService } from "@/services/emergencies/emergency-service";
 import { TechnicianOpportunitiesService } from "@/services/technicians/technician-opportunities-service";
+import { isDemoModeEnabled } from "@/config/demo-mode";
+import { EmptyState } from "@/components/shared/empty-state";
 
 const dateFormatter = new Intl.DateTimeFormat("es-CL", { dateStyle: "medium", timeStyle: "short" });
 
 export default async function TechnicianOpportunitiesPage() {
+  if (!isDemoModeEnabled()) return <TechnicianDashboardShell activeHref="/tecnico/oportunidades"><EmptyState title="Oportunidades en preparación" description="La recepción y cotización de trabajos aún no está habilitada. Mantén tu perfil registrado para la revisión administrativa." /></TechnicianDashboardShell>;
   const user = await getServerAuthenticatedUser();
   if (!user) return null;
   const [opportunities, emergencies] = await Promise.all([

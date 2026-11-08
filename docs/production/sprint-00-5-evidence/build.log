@@ -1,0 +1,56 @@
+
+> fixo-marketplace-tecnicos@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.29
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 5.7s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/24) ...
+   Generating static pages (6/24)
+   Generating static pages (12/24)
+   Generating static pages (18/24)
+ ✓ Generating static pages (24/24)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ƒ /                                      213 B         212 kB
+├ ○ /_not-found                            139 B         103 kB
+├ ƒ /admin                               2.78 kB         177 kB
+├ ƒ /admin/audit-log                      1.1 kB         189 kB
+├ ƒ /admin/configuracion                 2.78 kB         177 kB
+├ ƒ /admin/reportes                      2.78 kB         177 kB
+├ ƒ /admin/tecnicos                      2.97 kB         191 kB
+├ ƒ /admin/tecnicos/[slug]               3.14 kB         191 kB
+├ ƒ /admin/verificaciones                2.78 kB         177 kB
+├ ƒ /cliente                             2.78 kB         177 kB
+├ ƒ /cliente/solicitudes/[id]            3.92 kB         185 kB
+├ ○ /como-funciona                         213 B         212 kB
+├ ○ /login                               5.17 kB         224 kB
+├ ○ /registro                              195 B         224 kB
+├ ƒ /registro/tecnico                      192 B         224 kB
+├ ƒ /solicitar                           2.27 kB         225 kB
+├ ƒ /tecnico                             2.78 kB         177 kB
+├ ƒ /tecnico/agenda                      2.78 kB         177 kB
+├ ƒ /tecnico/oportunidades               3.94 kB         185 kB
+├ ƒ /tecnico/oportunidades/[id]/cotizar  5.42 kB         224 kB
+├ ƒ /tecnico/pagos                       2.78 kB         177 kB
+├ ƒ /tecnico/perfil                      2.78 kB         177 kB
+├ ƒ /tecnico/trabajos                    3.98 kB         185 kB
+├ ƒ /tecnicos                              213 B         212 kB
+├ ƒ /tecnicos/[slug]                       213 B         212 kB
+└ ○ /urgencia                            4.48 kB         228 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/1255-b84741b894bb9354.js      46.6 kB
+  ├ chunks/4bd1b696-f785427dddbba9fb.js  54.2 kB
+  └ other shared chunks (total)             2 kB
+
+
+ƒ Middleware                             93.6 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand

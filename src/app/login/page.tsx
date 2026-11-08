@@ -26,7 +26,7 @@ export default function LoginPage() {
             <div className="mt-14 lg:mt-6"><span className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary"><LockKeyhole className="size-6" /></span><p className="mt-6 text-sm font-semibold text-primary">Acceso seguro</p><h2 className="mt-2 text-3xl font-bold tracking-tight">Bienvenido de vuelta</h2><p className="mt-3 leading-7 text-muted-foreground">Ingresa para continuar con tu espacio de trabajo.</p></div>
             <div className="mt-8"><SignInForm /></div>
             <div className="mt-8 rounded-2xl border border-border/70 bg-muted/45 p-4 text-sm"><p className="font-bold">¿Primera vez en Fixo?</p><div className="mt-3 flex flex-wrap gap-3"><Link className="font-semibold text-primary hover:underline" href="/registro">Crear cuenta cliente</Link><Link className="font-semibold text-primary hover:underline" href="/registro/tecnico">Postular como técnico</Link></div></div>
-            <p className="mt-auto pt-8 text-center text-xs leading-5 text-muted-foreground">Al continuar, aceptas los términos de uso y la política de privacidad de Fixo.</p>
+
           </div>
         </section>
       </div>

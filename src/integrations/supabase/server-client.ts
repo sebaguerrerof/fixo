@@ -2,8 +2,11 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 import { getSupabasePublicConfig } from "@/integrations/supabase/config";
+import { ConfigurationError } from "@/integrations/supabase/config";
+import { isDemoModeEnabled } from "@/config/demo-mode";
 
 export async function getSupabaseServerClient() {
+  if (isDemoModeEnabled()) throw new ConfigurationError();
   const cookieStore = await cookies();
   const { url, publishableKey } = getSupabasePublicConfig();
 

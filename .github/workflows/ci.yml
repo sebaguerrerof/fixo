@@ -1,0 +1,53 @@
+name: Fixo CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  application:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_DEMO_MODE: 'false'
+      # Build-only, non-functional configuration. Never production credentials.
+      NEXT_PUBLIC_SUPABASE_URL: https://ci-build-only.supabase.invalid
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_build_only
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci --no-fund
+      - run: npm run secrets:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build
+      - run: npm run test:smoke
+      - run: npm audit --omit=dev --audit-level=moderate
+      - run: npm audit --audit-level=moderate
+
+  database:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .node-version
+      # No project link, access token, production password or --remote flag.
+      - run: npx --yes supabase@3.0.0 start --exclude studio,realtime,edge-runtime,imgproxy,logflare,vector,supavisor
+      - run: npx --yes supabase@3.0.0 db reset --no-seed
+      - run: npx --yes supabase@3.0.0 test db
+      - if: always()
+        run: npx --yes supabase@3.0.0 stop

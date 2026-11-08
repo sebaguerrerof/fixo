@@ -16,11 +16,11 @@ describe("isDemoModeEnabled", () => {
     expect(isDemoModeEnabled()).toBe(true);
   });
 
-  it("falls back to demo mode when Supabase is not configured", () => {
+  it("does not fall back to demo when Supabase is not configured", () => {
     delete process.env.NEXT_PUBLIC_DEMO_MODE;
     delete process.env.NEXT_PUBLIC_SUPABASE_URL;
     delete process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-    expect(isDemoModeEnabled()).toBe(true);
+    expect(isDemoModeEnabled()).toBe(false);
   });
 
   it("is disabled when explicitly set to false, even without Supabase", () => {

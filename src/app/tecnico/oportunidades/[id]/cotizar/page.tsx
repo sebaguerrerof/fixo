@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import { isDemoModeEnabled } from "@/config/demo-mode";
+import { EmptyState } from "@/components/shared/empty-state";
 
 import { CreateQuoteForm } from "@/components/technicians/create-quote-form";
 import { TechnicianDashboardShell } from "@/components/technicians/technician-dashboard-shell";
@@ -6,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getServiceRequestRepository } from "@/repositories/repository-factory";
 
 export default async function CreateQuotePage({ params }: { readonly params: Promise<{ id: string }> }) {
+  if (!isDemoModeEnabled()) return <TechnicianDashboardShell activeHref="/tecnico/oportunidades"><EmptyState title="Cotizaciones aún no disponibles" description="El envío de propuestas se habilitará cuando la contratación esté operativa." /></TechnicianDashboardShell>;
   const { id } = await params;
   const request = await getServiceRequestRepository().findById(id);
   if (!request) notFound();

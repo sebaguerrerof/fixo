@@ -14,3 +14,4 @@ export const quoteInputSchema = z.object({
 });
 
 export type QuoteInput = z.infer<typeof quoteInputSchema>;
+export type QuoteFormInput = z.input<typeof quoteInputSchema>;

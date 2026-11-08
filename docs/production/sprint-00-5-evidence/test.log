@@ -1,0 +1,12 @@
+
+> fixo-marketplace-tecnicos@0.1.0 test
+> vitest run
+
+
+ RUN  v5.1.0 C:/Git/fixo
+
+
+ Test Files  19 passed (19)
+      Tests  88 passed (88)
+   Start at  19:56:57
+   Duration  2.49s (import 58%, transform 37%, worker 4%, tests 1%)

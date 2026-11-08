@@ -2,7 +2,7 @@ import type { EmergencyRequest, EmergencyStatusEvent } from "@/domain/entities/e
 import type { EmergencyStatus } from "@/domain/enums/emergency-status";
 import type { CreateEmergencyInput, EmergencyActor, EmergencyRepository } from "@/repositories/contracts/emergency-repository";
 
-const NOT_IMPLEMENTED = "SupabaseEmergencyRepository no está implementado todavía. Usa NEXT_PUBLIC_DEMO_MODE=true mientras se agrega la persistencia real (próximo milestone).";
+const NOT_IMPLEMENTED = "Esta función todavía no está disponible en Fixo.";
 
 /**
  * La adjudicación atómica (`acceptEmergency`) deberá implementarse en Supabase
