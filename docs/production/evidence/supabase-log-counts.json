@@ -1,0 +1,54 @@
+{
+  "result": [
+    {
+      "entries": 86,
+      "severity_text": "INFO",
+      "source": "postgrest_logs"
+    },
+    {
+      "entries": 67,
+      "severity_text": "INFO",
+      "source": "pgbouncer_logs"
+    },
+    {
+      "entries": 37,
+      "severity_text": "INFO",
+      "source": "auth_logs"
+    },
+    {
+      "entries": 36,
+      "severity_text": "INFO",
+      "source": "edge_logs"
+    },
+    {
+      "entries": 13,
+      "severity_text": "LOG",
+      "source": "postgres_logs"
+    },
+    {
+      "entries": 4,
+      "severity_text": "INFO",
+      "source": "auth_audit_logs"
+    },
+    {
+      "entries": 4,
+      "severity_text": "INFO",
+      "source": "realtime_logs"
+    },
+    {
+      "entries": 4,
+      "severity_text": "WARNING",
+      "source": "auth_logs"
+    },
+    {
+      "entries": 2,
+      "severity_text": "INFO",
+      "source": "storage_logs"
+    },
+    {
+      "entries": 1,
+      "severity_text": "WARN",
+      "source": "realtime_logs"
+    }
+  ]
+}

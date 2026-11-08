@@ -1,0 +1,166 @@
+{
+  "result": {
+    "lints": [
+      {
+        "name": "function_search_path_mutable",
+        "title": "Function Search Path Mutable",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+          "SECURITY"
+        ],
+        "description": "Detects functions where the search_path parameter is not set.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable",
+        "count": 1,
+        "findings": [
+          {
+            "detail": "Function \\`public.technician_status_transition_allowed\\` has a role mutable search_path",
+            "metadata": {
+              "name": "technician_status_transition_allowed",
+              "type": "function",
+              "schema": "public"
+            },
+            "observed_at": "2026-11-08T22:07:10.884Z"
+          }
+        ]
+      },
+      {
+        "name": "anon_security_definer_function_executable",
+        "title": "Public Can Execute SECURITY DEFINER Function",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+          "SECURITY"
+        ],
+        "description": "Detects `SECURITY DEFINER` functions that are callable without signing in. Revoke `EXECUTE`, switch the function to `SECURITY INVOKER`, or move it out of your exposed API schema if it is not meant to be public.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable",
+        "count": 4,
+        "findings": [
+          {
+            "detail": "Function `public.active_technician_id()` can be executed by the `anon` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/active_technician_id`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+            "metadata": {
+              "name": "active_technician_id",
+              "schema": "public",
+              "language": "sql",
+              "arguments": "",
+              "security_definer": true
+            },
+            "observed_at": "2026-11-08T22:07:10.884Z"
+          },
+          {
+            "detail": "Function `public.change_technician_status(target_technician_id uuid, next_status public.technician_status, change_reason text)` can be executed by the `anon` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/change_technician_status`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+            "metadata": {
+              "name": "change_technician_status",
+              "schema": "public",
+              "language": "plpgsql",
+              "arguments": "target_technician_id uuid, next_status public.technician_status, change_reason text",
+              "security_definer": true
+            },
+            "observed_at": "2026-11-08T22:07:10.884Z"
+          },
+          {
+            "detail": "Function `public.handle_new_user()` can be executed by the `anon` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/handle_new_user`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+            "metadata": {
+              "name": "handle_new_user",
+              "schema": "public",
+              "language": "plpgsql",
+              "arguments": "",
+              "security_definer": true
+            },
+            "observed_at": "2026-11-08T22:07:10.884Z"
+          },
+          {
+            "detail": "Function `public.is_admin()` can be executed by the `anon` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/is_admin`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+            "metadata": {
+              "name": "is_admin",
+              "schema": "public",
+              "language": "sql",
+              "arguments": "",
+              "security_definer": true
+            },
+            "observed_at": "2026-11-08T22:07:10.884Z"
+          }
+        ]
+      },
+      {
+        "name": "authenticated_security_definer_function_executable",
+        "title": "Signed-In Users Can Execute SECURITY DEFINER Function",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+          "SECURITY"
+        ],
+        "description": "Detects `SECURITY DEFINER` functions that are callable by signed-in users. Revoke `EXECUTE`, switch the function to `SECURITY INVOKER`, or move it out of your exposed API schema if signed-in users should not call it.",
+        "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable",
+        "count": 4,
+        "findings": [
+          {
+            "detail": "Function `public.active_technician_id()` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/active_technician_id`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+            "metadata": {
+              "name": "active_technician_id",
+              "schema": "public",
+              "language": "sql",
+              "arguments": "",
+              "security_definer": true
+            },
+            "observed_at": "2026-11-08T22:07:10.884Z"
+          },
+          {
+            "detail": "Function `public.change_technician_status(target_technician_id uuid, next_status public.technician_status, change_reason text)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/change_technician_status`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+            "metadata": {
+              "name": "change_technician_status",
+              "schema": "public",
+              "language": "plpgsql",
+              "arguments": "target_technician_id uuid, next_status public.technician_status, change_reason text",
+              "security_definer": true
+            },
+            "observed_at": "2026-11-08T22:07:10.884Z"
+          },
+          {
+            "detail": "Function `public.handle_new_user()` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/handle_new_user`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+            "metadata": {
+              "name": "handle_new_user",
+              "schema": "public",
+              "language": "plpgsql",
+              "arguments": "",
+              "security_definer": true
+            },
+            "observed_at": "2026-11-08T22:07:10.884Z"
+          },
+          {
+            "detail": "Function `public.is_admin()` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/is_admin`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+            "metadata": {
+              "name": "is_admin",
+              "schema": "public",
+              "language": "sql",
+              "arguments": "",
+              "security_definer": true
+            },
+            "observed_at": "2026-11-08T22:07:10.884Z"
+          }
+        ]
+      },
+      {
+        "name": "auth_leaked_password_protection",
+        "title": "Leaked Password Protection Disabled",
+        "level": "WARN",
+        "facing": "EXTERNAL",
+        "categories": [
+          "SECURITY"
+        ],
+        "description": "Leaked password protection is currently disabled.",
+        "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection",
+        "count": 1,
+        "findings": [
+          {
+            "detail": "Supabase Auth prevents the use of compromised passwords by checking against HaveIBeenPwned.org. Enable this feature to enhance security.",
+            "metadata": {
+              "type": "auth",
+              "entity": "Auth"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,530 @@
+[
+  {
+    "schema": "public",
+    "table_name": "admin_audit_entries",
+    "column_name": "id",
+    "type": "uuid",
+    "not_null": true,
+    "default_expression": "gen_random_uuid()"
+  },
+  {
+    "schema": "public",
+    "table_name": "admin_audit_entries",
+    "column_name": "actor_id",
+    "type": "uuid",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "admin_audit_entries",
+    "column_name": "technician_id",
+    "type": "uuid",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "admin_audit_entries",
+    "column_name": "action",
+    "type": "text",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "admin_audit_entries",
+    "column_name": "previous_status",
+    "type": "technician_status",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "admin_audit_entries",
+    "column_name": "next_status",
+    "type": "technician_status",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "admin_audit_entries",
+    "column_name": "reason",
+    "type": "text",
+    "not_null": true,
+    "default_expression": "''::text"
+  },
+  {
+    "schema": "public",
+    "table_name": "admin_audit_entries",
+    "column_name": "created_at",
+    "type": "timestamp with time zone",
+    "not_null": true,
+    "default_expression": "now()"
+  },
+  {
+    "schema": "public",
+    "table_name": "categories",
+    "column_name": "id",
+    "type": "text",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "categories",
+    "column_name": "slug",
+    "type": "text",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "categories",
+    "column_name": "name",
+    "type": "text",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "categories",
+    "column_name": "description",
+    "type": "text",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "categories",
+    "column_name": "icon",
+    "type": "text",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "categories",
+    "column_name": "created_at",
+    "type": "timestamp with time zone",
+    "not_null": true,
+    "default_expression": "now()"
+  },
+  {
+    "schema": "public",
+    "table_name": "profiles",
+    "column_name": "id",
+    "type": "uuid",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "profiles",
+    "column_name": "full_name",
+    "type": "text",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "profiles",
+    "column_name": "role",
+    "type": "app_role",
+    "not_null": true,
+    "default_expression": "'customer'::app_role"
+  },
+  {
+    "schema": "public",
+    "table_name": "profiles",
+    "column_name": "avatar_url",
+    "type": "text",
+    "not_null": false,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "profiles",
+    "column_name": "created_at",
+    "type": "timestamp with time zone",
+    "not_null": true,
+    "default_expression": "now()"
+  },
+  {
+    "schema": "public",
+    "table_name": "profiles",
+    "column_name": "updated_at",
+    "type": "timestamp with time zone",
+    "not_null": true,
+    "default_expression": "now()"
+  },
+  {
+    "schema": "public",
+    "table_name": "service_requests",
+    "column_name": "id",
+    "type": "uuid",
+    "not_null": true,
+    "default_expression": "gen_random_uuid()"
+  },
+  {
+    "schema": "public",
+    "table_name": "service_requests",
+    "column_name": "customer_id",
+    "type": "uuid",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "service_requests",
+    "column_name": "assigned_technician_id",
+    "type": "uuid",
+    "not_null": false,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "service_requests",
+    "column_name": "category_id",
+    "type": "text",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "service_requests",
+    "column_name": "title",
+    "type": "text",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "service_requests",
+    "column_name": "description",
+    "type": "text",
+    "not_null": true,
+    "default_expression": "''::text"
+  },
+  {
+    "schema": "public",
+    "table_name": "service_requests",
+    "column_name": "priority",
+    "type": "service_priority",
+    "not_null": true,
+    "default_expression": "'standard'::service_priority"
+  },
+  {
+    "schema": "public",
+    "table_name": "service_requests",
+    "column_name": "status",
+    "type": "service_request_status",
+    "not_null": true,
+    "default_expression": "'submitted'::service_request_status"
+  },
+  {
+    "schema": "public",
+    "table_name": "service_requests",
+    "column_name": "location_label",
+    "type": "text",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "service_requests",
+    "column_name": "scheduled_for",
+    "type": "timestamp with time zone",
+    "not_null": false,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "service_requests",
+    "column_name": "created_at",
+    "type": "timestamp with time zone",
+    "not_null": true,
+    "default_expression": "now()"
+  },
+  {
+    "schema": "public",
+    "table_name": "service_requests",
+    "column_name": "updated_at",
+    "type": "timestamp with time zone",
+    "not_null": true,
+    "default_expression": "now()"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_categories",
+    "column_name": "technician_id",
+    "type": "uuid",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_categories",
+    "column_name": "category_id",
+    "type": "text",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_documents",
+    "column_name": "id",
+    "type": "uuid",
+    "not_null": true,
+    "default_expression": "gen_random_uuid()"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_documents",
+    "column_name": "technician_id",
+    "type": "uuid",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_documents",
+    "column_name": "document_type",
+    "type": "text",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_documents",
+    "column_name": "storage_path",
+    "type": "text",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_documents",
+    "column_name": "status",
+    "type": "text",
+    "not_null": true,
+    "default_expression": "'pending'::text"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_documents",
+    "column_name": "created_at",
+    "type": "timestamp with time zone",
+    "not_null": true,
+    "default_expression": "now()"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_documents",
+    "column_name": "reviewed_at",
+    "type": "timestamp with time zone",
+    "not_null": false,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_documents",
+    "column_name": "reviewed_by",
+    "type": "uuid",
+    "not_null": false,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_metrics",
+    "column_name": "technician_id",
+    "type": "uuid",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_metrics",
+    "column_name": "rating",
+    "type": "numeric(2,1)",
+    "not_null": true,
+    "default_expression": "0"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_metrics",
+    "column_name": "review_count",
+    "type": "integer",
+    "not_null": true,
+    "default_expression": "0"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_metrics",
+    "column_name": "completed_jobs",
+    "type": "integer",
+    "not_null": true,
+    "default_expression": "0"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_metrics",
+    "column_name": "response_time_minutes",
+    "type": "integer",
+    "not_null": true,
+    "default_expression": "0"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_metrics",
+    "column_name": "completion_rate",
+    "type": "integer",
+    "not_null": true,
+    "default_expression": "0"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_metrics",
+    "column_name": "updated_at",
+    "type": "timestamp with time zone",
+    "not_null": true,
+    "default_expression": "now()"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_profiles",
+    "column_name": "user_id",
+    "type": "uuid",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_profiles",
+    "column_name": "slug",
+    "type": "text",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_profiles",
+    "column_name": "city",
+    "type": "text",
+    "not_null": true,
+    "default_expression": "'Santiago'::text"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_profiles",
+    "column_name": "coverage_areas",
+    "type": "text[]",
+    "not_null": true,
+    "default_expression": "'{}'::text[]"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_profiles",
+    "column_name": "headline",
+    "type": "text",
+    "not_null": true,
+    "default_expression": "''::text"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_profiles",
+    "column_name": "bio",
+    "type": "text",
+    "not_null": true,
+    "default_expression": "''::text"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_profiles",
+    "column_name": "status",
+    "type": "technician_status",
+    "not_null": true,
+    "default_expression": "'draft'::technician_status"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_profiles",
+    "column_name": "years_of_experience",
+    "type": "integer",
+    "not_null": true,
+    "default_expression": "0"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_profiles",
+    "column_name": "emergency_enabled",
+    "type": "boolean",
+    "not_null": true,
+    "default_expression": "false"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_profiles",
+    "column_name": "starting_price_clp",
+    "type": "integer",
+    "not_null": true,
+    "default_expression": "0"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_profiles",
+    "column_name": "submitted_at",
+    "type": "timestamp with time zone",
+    "not_null": false,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_profiles",
+    "column_name": "verified_at",
+    "type": "timestamp with time zone",
+    "not_null": false,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_profiles",
+    "column_name": "created_at",
+    "type": "timestamp with time zone",
+    "not_null": true,
+    "default_expression": "now()"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_profiles",
+    "column_name": "updated_at",
+    "type": "timestamp with time zone",
+    "not_null": true,
+    "default_expression": "now()"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_specialties",
+    "column_name": "id",
+    "type": "uuid",
+    "not_null": true,
+    "default_expression": "gen_random_uuid()"
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_specialties",
+    "column_name": "technician_id",
+    "type": "uuid",
+    "not_null": true,
+    "default_expression": null
+  },
+  {
+    "schema": "public",
+    "table_name": "technician_specialties",
+    "column_name": "name",
+    "type": "text",
+    "not_null": true,
+    "default_expression": null
+  }
+]

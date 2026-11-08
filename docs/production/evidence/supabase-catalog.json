@@ -1,0 +1,884 @@
+{
+  "date": "2026-11-08",
+  "scope": "authorized read-only catalog and aggregate counts; no personal records",
+  "counts": {
+    "profiles": 2,
+    "documents": 0,
+    "auth_users": 2,
+    "categories": 8,
+    "technicians": 0,
+    "audit_entries": 0,
+    "storage_objects": 0,
+    "service_requests": 0
+  },
+  "grants": [
+    {
+      "grantee": "anon",
+      "table_name": "admin_audit_entries",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "admin_audit_entries",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "admin_audit_entries",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "admin_audit_entries",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "admin_audit_entries",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "admin_audit_entries",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "admin_audit_entries",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "admin_audit_entries",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "categories",
+      "table_schema": "public",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "categories",
+      "table_schema": "public",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "categories",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "categories",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "categories",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "categories",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "categories",
+      "table_schema": "public",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "categories",
+      "table_schema": "public",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "categories",
+      "table_schema": "public",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "categories",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "categories",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "categories",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "categories",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "categories",
+      "table_schema": "public",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "profiles",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "profiles",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "profiles",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "profiles",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "profiles",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "profiles",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "profiles",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "profiles",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "service_requests",
+      "table_schema": "public",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "service_requests",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "service_requests",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "service_requests",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "service_requests",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "service_requests",
+      "table_schema": "public",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "service_requests",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "service_requests",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "service_requests",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "service_requests",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_categories",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_categories",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_categories",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_categories",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_categories",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_categories",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_categories",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_categories",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_documents",
+      "table_schema": "public",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_documents",
+      "table_schema": "public",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_documents",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_documents",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_documents",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_documents",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_documents",
+      "table_schema": "public",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_documents",
+      "table_schema": "public",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_documents",
+      "table_schema": "public",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_documents",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_documents",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_documents",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_documents",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_documents",
+      "table_schema": "public",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_metrics",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_metrics",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_metrics",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_metrics",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_metrics",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_metrics",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_metrics",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_metrics",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_profiles",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_profiles",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_profiles",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_profiles",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_profiles",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_profiles",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_profiles",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_profiles",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_specialties",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_specialties",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_specialties",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "technician_specialties",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_specialties",
+      "table_schema": "public",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_specialties",
+      "table_schema": "public",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_specialties",
+      "table_schema": "public",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "technician_specialties",
+      "table_schema": "public",
+      "privilege_type": "TRUNCATE"
+    }
+  ],
+  "tables": [
+    {
+      "rls": true,
+      "name": "admin_audit_entries",
+      "schema": "public",
+      "relkind": "r",
+      "force_rls": false
+    },
+    {
+      "rls": true,
+      "name": "categories",
+      "schema": "public",
+      "relkind": "r",
+      "force_rls": false
+    },
+    {
+      "rls": true,
+      "name": "profiles",
+      "schema": "public",
+      "relkind": "r",
+      "force_rls": false
+    },
+    {
+      "rls": true,
+      "name": "service_requests",
+      "schema": "public",
+      "relkind": "r",
+      "force_rls": false
+    },
+    {
+      "rls": true,
+      "name": "technician_categories",
+      "schema": "public",
+      "relkind": "r",
+      "force_rls": false
+    },
+    {
+      "rls": true,
+      "name": "technician_documents",
+      "schema": "public",
+      "relkind": "r",
+      "force_rls": false
+    },
+    {
+      "rls": true,
+      "name": "technician_metrics",
+      "schema": "public",
+      "relkind": "r",
+      "force_rls": false
+    },
+    {
+      "rls": true,
+      "name": "technician_profiles",
+      "schema": "public",
+      "relkind": "r",
+      "force_rls": false
+    },
+    {
+      "rls": true,
+      "name": "technician_specialties",
+      "schema": "public",
+      "relkind": "r",
+      "force_rls": false
+    }
+  ],
+  "buckets": [
+    {
+      "id": "technician-documents",
+      "name": "technician-documents",
+      "public": false,
+      "file_size_limit": null,
+      "allowed_mime_types": null
+    }
+  ],
+  "policies": [
+    {
+      "cmd": "SELECT",
+      "qual": "is_admin()",
+      "roles": [
+        "public"
+      ],
+      "tablename": "admin_audit_entries",
+      "permissive": "PERMISSIVE",
+      "policyname": "Administrators read audit entries",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "true",
+      "roles": [
+        "public"
+      ],
+      "tablename": "categories",
+      "permissive": "PERMISSIVE",
+      "policyname": "Categories are public",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((id = auth.uid()) OR is_admin() OR (EXISTS ( SELECT 1\n   FROM technician_profiles\n  WHERE ((technician_profiles.user_id = profiles.id) AND (technician_profiles.status = ANY (ARRAY['verified'::technician_status, 'active'::technician_status]))))))",
+      "roles": [
+        "public"
+      ],
+      "tablename": "profiles",
+      "permissive": "PERMISSIVE",
+      "policyname": "Public profiles are visible for public technicians",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "public"
+      ],
+      "tablename": "service_requests",
+      "permissive": "PERMISSIVE",
+      "policyname": "Customers create their own service requests",
+      "schemaname": "public",
+      "with_check": "((customer_id = auth.uid()) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'customer'::app_role)))))"
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((customer_id = auth.uid()) OR (assigned_technician_id = active_technician_id()) OR is_admin())",
+      "roles": [
+        "public"
+      ],
+      "tablename": "service_requests",
+      "permissive": "PERMISSIVE",
+      "policyname": "Customers view their own service requests",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((technician_id = auth.uid()) OR is_admin() OR (EXISTS ( SELECT 1\n   FROM technician_profiles\n  WHERE ((technician_profiles.user_id = technician_categories.technician_id) AND (technician_profiles.status = ANY (ARRAY['verified'::technician_status, 'active'::technician_status]))))))",
+      "roles": [
+        "public"
+      ],
+      "tablename": "technician_categories",
+      "permissive": "PERMISSIVE",
+      "policyname": "Technician categories follow profile visibility",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((technician_id = auth.uid()) OR is_admin())",
+      "roles": [
+        "public"
+      ],
+      "tablename": "technician_documents",
+      "permissive": "PERMISSIVE",
+      "policyname": "Technicians and administrators view their documents",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((technician_id = auth.uid()) OR is_admin() OR (EXISTS ( SELECT 1\n   FROM technician_profiles\n  WHERE ((technician_profiles.user_id = technician_metrics.technician_id) AND (technician_profiles.status = ANY (ARRAY['verified'::technician_status, 'active'::technician_status]))))))",
+      "roles": [
+        "public"
+      ],
+      "tablename": "technician_metrics",
+      "permissive": "PERMISSIVE",
+      "policyname": "Technician metrics follow profile visibility",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((status = ANY (ARRAY['verified'::technician_status, 'active'::technician_status])) OR (user_id = auth.uid()) OR is_admin())",
+      "roles": [
+        "public"
+      ],
+      "tablename": "technician_profiles",
+      "permissive": "PERMISSIVE",
+      "policyname": "Public technicians are visible and private profiles remain scop",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((technician_id = auth.uid()) OR is_admin() OR (EXISTS ( SELECT 1\n   FROM technician_profiles\n  WHERE ((technician_profiles.user_id = technician_specialties.technician_id) AND (technician_profiles.status = ANY (ARRAY['verified'::technician_status, 'active'::technician_status]))))))",
+      "roles": [
+        "public"
+      ],
+      "tablename": "technician_specialties",
+      "permissive": "PERMISSIVE",
+      "policyname": "Technician specialties follow profile visibility",
+      "schemaname": "public",
+      "with_check": null
+    },
+    {
+      "cmd": "SELECT",
+      "qual": "((bucket_id = 'technician-documents'::text) AND (((storage.foldername(name))[1] = (auth.uid())::text) OR is_admin()))",
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "Technicians and administrators view verification documents",
+      "schemaname": "storage",
+      "with_check": null
+    },
+    {
+      "cmd": "INSERT",
+      "qual": null,
+      "roles": [
+        "authenticated"
+      ],
+      "tablename": "objects",
+      "permissive": "PERMISSIVE",
+      "policyname": "Technicians upload their own documents",
+      "schemaname": "storage",
+      "with_check": "((bucket_id = 'technician-documents'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))"
+    }
+  ],
+  "triggers": [
+    {
+      "schema": "auth",
+      "tgname": "on_auth_user_created",
+      "definition": "CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE FUNCTION handle_new_user()",
+      "table_name": "users"
+    },
+    {
+      "schema": "public",
+      "tgname": "profiles_touch_updated_at",
+      "definition": "CREATE TRIGGER profiles_touch_updated_at BEFORE UPDATE ON profiles FOR EACH ROW EXECUTE FUNCTION touch_updated_at()",
+      "table_name": "profiles"
+    },
+    {
+      "schema": "public",
+      "tgname": "service_requests_touch_updated_at",
+      "definition": "CREATE TRIGGER service_requests_touch_updated_at BEFORE UPDATE ON service_requests FOR EACH ROW EXECUTE FUNCTION touch_updated_at()",
+      "table_name": "service_requests"
+    },
+    {
+      "schema": "public",
+      "tgname": "technician_profiles_touch_updated_at",
+      "definition": "CREATE TRIGGER technician_profiles_touch_updated_at BEFORE UPDATE ON technician_profiles FOR EACH ROW EXECUTE FUNCTION touch_updated_at()",
+      "table_name": "technician_profiles"
+    }
+  ],
+  "functions": [
+    {
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "args": "",
+      "proname": "active_technician_id",
+      "proconfig": [
+        "search_path=public"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.active_technician_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  select user_id from public.technician_profiles\r\n  where user_id = auth.uid() and status = 'active'\r\n  limit 1;\r\n$function$\n",
+      "anon_execute": true,
+      "security_definer": true,
+      "authenticated_execute": true
+    },
+    {
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "args": "target_technician_id uuid, next_status technician_status, change_reason text",
+      "proname": "change_technician_status",
+      "proconfig": [
+        "search_path=public"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.change_technician_status(target_technician_id uuid, next_status technician_status, change_reason text DEFAULT ''::text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\ndeclare\r\n  current_status public.technician_status;\r\n  updated_profile public.technician_profiles;\r\nbegin\r\n  if not public.is_admin() then\r\n    raise exception 'No tienes permiso para gestionar técnicos.' using errcode = '42501';\r\n  end if;\r\n\r\n  select status into current_status from public.technician_profiles where user_id = target_technician_id for update;\r\n  if current_status is null then\r\n    raise exception 'No existe el perfil técnico.' using errcode = 'P0002';\r\n  end if;\r\n\r\n  if not public.technician_status_transition_allowed(current_status, next_status) then\r\n    raise exception 'La transición de estado no está permitida.' using errcode = '22023';\r\n  end if;\r\n\r\n  update public.technician_profiles\r\n  set status = next_status,\r\n      verified_at = case when next_status in ('verified', 'active') then now() else verified_at end\r\n  where user_id = target_technician_id\r\n  returning * into updated_profile;\r\n\r\n  insert into public.admin_audit_entries (actor_id, technician_id, action, previous_status, next_status, reason)\r\n  values (auth.uid(), target_technician_id, 'technician_status_changed', current_status, next_status, coalesce(nullif(trim(change_reason), ''), 'Cambio de estado desde administración.'));\r\n\r\n  return jsonb_build_object('technician_id', updated_profile.user_id, 'status', updated_profile.status);\r\nend;\r\n$function$\n",
+      "anon_execute": true,
+      "security_definer": true,
+      "authenticated_execute": true
+    },
+    {
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "args": "",
+      "proname": "handle_new_user",
+      "proconfig": [
+        "search_path=public"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.handle_new_user()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\ndeclare\r\n  requested_role public.app_role := case when new.raw_user_meta_data ->> 'account_type' = 'technician' then 'technician' else 'customer' end;\r\n  technician_slug text;\r\n  category_id_value text;\r\n  specialty_value text;\r\n  years_value integer := case when coalesce(new.raw_user_meta_data ->> 'years_of_experience', '') ~ '^\\d+$' then least((new.raw_user_meta_data ->> 'years_of_experience')::integer, 80) else 0 end;\r\n  price_value integer := case when coalesce(new.raw_user_meta_data ->> 'starting_price_clp', '') ~ '^\\d+$' then greatest((new.raw_user_meta_data ->> 'starting_price_clp')::integer, 0) else 0 end;\r\nbegin\r\n  insert into public.profiles (id, full_name, role)\r\n  values (\r\n    new.id,\r\n    coalesce(nullif(trim(new.raw_user_meta_data ->> 'full_name'), ''), split_part(new.email, '@', 1)),\r\n    requested_role\r\n  );\r\n\r\n  if requested_role = 'technician' then\r\n    technician_slug := trim(both '-' from regexp_replace(lower(coalesce(new.raw_user_meta_data ->> 'full_name', 'tecnico')), '[^a-z0-9]+', '-', 'g')) || '-' || left(new.id::text, 8);\r\n\r\n    insert into public.technician_profiles (\r\n      user_id, slug, city, coverage_areas, headline, bio, status,\r\n      years_of_experience, emergency_enabled, starting_price_clp, submitted_at\r\n    ) values (\r\n      new.id,\r\n      technician_slug,\r\n      coalesce(nullif(trim(new.raw_user_meta_data ->> 'city'), ''), 'Santiago'),\r\n      coalesce(array(select jsonb_array_elements_text(coalesce(new.raw_user_meta_data -> 'coverage_areas', '[]'::jsonb))), '{}'),\r\n      coalesce(left(new.raw_user_meta_data ->> 'headline', 180), ''),\r\n      coalesce(left(new.raw_user_meta_data ->> 'bio', 2000), ''),\r\n      'pending_verification',\r\n      years_value,\r\n      coalesce((new.raw_user_meta_data ->> 'emergency_enabled')::boolean, false),\r\n      price_value,\r\n      now()\r\n    );\r\n\r\n    for category_id_value in select jsonb_array_elements_text(coalesce(new.raw_user_meta_data -> 'category_ids', '[]'::jsonb)) loop\r\n      insert into public.technician_categories (technician_id, category_id)\r\n      select new.id, category_id_value where exists (select 1 from public.categories where id = category_id_value)\r\n      on conflict do nothing;\r\n    end loop;\r\n\r\n    for specialty_value in select jsonb_array_elements_text(coalesce(new.raw_user_meta_data -> 'specialties', '[]'::jsonb)) loop\r\n      if char_length(trim(specialty_value)) between 2 and 100 then\r\n        insert into public.technician_specialties (technician_id, name) values (new.id, trim(specialty_value)) on conflict do nothing;\r\n      end if;\r\n    end loop;\r\n\r\n    insert into public.technician_metrics (technician_id) values (new.id);\r\n  end if;\r\n\r\n  return new;\r\nend;\r\n$function$\n",
+      "anon_execute": true,
+      "security_definer": true,
+      "authenticated_execute": true
+    },
+    {
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "args": "",
+      "proname": "is_admin",
+      "proconfig": [
+        "search_path=public"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.is_admin()\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  select exists (\r\n    select 1 from public.profiles\r\n    where id = auth.uid() and role in ('moderator', 'superadmin')\r\n  );\r\n$function$\n",
+      "anon_execute": true,
+      "security_definer": true,
+      "authenticated_execute": true
+    },
+    {
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "args": "current_status technician_status, next_status technician_status",
+      "proname": "technician_status_transition_allowed",
+      "proconfig": null,
+      "definition": "CREATE OR REPLACE FUNCTION public.technician_status_transition_allowed(current_status technician_status, next_status technician_status)\n RETURNS boolean\n LANGUAGE sql\n IMMUTABLE\nAS $function$\r\n  select (current_status, next_status) in (\r\n    ('draft'::public.technician_status, 'pending_verification'::public.technician_status),\r\n    ('draft'::public.technician_status, 'rejected'::public.technician_status),\r\n    ('pending_verification'::public.technician_status, 'needs_information'::public.technician_status),\r\n    ('pending_verification'::public.technician_status, 'verified'::public.technician_status),\r\n    ('pending_verification'::public.technician_status, 'rejected'::public.technician_status),\r\n    ('needs_information'::public.technician_status, 'pending_verification'::public.technician_status),\r\n    ('needs_information'::public.technician_status, 'rejected'::public.technician_status),\r\n    ('verified'::public.technician_status, 'active'::public.technician_status),\r\n    ('verified'::public.technician_status, 'temporarily_suspended'::public.technician_status),\r\n    ('verified'::public.technician_status, 'banned'::public.technician_status),\r\n    ('active'::public.technician_status, 'temporarily_suspended'::public.technician_status),\r\n    ('active'::public.technician_status, 'suspended'::public.technician_status),\r\n    ('active'::public.technician_status, 'banned'::public.technician_status),\r\n    ('temporarily_suspended'::public.technician_status, 'active'::public.technician_status),\r\n    ('temporarily_suspended'::public.technician_status, 'suspended'::public.technician_status),\r\n    ('temporarily_suspended'::public.technician_status, 'banned'::public.technician_status),\r\n    ('suspended'::public.technician_status, 'active'::public.technician_status),\r\n    ('suspended'::public.technician_status, 'banned'::public.technician_status),\r\n    ('rejected'::public.technician_status, 'pending_verification'::public.technician_status)\r\n  );\r\n$function$\n",
+      "anon_execute": true,
+      "security_definer": false,
+      "authenticated_execute": true
+    },
+    {
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "args": "",
+      "proname": "touch_updated_at",
+      "proconfig": [
+        "search_path=public"
+      ],
+      "definition": "CREATE OR REPLACE FUNCTION public.touch_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public'\nAS $function$\r\nbegin\r\n  new.updated_at = now();\r\n  return new;\r\nend;\r\n$function$\n",
+      "anon_execute": true,
+      "security_definer": false,
+      "authenticated_execute": true
+    }
+  ],
+  "extensions": [
+    {
+      "schema": "extensions",
+      "extname": "pg_stat_statements",
+      "extversion": "1.11"
+    },
+    {
+      "schema": "extensions",
+      "extname": "pgcrypto",
+      "extversion": "1.3"
+    },
+    {
+      "schema": "pg_catalog",
+      "extname": "plpgsql",
+      "extversion": "1.0"
+    },
+    {
+      "schema": "vault",
+      "extname": "supabase_vault",
+      "extversion": "0.3.1"
+    },
+    {
+      "schema": "extensions",
+      "extname": "uuid-ossp",
+      "extversion": "1.1"
+    }
+  ],
+  "profile_roles": [
+    {
+      "role": "superadmin",
+      "count": 2
+    }
+  ],
+  "technician_states": []
+}

@@ -12,22 +12,41 @@
     "source": "GitHub connector GET repository metadata, branches and commits"
   },
   "supabase": {
-    "connected_accounts_inspected": 2,
-    "configured_project_matches_connected_projects": false,
-    "remote_schema_rls_auth_storage": "BLOCKED",
-    "privileged_read": "Rejected by automatic approval review: account/destination authorization unverified",
+    "connection": "Fixo",
+    "configured_project_matches_connected_project": true,
+    "remote_catalog_rls_grants_storage": "PASS inspection; defects documented",
+    "migration_history_records": 0,
+    "auth_public_settings": "PASS read-only; complete Auth URL/SMTP NOT TESTED",
+    "access": "authorized by owner; initial approval rejection resolved",
     "remote_mutations": false
   },
   "vercel": {
     "local_project_name": "fixo-marketplace",
-    "git_link_production_branch_deployed_commit_environment": "BLOCKED",
-    "privileged_read": "Rejected by automatic approval review: account/destination authorization unverified"
+    "remote_project_verified": true,
+    "git_link": null,
+    "deployment_source": "cli",
+    "deployed_git_sha": "not recorded",
+    "environment_names_and_targets": "PASS read-only",
+    "domains": "only fixo-marketplace.vercel.app",
+    "access": "authorized by owner; initial approval rejection resolved"
   },
   "public_http": [
-    { "url": "https://fixo-marketplace.vercel.app/", "status": 200 },
-    { "url": "https://fixo-marketplace.vercel.app/tecnicos", "status": 200 },
-    { "url": "https://fixo-marketplace.vercel.app/login", "status": 200 },
-    { "url": "https://soyfixo.cl/", "error": "ENOTFOUND" }
+    {
+      "url": "https://fixo-marketplace.vercel.app/",
+      "status": 200
+    },
+    {
+      "url": "https://fixo-marketplace.vercel.app/tecnicos",
+      "status": 200
+    },
+    {
+      "url": "https://fixo-marketplace.vercel.app/login",
+      "status": 200
+    },
+    {
+      "url": "https://soyfixo.cl/",
+      "error": "ENOTFOUND"
+    }
   ],
   "limitations": [
     "HTTP 200 does not prove database persistence or identify the deployed source revision",

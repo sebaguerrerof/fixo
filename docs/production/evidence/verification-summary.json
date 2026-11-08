@@ -49,6 +49,14 @@
     }
   },
   "remote_integration_tests": "NOT TESTED",
-  "remote_catalog_vercel_configuration": "BLOCKED",
-  "remote_mutations": false
+  "remote_mutations": false,
+  "remote_readonly": {
+    "supabase_identity_catalog_rls_grants_storage": "PASS inspection; defects documented",
+    "migration_history": "FAIL tracking; schema present without recorded migrations",
+    "auth_public_settings": "PASS partial read-only",
+    "auth_urls_smtp_backup_restore": "NOT TESTED",
+    "vercel_project_env_deployments_domains": "PASS inspection",
+    "github_vercel_traceability": "FAIL; no Git link or deployed SHA",
+    "scope": "read-only extension; local code unchanged; existing four check results retained"
+  }
 }

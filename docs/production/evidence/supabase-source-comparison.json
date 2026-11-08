@@ -1,0 +1,64 @@
+{
+  "date": "2026-11-08",
+  "scope": "function bodies compared with local initial SQL; not a full schema-diff proof",
+  "functions": [
+    {
+      "name": "touch_updated_at",
+      "exists": true,
+      "bodyMatchesIgnoringOuterWhitespace": true
+    },
+    {
+      "name": "is_admin",
+      "exists": true,
+      "bodyMatchesIgnoringOuterWhitespace": true
+    },
+    {
+      "name": "active_technician_id",
+      "exists": true,
+      "bodyMatchesIgnoringOuterWhitespace": true
+    },
+    {
+      "name": "handle_new_user",
+      "exists": true,
+      "bodyMatchesIgnoringOuterWhitespace": true
+    },
+    {
+      "name": "technician_status_transition_allowed",
+      "exists": true,
+      "bodyMatchesIgnoringOuterWhitespace": true
+    },
+    {
+      "name": "change_technician_status",
+      "exists": true,
+      "bodyMatchesIgnoringOuterWhitespace": true
+    }
+  ],
+  "localTables": [
+    "profiles",
+    "categories",
+    "technician_profiles",
+    "technician_categories",
+    "technician_specialties",
+    "technician_metrics",
+    "technician_documents",
+    "service_requests",
+    "admin_audit_entries"
+  ],
+  "remoteTables": [
+    "admin_audit_entries",
+    "categories",
+    "profiles",
+    "service_requests",
+    "technician_categories",
+    "technician_documents",
+    "technician_metrics",
+    "technician_profiles",
+    "technician_specialties"
+  ],
+  "column_name_comparison": {
+    "localCount": 66,
+    "remoteCount": 66,
+    "missingRemote": [],
+    "extraRemote": []
+  }
+}

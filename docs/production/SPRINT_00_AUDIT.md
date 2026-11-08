@@ -2,7 +2,7 @@
 
 Fecha: **8 de noviembre de 2026**, zona de referencia `America/Santiago`.
 
-Estado del sprint: **BLOCKED**. La inspección local y el informe están realizados; quedan verificaciones remotas críticas sin autorización efectiva del entorno y defectos que impiden liberar una aplicación comercial. No se inició Sprint 01.
+Estado del sprint: **BLOCKED** por defectos críticos y pruebas comerciales pendientes. **La auditoría remota de catálogo Supabase y configuración Vercel ya fue autorizada y realizada** mediante la conexión Fixo y consultas GET; el rechazo inicial de acceso quedó resuelto. No se inició Sprint 01. Detalle de la ampliación en §14.
 
 ## 1. Dictamen ejecutivo
 
@@ -10,7 +10,9 @@ Fixo tiene una arquitectura reutilizable, interfaz responsive, autenticación Su
 
 El código compila y sus 43 pruebas pasan. Eso no acredita el funcionamiento del backend remoto: los tests existentes usan dominio y mocks. La auditoría npm detectó **20 paquetes afectados: 3 críticos, 7 altos y 10 moderados**; al omitir desarrollo quedan **5: 1 crítico y 4 altos**. Son conteos de paquetes de npm, no de incidentes ni de vulnerabilidades explotadas en el despliegue.
 
-GitHub está vacío: la API devuelve cero ramas y HTTP 409 al listar commits. Existe un despliegue público que responde 200, pero no se pudo establecer su commit, configuración Git, rama de producción ni variables. `soyfixo.cl` produjo `ENOTFOUND` en la consulta pública de esta sesión; esto no equivale a una auditoría autoritativa de Cloudflare.
+GitHub está vacío: la API devuelve cero ramas y HTTP 409 al listar commits. Vercel **no tiene integración Git**; sus dos despliegues son de CLI. El de producción más reciente fue creado el **17 de agosto de 2026 a las 18:44:51 de Chile** y no registra un SHA Git. Solo hay dos variables configuradas, ambas públicas de Supabase y dirigidas a producción; no hay targets preview/development. Los scripts públicos desplegados contienen la misma URL y clave pública configuradas localmente, comprobado sin conservar sus valores. `soyfixo.cl` no está asociado al proyecto y produjo `ENOTFOUND`; Cloudflare no fue auditado directamente.
+
+La base real tiene **2 usuarios y 2 perfiles, ambos superadmin; 8 categorías; 0 técnicos, solicitudes, documentos y eventos de auditoría**. El directorio vacío tiene una causa concreta: no hay oferta técnica registrada. Existen las nueve tablas iniciales con RLS, las seis funciones y cuatro triggers; sus cuerpos de función coinciden con el SQL local. **El historial de migraciones remoto está vacío**: no repetir la migración inicial ni asumir que el historial representa el esquema existente.
 
 Recomendación: resolver los bloqueos de seguridad y trazabilidad; después implementar un único recorrido **registro → técnico aprobado → solicitud → cotización → adjudicación única → trabajo → pago Sandbox**. Retirar contenido ficticio desde el primer paquete. Chat, IA, agenda avanzada, liquidaciones automáticas y expansión de categorías no son requisitos para completar ese recorrido.
 
@@ -20,13 +22,14 @@ Recomendación: resolver los bloqueos de seguridad y trazabilidad; después impl
 - Contraste con `docs/RESUMEN_DEL_DESARROLLO.md`, `docs/FIXO_P0_GAP_ANALYSIS.md`, `docs/integrations.md`, `supabase/README.md`, `README.md` y `marketplace_tecnicos_master.md`.
 - Ejecución actual de lint, typecheck, tests, build y auditorías npm completa y de producción.
 - Consultas GET a GitHub mediante el conector y a las páginas públicas sin credenciales.
-- Enumeración de proyectos de las dos conexiones Supabase disponibles, sin consultar tablas ni datos de proyectos ajenos. El proyecto configurado localmente no coincide con ninguno de esos proyectos.
+- Tras confirmación explícita del propietario, uso de la nueva conexión Supabase **Fixo**, cuyo proyecto coincide con la configuración local. Consultas SELECT de catálogos/conteos, migrations, advisors y logs agregados; sin consultar registros personales ni proyectos ajenos.
+- GET autorizado de proyecto, despliegues, dominios y nombres/targets de variables Vercel. GET de ajustes públicos Auth y tablas/RPC de lectura anónima. Sin mostrar claves ni valores de variables.
 - No se registraron usuarios, enviaron correos, insertaron solicitudes, cambiaron estados ni iniciaron cobros reales para probar funcionalidades.
 - No se ejecutaron migraciones, push, deploy, cambios DNS ni escrituras a servicios externos.
 
 Los estados describen una comprobación concreta: `PASS` comprobado; `FAIL` defecto o ausencia demostrada en el código; `BLOCKED` falta una condición necesaria para verificar; `NOT TESTED` no se ejecutó esa comprobación. Una implementación encontrada en disco no implica `PASS` de aceptación remota.
 
-**Restricción remota:** la revisión automática rechazó una consulta que usaría la service role de Supabase y el token local de Vercel, porque no pudo verificar las cuentas/destinos autorizados y el proyecto configurado no está entre los conectados. No se eludió la restricción. Las consultas públicas sin credenciales sí fueron permitidas. No se imprimieron valores de credenciales.
+**Antecedente de acceso resuelto:** la revisión automática rechazó inicialmente una consulta por cuentas/destinos no verificados. El propietario confirmó que ambos proyectos pertenecen a Fixo y autorizó su auditoría; además conectó la cuenta Fixo. Las consultas posteriores fueron permitidas. Para Supabase se prefirió el conector; la service role local no fue necesaria. Para Vercel se usó el token local solo contra `api.vercel.com`, mediante GET y sin redirecciones. No se imprimieron valores de credenciales. No hay una solicitud de autorización de lectura pendiente.
 
 ## 3. Git, respaldo y cadena de despliegue
 
@@ -43,7 +46,7 @@ Los estados describen una comprobación concreta: `PASS` comprobado; `FAIL` defe
 | Commit de línea base local | PASS | `9af3a648f4de319041609a36917d8db357b9ca79`, `chore: snapshot reviewed pre-production baseline`, 122 rutas en el diff. Es una fotografía con defectos conocidos, no una versión autorizada para producción. |
 | Vercel enlazado localmente | PASS local | `.vercel/project.json` identifica `fixo-marketplace`. Esta vinculación local no prueba integración Git ni rama de producción. |
 | Sitio público actual | PASS HTTP | `/`, `/tecnicos` y `/login` responden HTTP 200. No demuestra escrituras ni coincide necesariamente con el checkout. |
-| GitHub–Vercel, rama y commit desplegado | BLOCKED | Sin lectura autorizada de ajustes/historial de Vercel. GitHub vacío impide acreditar una cadena actual de despliegue desde ese repositorio. No se infiere que un despliegue previo por CLI no pueda existir. |
+| GitHub–Vercel, rama y commit desplegado | FAIL trazabilidad; PASS inspección | API Vercel 200: gitLink null; dos despliegues CLI; producción READY del 17/08/2026, sin SHA Git. No hay rama de producción Git configurada que pueda validarse como aprobada. |
 | Push, deploy y cambios externos | PASS | No ejecutados. Requieren aprobación explícita. `main` existe localmente, pero no se presume aprobada como rama de producción. |
 
 Respaldos locales, ignorados por Git:
@@ -68,7 +71,8 @@ La cadena existente es App Router/componentes → servicios → contratos → re
 | Vitest / ESLint | 2.1.9 / 9.39.5 |
 | Lockfile y scripts | `package-lock.json`; existen los cuatro scripts solicitados. |
 | CI | No hay workflows `.github` en el árbol inspeccionado. |
-| Entorno local Supabase | Variables presentes; esto acredita configuración local, no credenciales vigentes ni esquema remoto. |
+| Entorno Supabase | Proyecto Fixo conectado y coincidente con configuración local; catálogo remoto y acceso anónimo de lectura verificados. Login/correo y claves privilegiadas locales no se probaron. |
+| Runtime Vercel | Proyecto y despliegue productivo usan Node 24.x; el build local fue probado en Node 22.14.0. Alinear y probar runtime antes del siguiente release. |
 
 Variables encontradas, **solo nombres**:
 
@@ -76,7 +80,7 @@ Variables encontradas, **solo nombres**:
 | --- | --- |
 | `.env.local` | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `VERCEL_OIDC_TOKEN` |
 | `.env.example` | `NEXT_PUBLIC_DEMO_MODE`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY` |
-| Vercel | BLOCKED: nombres, targets y configuración remota no verificados. |
+| Vercel | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`; ambas sensitive, target production. No hay variables preview/development. |
 
 No se encontraron referencias de uso de `SUPABASE_SERVICE_ROLE_KEY` en el código de aplicación ni un proveedor Flow implementado. La presencia de una variable privada no significa que exista una integración que la use. No se añadieron variables.
 
@@ -89,14 +93,14 @@ Los `FAIL` de esta matriz pueden coexistir con adapters parciales útiles; no si
 | Funcionalidad | Estado | Evidencia | Brecha | Criticidad | Dependencias | Acción recomendada |
 | --- | --- | --- | --- | --- | --- | --- |
 | Inicio, navegación y UI responsive | PASS compilación; NOT TESTED UX | `src/app/page.tsx`, componentes layout, build | Sin QA móvil/accesibilidad; textos prometen chat/seguimiento inexistentes. | P1 | Recorrido MVP | Revisar contenido y UX con datos vacíos reales. |
-| Categorías | PASS adapter; BLOCKED remoto | `supabase-technician-repository.ts:51`; SQL:23,300 | Seed de 8 categorías; sin CRUD/activación ni paginación. | P1 | Esquema real | Verificar carga real; agregar solo rubros operables. |
-| Búsqueda/directorio | PASS adapter; BLOCKED remoto | `supabase-technician-repository.ts:79`; SQL:327 | Sin prueba de técnicos reales aprobados; filtra parcialmente en memoria. | P0 para oferta real | Auth, aprobación, RLS | Probar pending/verified/active/suspended con usuarios reales de prueba. |
+| Categorías | PASS adapter y datos remotos | `supabase-technician-repository.ts:51`; SQL:23,300; conteo remoto 8, REST 200 | Sin CRUD/activación ni paginación. | P1 | Esquema real | Agregar solo rubros operables. |
+| Búsqueda/directorio | PASS adapter; NOT TESTED con oferta real | `supabase-technician-repository.ts:79`; SQL:327; 0 técnicos remotos | No existen técnicos aprobados para probar el recorrido; filtra parcialmente en memoria. | P0 para oferta real | Auth, aprobación, RLS | Incorporar oferta real y probar pending/verified/active/suspended. |
 | Perfil público | FAIL contenido | `src/app/tecnicos/[slug]/page.tsx` | Reseñas y estrellas fijas presentadas como clientes verificados. | P0 | Directorio | Eliminar reseñas ficticias; estado vacío hasta tener reseñas persistidas. |
 | Registro cliente/técnico | PASS adapter; NOT TESTED integración | `supabase-auth-provider.ts:69`; SQL:156 | Formulario técnico sin teléfono, términos, documentos/fotos ni disponibilidad real. | P0/P1 según requisito | Auth remoto, términos | Completar mínimo operativo y probar el alta/trigger con datos válidos e inválidos. |
 | Login/logout y sesión | PASS implementación; NOT TESTED recorrido | `supabase-auth-provider.ts`, `middleware.ts` | Confirmación/callback completo no acreditado; sin pruebas reales de revocación. | P0 de validación | Auth URL/SMTP | Probar correo, callback y renovación; no inferir sesión por UI. |
 | Recuperación, perfil y estado de cuenta | FAIL | No hay rutas/acciones de recuperación; `profiles` sin estado de cuenta | Falta recuperación, edición, bloqueo/suspensión global. | P0 para operar cuentas | Matriz RBAC | Implementar con respuestas no enumerables y restricciones DB. |
 | Permisos por rol | PASS parcial; NOT TESTED RLS | Layouts admin/cliente/técnico y `requireServerRole`; SQL:365 | Sin RBAC central completo ni distinción granular moderator/superadmin; demo confía cookie editable. | P0 | Auth real, políticas | Cerrar demo en producción y probar cada rol/acción directamente. |
-| Postulación y aprobación técnica | PASS parcial; BLOCKED remoto | Trigger pending; RPC `change_technician_status`, SQL:260 | No hay carga/inspección/revisión real de documentos ni credenciales como condición DB. | P0 | Storage privado, criterios operativos | Implementar validación mínima antes de publicación. |
+| Postulación y aprobación técnica | PASS esquema; NOT TESTED operación | Trigger y RPC remotos coinciden con SQL:260; 0 postulaciones | No hay carga/inspección/revisión real de documentos ni credenciales como condición DB. | P0 | Storage privado, criterios operativos | Implementar validación mínima antes de publicación. |
 | Invitaciones y administración de roles | FAIL | No hay implementación de invitaciones/gestión de usuarios | Sin incorporación segura directa; no hay mecanismo exclusivo de superadmin. | P1; P0 antes de habilitarlo | RBAC, correo | Superadmin invita; técnico completa y se somete a aprobación. |
 | Crear solicitud | FAIL extremo a extremo | `src/app/solicitar/actions.ts:18`, `:32`; SQL:371 | INSERT seguido de UPDATE revocado; persistencia parcial y error al usuario. | P0 | RPC/transacción, RLS | Crear estado inicial autorizado de forma atómica e idempotente. |
 | Panel de solicitudes cliente | FAIL para nuevas solicitudes | `customer-dashboard-service.ts:9` | Solo muestra estados activos; una solicitud atascada en submitted no aparece aunque exista. | P0 | Arreglar creación | Mostrar submitted y todos los estados relevantes con historial. |
@@ -108,7 +112,7 @@ Los `FAIL` de esta matriz pueden coexistir con adapters parciales útiles; no si
 | Urgencias | FAIL real; PASS dominio mock | `supabase-emergency-repository.ts:5`, `ai-provider-factory.ts:6` | No persisten; creación exige IA mock; precio snapshot 0 pendiente de definición. | P0 si se ofrecen | Jobs, matching, precio acordado | Ocultar temporalmente oferta; reutilizar servicio al conectar persistencia. |
 | Dashboard técnico | FAIL veracidad | `technician-dashboard-service.ts:12`, `tecnico/perfil/page.tsx` | Métricas constantes 0; perfil dice verificado/urgencias habilitadas sin derivarlo del estado. | P0 contenido / P1 agregados | Datos de trabajos | Estado real o sin datos; nunca sustituir ausencia por métricas inventadas. |
 | Agenda e ingresos técnicos | FAIL | `tecnico/agenda/page.tsx`, `tecnico/pagos/page.tsx` | Nombres, horarios, ingresos y movimientos fijos en ambos modos. | P0 | Datos reales o alcance MVP | Retirar demos; diferir agenda avanzada. |
-| Administración técnica y auditoría | PASS adapter; BLOCKED remoto | `supabase-admin-management-store.ts`; RPC SQL:260 | RPC bloquea fila y audita en una transacción; no cubre documentos/roles/pagos ni operación completa. | P0 validación / P1 extensión | Permisos DB | Mantener RPC; probar actor, transición, concurrencia y auditoría persistida. |
+| Administración técnica y auditoría | PASS esquema/adapter; NOT TESTED operación | `supabase-admin-management-store.ts`; cuerpo RPC remoto coincide con SQL:260 | RPC bloquea fila y audita en una transacción; no cubre documentos/roles/pagos ni operación completa. | P0 validación / P1 extensión | Permisos DB | Mantener RPC; probar actor, transición, concurrencia y auditoría persistida. |
 | Dashboard admin | PASS parcial adapter | `admin-dashboard-service.ts` | Solo contadores de técnicos; falta usuarios, solicitudes, trabajos y pagos. | P1 | Persistencia comercial | Agregados SQL con datos reales; sin números de relleno. |
 | Reclamos/configuración admin | FAIL | `admin/reportes/page.tsx`, `admin/configuracion/page.tsx` | Reclamos ficticios; botones sin operación; comisión 12% referencial y matching mostrado activo. | P0 contenido / P1 producto | Política comercial | Estados vacíos/herramienta mínima operativa; no publicar comisión no aprobada. |
 | Flow / pagos / reembolsos | FAIL | Solo `payment-provider.ts` | Sin adapter, órdenes, callbacks, validación, conciliación ni Sandbox. | P0 antes de cobrar | Snapshot, contrato Flow | Sprint 05 Sandbox; modelo de fondos validado antes de cobros reales. |
@@ -126,8 +130,8 @@ Los `FAIL` de esta matriz pueden coexistir con adapters parciales útiles; no si
 | P0-04 | No existe acceso a oportunidades para un técnico aún no asignado. | SELECT RLS SQL:349; `TechnicianOpportunitiesService`. | Cliente ve solo sus solicitudes; técnico activo elegible ve oportunidades permitidas; ajenos/suspendidos no. |
 | P0-05 | Quotes/jobs sin esquema/adapters; aceptación compuesta sin atomicidad DB. | Stubs y `quote-service.ts:92`. | Dos aceptaciones concurrentes dejan un adjudicatario y un trabajo; snapshot inmutable; rollback/reintento comprobado. |
 | P0-06 | Contenido ficticio fuera de demo. | Reseñas públicas, agenda, pagos, reclamos, insignias del perfil, métricas constantes. | Sin reseñas, personas, ingresos ni afirmaciones de certificación inventadas en ninguna ruta liberada. |
-| P0-07 | Backend remoto no verificado: tablas, grants, políticas, RPC, Auth y Storage pueden diferir del SQL local. | Proyecto fuera de las conexiones Supabase; acceso privilegiado bloqueado. | Conectar proyecto correcto y comparar catálogos, migraciones, advisors, buckets y configuración Auth en lectura. |
-| P0-08 | Fuente de código y despliegue sin trazabilidad. | GitHub vacío; ajustes de Vercel bloqueados. | Revisión/aprobación de rama; código aprobado respaldado en GitHub; Vercel vinculado al commit correcto; preview verificable. Push/deploy requieren aprobación. |
+| P0-07 | Historial de migraciones vacío con esquema ya existente; seguridad/configuración Auth aún requiere preparación y pruebas. El bloqueo de acceso está resuelto. | Catálogo inspeccionado: 9 tablas, 6 funciones, 4 triggers, 0 migraciones registradas; advisors detallados en §14. | Reconciliar historial sin reejecutar CREATE inicial; cerrar grants/helpers necesarios, configurar/verificar Auth URL/SMTP y ejecutar pruebas de aislamiento. |
+| P0-08 | Fuente de código y despliegue sin trazabilidad. | GitHub vacío; Vercel gitLink null; despliegues CLI sin SHA. | Revisión/aprobación de rama; código aprobado respaldado en GitHub; Vercel vinculado al commit correcto; preview verificable. Push/deploy requieren aprobación. |
 | P0-09 | Pagos no implementados ni modelo de fondos confirmado. | Solo contrato PaymentProvider; sin endpoints ni tablas. | Escenarios Sandbox correctos, callback consultado y validado, duplicados seguros, conciliación; contrato operativo documentado. |
 | P0-10 | Validación técnica y suspensión incompletas. | RPC permite aprobación sin comprobar documentos; quotes no verifica estado activo; cuenta no tiene estado global. | Publicación y acciones sensibles condicionadas a aprobación/credenciales; suspendidos no cotizan/reciben trabajos; motivos auditados. |
 | P0-11 | Inserción directa permite estados/asignación comerciales arbitrarios dentro de la solicitud propia. | INSERT RLS SQL:346 solo comprueba customer/rol; columnas status y assigned_technician_id no están restringidas para INSERT. | Probar rechazo de status completed/awaiting_payment o técnico preasignado en alta directa; transición solo por operaciones autorizadas. |
@@ -183,7 +187,7 @@ La RPC de estados administrativos usa `FOR UPDATE`, valida admin y transición, 
 Hallazgos:
 
 1. **Incompatibilidad escritura/lectura de solicitudes:** UPDATE está revocado; el repositorio lo necesita. SELECT no permite oportunidades sin asignar; INSERT no limita estado inicial/asignación. No solucionar concediendo UPDATE genérico.
-2. **Grants de lectura/INSERT no explícitos:** la migración depende de privilegios por defecto del proyecto. RLS y grants se deben contrastar por separado con el catálogo efectivo. Un HTTP 200 de una tabla no demuestra que todos los accesos correctos estén permitidos ni que los indebidos se rechacen.
+2. **Grants remotos confirmados:** anon/authenticated tienen SELECT e INSERT sobre service_requests, sin UPDATE/DELETE. Las restricciones RLS siguen aplicando al INSERT. Persisten permisos amplios de REFERENCES/TRIGGER/TRUNCATE sobre tablas; RLS no protege TRUNCATE, aunque no hay evidencia de una vía PostgREST que exponga esa operación. Revisar privilegios mínimos sin presentar esto como borrado anónimo demostrado. Un HTTP 200 no demuestra aislamiento entre actores.
 3. **Sin modelo comercial completo:** faltan quotes, jobs, emergencies, pagos, eventos, reembolsos, historial de solicitudes y adjuntos. No hay unicidad transaccional ni inmutabilidad de snapshot en DB.
 4. **Funciones privilegiadas:** is_admin, active_technician_id, handle_new_user y change_technician_status usan SECURITY DEFINER y search_path fijo. La RPC tiene guard de admin, pero no se revoca EXECUTE a PUBLIC/anon de forma explícita. Revisar grants mínimos y esquema privado para helpers; no se encontró una elevación administrativa por el simple hecho de llamar a is_admin.
 5. **Entrada del trigger:** cast de boolean/integer y expansión JSON de metadata pueden fallar con tipos o enteros fuera de rango; las validaciones del formulario no protegen el endpoint Auth directo. Probar registro malformado sin elevar roles ni exponer errores internos.
@@ -192,7 +196,7 @@ Hallazgos:
 8. **Sin protección general de cuenta suspendida:** ninguna política consulta un estado de cuenta inexistente; active_technician_id solo protege la lectura de solicitudes ya asignadas.
 9. **Migración inicial no repetible sobre esquema ya creado:** CREATE TYPE/TABLE sin guard y triggers/policies nominales; el README propone pegar todo en SQL Editor. No repetirla en un proyecto existente. El backfill asigna customer a perfiles faltantes; revisar usuarios previos antes de cualquier ejecución. El upsert de categorías puede sobrescribir descripciones existentes.
 
-Catálogos, migraciones realmente aplicadas, drift, políticas efectivas, grants, buckets, vistas, extensiones y advisors remotos: **BLOCKED**. No inferir que el catálogo remoto coincide con este inventario.
+**Lectura remota completada:** nueve tablas con RLS y ninguna vista/materialized view en public; 66 columnas, 48 constraints, 16 índices, cuatro enums, seis funciones, cuatro triggers y doce políticas entre tablas/Storage. Los conjuntos de nombres de tablas y columnas coinciden con el SQL local, sin faltantes ni extras; los seis cuerpos de función coinciden ignorando solo whitespace exterior. Hay cinco extensiones instaladas. Se inspeccionaron grants, bucket y advisors; el historial de migraciones está vacío. Esto no equivale a un diff semántico exhaustivo de todo el DDL ni a pruebas de aislamiento con usuarios cliente/técnico. Detalle y límites en §14.
 
 ## 9. Dependencias demo y contraste documental
 
@@ -204,10 +208,10 @@ Rendimiento y consistencia pendientes (P1): `TechnicianJobsService.describe` hac
 
 | Documento / afirmación previa | Contraste actual |
 | --- | --- |
-| Resumen: Supabase conectado y endpoints profiles/categories 200 | Variables y adapters existen. La comprobación anterior no se pudo repetir por acceso; tampoco demuestra registros, RLS ni flujo comercial. |
+| Resumen: Supabase conectado y endpoints profiles/categories 200 | Revalidado con la conexión Fixo y GET anónimos. Conteos reales: 2 perfiles superadmin y 8 categorías; no hay técnicos ni solicitudes. No demuestra un flujo comercial. |
 | Resumen: cotizaciones/trabajos/urgencias completos en mock, migraciones faltantes | Confirmado. Los adapters reales son stubs que lanzan errores. |
 | Resumen: login, registro y protección de rutas | Confirmados como implementación. Falta validar correo/recuperación, permisos efectivos y suspensión en integración. |
-| Resumen: GitHub vacío, despliegue no sincronizado | Vacío confirmado con ramas y 409; origen exacto del deploy sigue BLOCKED. |
+| Resumen: GitHub vacío, despliegue no sincronizado | Vacío confirmado; Vercel carece de integración Git y usa despliegues CLI sin SHA registrado. |
 | Resumen: 43 tests verdes y logs previos de build | Reejecutados ahora: 10 archivos/43 tests PASS; lint/typecheck/build PASS. |
 | GAP_ANALYSIS: autenticación demo como “cookie no sensible”; activar demo en Vercel como “cero riesgo” | No apto para producción comercial: cookie editable permite afirmar rol, hay fallbacks y datos en memoria. No seguir esa recomendación. |
 | GAP_ANALYSIS: RLS implementado “para lo modelado” | RLS existe, pero hay incompatibilidades concretas de creación/visibilidad e INSERT permisivo en estado. No equivale a seguridad verificada. |
@@ -231,7 +235,11 @@ Rendimiento y consistencia pendientes (P1): `TechnicianJobsService.describe` hac
 | Cookie demo autofijada como superadmin | FAIL de confianza demo, reproducido en función local | Decoder aceptó objeto construido sin firma; no se envió cookie a ningún servicio. |
 | Smoke HTTP local de layouts sin sesión | BLOCKED | EACCES en sandbox y ETIMEDOUT al reintentar desde otro contexto; `evidence/local-route-smoke.json`. No acredita redirects ni fallos funcionales. Servidor temporal detenido. |
 | HTTP público /, /tecnicos, /login | PASS disponibilidad | `evidence/external-readonly.json` |
-| RLS, registro/SMTP y callbacks reales | NOT TESTED / BLOCKED | Sin entorno de integración del proyecto correcto ni autorización para modificar servicios. |
+| Catálogo, RLS/grants configurados, bucket y advisors Supabase | PASS inspección; FAIL brechas | Evidencia `supabase-*.json`; no se crearon actores ni se probaron escrituras. |
+| GET anónimos y ajustes Auth públicos | PASS lectura | Profiles/categories/technician_profiles/service_requests 200 con limit 0; quotes/jobs/emergency_requests 404; is_admin false; active_technician_id null. |
+| Visibilidad anónima de perfiles existentes | PASS acotado | HEAD con count exact: 0 perfiles visibles frente a 2 en DB; 8 categorías visibles; técnicos/solicitudes/documentos/auditoría devuelven conteo 0. Sin cuerpos de respuesta personales. |
+| Proyecto/deploy/env/domains Vercel y backend público | PASS inspección; FAIL trazabilidad | `vercel-readonly.json`, `production-public-config-match.json`; no integración Git ni SHA. |
+| RLS entre usuarios, registro/SMTP y callbacks reales | NOT TESTED | Proyecto correcto accesible; no hay actores customer/technician ni entorno de pruebas de escritura preparado. No se crearon datos ni enviaron correos. |
 
 Pruebas necesarias para los próximos sprints, en un entorno de prueba autorizado y separado de datos comerciales:
 
@@ -260,7 +268,7 @@ No se agregaron pruebas que repliquen cambios triviales de whitespace. La suite 
 
 Mantener la numeración del plan, pero adelantar controles esenciales y reducir funciones opcionales:
 
-1. **Cerrar Sprint 00:** conectar el proyecto Supabase correcto y lectura Vercel; comparar DB y migraciones; evaluar/actualizar dependencias vulnerables; establecer preview y CI por commit. Ningún push/deploy sin aprobación.
+1. **Cerrar Sprint 00:** el acceso y la lectura remota ya están realizados; reconciliar el historial de migraciones vacío y preparar mitigaciones de advisors; evaluar/actualizar dependencias vulnerables; alinear Node local con Vercel 24.x y establecer preview/CI por commit. Ningún cambio remoto, push o deploy sin aprobación.
 2. **Sprint 01 — identidad y permisos:** cerrar demo en producción; RBAC central, registro/confirmación/recuperación, estados de cuenta y protección en DB/actions. Adelantar eliminación de reseñas/datos ficticios desde Sprint 08. Habilitar correo crítico de Sprint 06 cuando sea necesario para probar Auth.
 3. **Sprint 02 — oferta real:** postulación mínima, términos/contacto, revisión de credenciales por rubro, archivos privados con límites, aprobación y suspensión con historial. Incorporar pocos técnicos reales revisados; sin inventar oferta.
 4. **Sprint 03 — solicitudes reales:** corregir alta atómica/idempotente y panel, política de visibilidad elegible, categorías/comunas, historial. Adjuntos opcionales si retrasan el primer recorrido normal.
@@ -276,7 +284,7 @@ No ampliar MVP con chat, IA, geocoding, agenda avanzada, payouts o dashboard de 
 
 | Orden | Tarea acotada | Resultado de aceptación |
 | --- | --- | --- |
-| 1 | Desbloquear acceso de lectura al proyecto correcto y Vercel | Identidad de proyecto, catálogo efectivo, migraciones/RLS/Storage/Auth, branch y commit de deploy documentados sin secretos. |
+| 1 | Reconciliar esquema e historial de migraciones y definir configuración de release | Lectura de cuentas ya completada; preparar baseline/adiciones sin repetir el CREATE inicial, revisar grants/advisors y proponer rama/CI/runtime/env preview. Auth URL/SMTP y respaldo/restore pendientes de verificar. |
 | 2 | Remediar dependencias de producción y definir upgrades de herramientas | Lockfile revisado, advisories evaluados, checks verdes; no ejecutar npm audit fix --force de forma indiscriminada. |
 | 3 | Aplicar cierre de demo y retirar contenido ficticio | Configuración incompleta en producción no activa mocks; no se aceptan sesiones demo; UI vacía honesta en perfiles/pagos/agenda/reportes. |
 | 4 | Completar matriz RBAC y flujo Auth mínimo | Recuperación/confirmación probadas, usuarios bloqueados sin acceso, cambios privilegiados solo superadmin y auditados. |
@@ -292,3 +300,37 @@ Estas tareas son una recomendación de continuación, no cambios ejecutados dura
 - [Aviso Next.js Windows](https://github.com/advisories/GHSA-p293-qw3h-jr36) y [aviso optimización AVIF](https://github.com/advisories/GHSA-2xp9-vwfh-vxw4), además de URLs y rangos conservados en los JSON npm. La versión bloqueada 15.5.23 aparece en rangos afectados; el aviso de Windows no prueba que Vercel use Windows. Revisar condiciones de cada aviso al remediar.
 
 La API Flow se investigará con su [documentación oficial](https://developers.flow.cl/api) en Sprint 05; no se implementaron contratos ni se presumieron capacidades de split o transferencias en Sprint 00.
+
+## 14. Ampliación remota después de autorización del propietario
+
+La conexión del complemento denominada **Fixo** corresponde al proyecto configurado localmente. El proyecto está ACTIVE_HEALTHY, PostgreSQL 17.11.0.003. Se usó exclusivamente esa conexión para catálogos, conteos y advisors. No se leyó contenido de documentos ni perfiles personales; los usuarios solo se contaron/agruparon por rol.
+
+| Dato real | Resultado | Interpretación |
+| --- | --- | --- |
+| Auth users / profiles | 2 / 2; ambos perfiles superadmin | No hay customer/technician con los que validar recorridos. No se investigaron nombres ni correos. |
+| Categorías / técnicos / solicitudes | 8 / 0 / 0 | El directorio vacío no requiere datos demo: falta incorporar técnicos reales aprobados. |
+| Documentos / auditoría / Storage objects | 0 / 0 / 0 | No hay evidencia histórica de validaciones ni operaciones comerciales en estos datos. |
+| Public tables / RLS | 9 / 9 habilitadas | RLS está configurado, pero persisten los defectos de visibilidad e INSERT señalados. |
+| Funciones / triggers | 6 / 4 | Cuerpos de las seis funciones iguales al archivo local; no constituye prueba de ejecución de cada flujo. |
+| Migration history | 0 registros | El esquema existe sin historia registrada; el mecanismo de aplicación previo no está acreditado. |
+| Storage technician-documents | Privado; tamaño y MIME sin límites configurados | Requiere reglas de archivos y flujo de revisión antes de recibir documentación. |
+| Auth público | Email habilitado; signup abierto; autoconfirm desactivado | Confirmación de correo requerida por configuración. No se probó envío/entrega, callback ni recuperación. |
+| Lectura anónima de perfiles/categorías | 0 perfiles visibles / 8 categorías visibles | HEAD con count exact acredita que los dos perfiles administrativos actuales no son públicos; no sustituye aislamiento entre clientes/técnicos. |
+| Vercel Git / despliegues | Sin link Git; 2 despliegues CLI READY | Último productivo 17/08/2026 18:44:51 Chile; sin SHA Git en metadata. No acreditar que contiene los cambios locales de noviembre. |
+| Vercel runtime / entorno | Node 24.x; solo 2 variables Supabase en production | Alinear build local 22.x; preparar variables de preview/development antes de probar un release. La service role no es necesaria para los adapters actuales y no se recomienda agregarla por defecto. |
+| Vercel dominios | Solo fixo-marketplace.vercel.app, verificado | soyfixo.cl y www no están asociados al proyecto. No se hizo cambio DNS. |
+| Backend usado por login desplegado | Coincidencia de URL y clave pública con configuración local | Comprobación booleana en 13 scripts públicos, todos 200; no se conservaron valores. No verifica el resto del código desplegado. |
+
+Los conteos son SELECT count(*) exactos de la auditoría. El campo rows del inventario de tablas devolvía estimaciones 0 aun para categorías/profiles; no se usó como conteo definitivo.
+
+**Advisors de seguridad: cuatro grupos, diez observaciones** (las cuatro funciones aparecen por cada rol, no ocho funciones diferentes):
+
+- Una función `technician_status_transition_allowed` con [search_path mutable](https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable).
+- Cuatro SECURITY DEFINER ejecutables por [anon](https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable) y por [authenticated](https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable): active_technician_id, change_technician_status, handle_new_user e is_admin. La RPC administrativa conserva su guard; no se la llamó ni se demostró elevación de privilegios. Los dos helpers de lectura respondieron false/null sin sesión. Revisar exposición/grants, mantener controles y no convertir funciones a invoker sin analizar dependencias de RLS.
+- [Protección contra contraseñas filtradas desactivada](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection); evaluar su habilitación y compatibilidad de cuenta antes de configurarla.
+
+**Advisors de rendimiento:** seis FK sin índice de cobertura, ocho políticas que reevalúan auth por fila y tres índices sin uso registrado. No eliminar esos índices por una estadística vacía en una aplicación sin tráfico comercial. Health no devolvió observaciones. Los logs de las últimas 24 horas se consultaron solo agregados por source/severity: cuatro WARNING de Auth y un WARN de Realtime; no se inspeccionaron mensajes personales ni se atribuyó una causa sin evidencia.
+
+**Límites aún abiertos:** Auth Site URL, allowlist de redirects, proveedor SMTP, backups/PITR y restauración no quedan acreditados por los endpoints/conector utilizados. Los ajustes públicos Auth son parciales. Falta un entorno autorizado con actores customer/technician para pruebas de aislamiento y escrituras; no se crearon cuentas de prueba dentro de una auditoría de lectura. El bloqueo de acceso ya no es un pendiente: lo pendiente es preparar y verificar la operación segura.
+
+Evidencia reproducible: `supabase-catalog.json`, `supabase-columns.json`, `supabase-constraints-indexes.json`, `supabase-source-comparison.json`, `supabase-migrations.json`, `supabase-security.json`, `supabase-performance.json`, `supabase-health.json`, `supabase-log-counts.json`, `supabase-anonymous-readonly.json`, `vercel-readonly.json` y `production-public-config-match.json`, dentro de `evidence/`.

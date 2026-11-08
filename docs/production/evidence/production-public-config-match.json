@@ -1,0 +1,9 @@
+{
+  "date": "2026-11-08",
+  "scope": "public login scripts; only booleans retained, no key or URL values",
+  "loginHttpStatus": 200,
+  "assetsChecked": 13,
+  "assetErrors": 0,
+  "containsConfiguredSupabaseUrl": true,
+  "containsConfiguredPublicKey": true
+}

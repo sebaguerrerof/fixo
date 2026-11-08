@@ -1,0 +1,511 @@
+{
+  "enums": [
+    {
+      "typname": "app_role",
+      "enumlabel": "customer",
+      "enumsortorder": 1
+    },
+    {
+      "typname": "app_role",
+      "enumlabel": "technician",
+      "enumsortorder": 2
+    },
+    {
+      "typname": "app_role",
+      "enumlabel": "moderator",
+      "enumsortorder": 3
+    },
+    {
+      "typname": "app_role",
+      "enumlabel": "superadmin",
+      "enumsortorder": 4
+    },
+    {
+      "typname": "service_priority",
+      "enumlabel": "standard",
+      "enumsortorder": 1
+    },
+    {
+      "typname": "service_priority",
+      "enumlabel": "urgent",
+      "enumsortorder": 2
+    },
+    {
+      "typname": "service_request_status",
+      "enumlabel": "draft",
+      "enumsortorder": 1
+    },
+    {
+      "typname": "service_request_status",
+      "enumlabel": "submitted",
+      "enumsortorder": 2
+    },
+    {
+      "typname": "service_request_status",
+      "enumlabel": "matching",
+      "enumsortorder": 3
+    },
+    {
+      "typname": "service_request_status",
+      "enumlabel": "receiving_quotes",
+      "enumsortorder": 4
+    },
+    {
+      "typname": "service_request_status",
+      "enumlabel": "technician_selected",
+      "enumsortorder": 5
+    },
+    {
+      "typname": "service_request_status",
+      "enumlabel": "awaiting_payment",
+      "enumsortorder": 6
+    },
+    {
+      "typname": "service_request_status",
+      "enumlabel": "scheduled",
+      "enumsortorder": 7
+    },
+    {
+      "typname": "service_request_status",
+      "enumlabel": "in_progress",
+      "enumsortorder": 8
+    },
+    {
+      "typname": "service_request_status",
+      "enumlabel": "completed",
+      "enumsortorder": 9
+    },
+    {
+      "typname": "service_request_status",
+      "enumlabel": "cancelled",
+      "enumsortorder": 10
+    },
+    {
+      "typname": "service_request_status",
+      "enumlabel": "expired",
+      "enumsortorder": 11
+    },
+    {
+      "typname": "service_request_status",
+      "enumlabel": "disputed",
+      "enumsortorder": 12
+    },
+    {
+      "typname": "technician_status",
+      "enumlabel": "draft",
+      "enumsortorder": 1
+    },
+    {
+      "typname": "technician_status",
+      "enumlabel": "pending_verification",
+      "enumsortorder": 2
+    },
+    {
+      "typname": "technician_status",
+      "enumlabel": "needs_information",
+      "enumsortorder": 3
+    },
+    {
+      "typname": "technician_status",
+      "enumlabel": "verified",
+      "enumsortorder": 4
+    },
+    {
+      "typname": "technician_status",
+      "enumlabel": "active",
+      "enumsortorder": 5
+    },
+    {
+      "typname": "technician_status",
+      "enumlabel": "temporarily_suspended",
+      "enumsortorder": 6
+    },
+    {
+      "typname": "technician_status",
+      "enumlabel": "suspended",
+      "enumsortorder": 7
+    },
+    {
+      "typname": "technician_status",
+      "enumlabel": "banned",
+      "enumsortorder": 8
+    },
+    {
+      "typname": "technician_status",
+      "enumlabel": "rejected",
+      "enumsortorder": 9
+    }
+  ],
+  "indexes": [
+    {
+      "indexdef": "CREATE UNIQUE INDEX admin_audit_entries_pkey ON public.admin_audit_entries USING btree (id)",
+      "indexname": "admin_audit_entries_pkey",
+      "tablename": "admin_audit_entries"
+    },
+    {
+      "indexdef": "CREATE INDEX admin_audit_entries_technician_idx ON public.admin_audit_entries USING btree (technician_id, created_at DESC)",
+      "indexname": "admin_audit_entries_technician_idx",
+      "tablename": "admin_audit_entries"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX categories_pkey ON public.categories USING btree (id)",
+      "indexname": "categories_pkey",
+      "tablename": "categories"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX categories_slug_key ON public.categories USING btree (slug)",
+      "indexname": "categories_slug_key",
+      "tablename": "categories"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id)",
+      "indexname": "profiles_pkey",
+      "tablename": "profiles"
+    },
+    {
+      "indexdef": "CREATE INDEX service_requests_customer_idx ON public.service_requests USING btree (customer_id, created_at DESC)",
+      "indexname": "service_requests_customer_idx",
+      "tablename": "service_requests"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX service_requests_pkey ON public.service_requests USING btree (id)",
+      "indexname": "service_requests_pkey",
+      "tablename": "service_requests"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX technician_categories_pkey ON public.technician_categories USING btree (technician_id, category_id)",
+      "indexname": "technician_categories_pkey",
+      "tablename": "technician_categories"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX technician_documents_pkey ON public.technician_documents USING btree (id)",
+      "indexname": "technician_documents_pkey",
+      "tablename": "technician_documents"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX technician_documents_storage_path_key ON public.technician_documents USING btree (storage_path)",
+      "indexname": "technician_documents_storage_path_key",
+      "tablename": "technician_documents"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX technician_metrics_pkey ON public.technician_metrics USING btree (technician_id)",
+      "indexname": "technician_metrics_pkey",
+      "tablename": "technician_metrics"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX technician_profiles_pkey ON public.technician_profiles USING btree (user_id)",
+      "indexname": "technician_profiles_pkey",
+      "tablename": "technician_profiles"
+    },
+    {
+      "indexdef": "CREATE INDEX technician_profiles_public_directory_idx ON public.technician_profiles USING btree (status, city)",
+      "indexname": "technician_profiles_public_directory_idx",
+      "tablename": "technician_profiles"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX technician_profiles_slug_key ON public.technician_profiles USING btree (slug)",
+      "indexname": "technician_profiles_slug_key",
+      "tablename": "technician_profiles"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX technician_specialties_pkey ON public.technician_specialties USING btree (id)",
+      "indexname": "technician_specialties_pkey",
+      "tablename": "technician_specialties"
+    },
+    {
+      "indexdef": "CREATE UNIQUE INDEX technician_specialties_technician_id_name_key ON public.technician_specialties USING btree (technician_id, name)",
+      "indexname": "technician_specialties_technician_id_name_key",
+      "tablename": "technician_specialties"
+    }
+  ],
+  "constraints": [
+    {
+      "conname": "admin_audit_entries_action_check",
+      "contype": "c",
+      "definition": "CHECK (action = 'technician_status_changed'::text)",
+      "table_name": "admin_audit_entries"
+    },
+    {
+      "conname": "admin_audit_entries_actor_id_fkey",
+      "contype": "f",
+      "definition": "FOREIGN KEY (actor_id) REFERENCES profiles(id) ON DELETE RESTRICT",
+      "table_name": "admin_audit_entries"
+    },
+    {
+      "conname": "admin_audit_entries_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (id)",
+      "table_name": "admin_audit_entries"
+    },
+    {
+      "conname": "admin_audit_entries_technician_id_fkey",
+      "contype": "f",
+      "definition": "FOREIGN KEY (technician_id) REFERENCES technician_profiles(user_id) ON DELETE RESTRICT",
+      "table_name": "admin_audit_entries"
+    },
+    {
+      "conname": "categories_icon_check",
+      "contype": "c",
+      "definition": "CHECK (icon = ANY (ARRAY['bolt'::text, 'droplets'::text, 'key-round'::text, 'snowflake'::text, 'monitor-cog'::text, 'wrench'::text, 'paint-roller'::text, 'sprout'::text]))",
+      "table_name": "categories"
+    },
+    {
+      "conname": "categories_id_check",
+      "contype": "c",
+      "definition": "CHECK (id ~ '^[a-z0-9-]+$'::text)",
+      "table_name": "categories"
+    },
+    {
+      "conname": "categories_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (id)",
+      "table_name": "categories"
+    },
+    {
+      "conname": "categories_slug_check",
+      "contype": "c",
+      "definition": "CHECK (slug ~ '^[a-z0-9-]+$'::text)",
+      "table_name": "categories"
+    },
+    {
+      "conname": "categories_slug_key",
+      "contype": "u",
+      "definition": "UNIQUE (slug)",
+      "table_name": "categories"
+    },
+    {
+      "conname": "profiles_full_name_check",
+      "contype": "c",
+      "definition": "CHECK (char_length(TRIM(BOTH FROM full_name)) >= 2 AND char_length(TRIM(BOTH FROM full_name)) <= 120)",
+      "table_name": "profiles"
+    },
+    {
+      "conname": "profiles_id_fkey",
+      "contype": "f",
+      "definition": "FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE",
+      "table_name": "profiles"
+    },
+    {
+      "conname": "profiles_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (id)",
+      "table_name": "profiles"
+    },
+    {
+      "conname": "service_requests_assigned_technician_id_fkey",
+      "contype": "f",
+      "definition": "FOREIGN KEY (assigned_technician_id) REFERENCES technician_profiles(user_id) ON DELETE SET NULL",
+      "table_name": "service_requests"
+    },
+    {
+      "conname": "service_requests_category_id_fkey",
+      "contype": "f",
+      "definition": "FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT",
+      "table_name": "service_requests"
+    },
+    {
+      "conname": "service_requests_customer_id_fkey",
+      "contype": "f",
+      "definition": "FOREIGN KEY (customer_id) REFERENCES profiles(id) ON DELETE CASCADE",
+      "table_name": "service_requests"
+    },
+    {
+      "conname": "service_requests_description_check",
+      "contype": "c",
+      "definition": "CHECK (char_length(description) <= 3000)",
+      "table_name": "service_requests"
+    },
+    {
+      "conname": "service_requests_location_label_check",
+      "contype": "c",
+      "definition": "CHECK (char_length(TRIM(BOTH FROM location_label)) >= 2 AND char_length(TRIM(BOTH FROM location_label)) <= 180)",
+      "table_name": "service_requests"
+    },
+    {
+      "conname": "service_requests_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (id)",
+      "table_name": "service_requests"
+    },
+    {
+      "conname": "service_requests_title_check",
+      "contype": "c",
+      "definition": "CHECK (char_length(TRIM(BOTH FROM title)) >= 5 AND char_length(TRIM(BOTH FROM title)) <= 160)",
+      "table_name": "service_requests"
+    },
+    {
+      "conname": "technician_categories_category_id_fkey",
+      "contype": "f",
+      "definition": "FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT",
+      "table_name": "technician_categories"
+    },
+    {
+      "conname": "technician_categories_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (technician_id, category_id)",
+      "table_name": "technician_categories"
+    },
+    {
+      "conname": "technician_categories_technician_id_fkey",
+      "contype": "f",
+      "definition": "FOREIGN KEY (technician_id) REFERENCES technician_profiles(user_id) ON DELETE CASCADE",
+      "table_name": "technician_categories"
+    },
+    {
+      "conname": "technician_documents_document_type_check",
+      "contype": "c",
+      "definition": "CHECK (document_type = ANY (ARRAY['identity'::text, 'certificate'::text, 'license'::text, 'other'::text]))",
+      "table_name": "technician_documents"
+    },
+    {
+      "conname": "technician_documents_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (id)",
+      "table_name": "technician_documents"
+    },
+    {
+      "conname": "technician_documents_reviewed_by_fkey",
+      "contype": "f",
+      "definition": "FOREIGN KEY (reviewed_by) REFERENCES profiles(id) ON DELETE SET NULL",
+      "table_name": "technician_documents"
+    },
+    {
+      "conname": "technician_documents_status_check",
+      "contype": "c",
+      "definition": "CHECK (status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text]))",
+      "table_name": "technician_documents"
+    },
+    {
+      "conname": "technician_documents_storage_path_key",
+      "contype": "u",
+      "definition": "UNIQUE (storage_path)",
+      "table_name": "technician_documents"
+    },
+    {
+      "conname": "technician_documents_technician_id_fkey",
+      "contype": "f",
+      "definition": "FOREIGN KEY (technician_id) REFERENCES technician_profiles(user_id) ON DELETE CASCADE",
+      "table_name": "technician_documents"
+    },
+    {
+      "conname": "technician_metrics_completed_jobs_check",
+      "contype": "c",
+      "definition": "CHECK (completed_jobs >= 0)",
+      "table_name": "technician_metrics"
+    },
+    {
+      "conname": "technician_metrics_completion_rate_check",
+      "contype": "c",
+      "definition": "CHECK (completion_rate >= 0 AND completion_rate <= 100)",
+      "table_name": "technician_metrics"
+    },
+    {
+      "conname": "technician_metrics_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (technician_id)",
+      "table_name": "technician_metrics"
+    },
+    {
+      "conname": "technician_metrics_rating_check",
+      "contype": "c",
+      "definition": "CHECK (rating >= 0::numeric AND rating <= 5::numeric)",
+      "table_name": "technician_metrics"
+    },
+    {
+      "conname": "technician_metrics_response_time_minutes_check",
+      "contype": "c",
+      "definition": "CHECK (response_time_minutes >= 0)",
+      "table_name": "technician_metrics"
+    },
+    {
+      "conname": "technician_metrics_review_count_check",
+      "contype": "c",
+      "definition": "CHECK (review_count >= 0)",
+      "table_name": "technician_metrics"
+    },
+    {
+      "conname": "technician_metrics_technician_id_fkey",
+      "contype": "f",
+      "definition": "FOREIGN KEY (technician_id) REFERENCES technician_profiles(user_id) ON DELETE CASCADE",
+      "table_name": "technician_metrics"
+    },
+    {
+      "conname": "technician_profiles_bio_check",
+      "contype": "c",
+      "definition": "CHECK (char_length(bio) <= 2000)",
+      "table_name": "technician_profiles"
+    },
+    {
+      "conname": "technician_profiles_city_check",
+      "contype": "c",
+      "definition": "CHECK (char_length(TRIM(BOTH FROM city)) >= 2 AND char_length(TRIM(BOTH FROM city)) <= 80)",
+      "table_name": "technician_profiles"
+    },
+    {
+      "conname": "technician_profiles_headline_check",
+      "contype": "c",
+      "definition": "CHECK (char_length(headline) <= 180)",
+      "table_name": "technician_profiles"
+    },
+    {
+      "conname": "technician_profiles_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (user_id)",
+      "table_name": "technician_profiles"
+    },
+    {
+      "conname": "technician_profiles_slug_check",
+      "contype": "c",
+      "definition": "CHECK (slug ~ '^[a-z0-9-]+$'::text)",
+      "table_name": "technician_profiles"
+    },
+    {
+      "conname": "technician_profiles_slug_key",
+      "contype": "u",
+      "definition": "UNIQUE (slug)",
+      "table_name": "technician_profiles"
+    },
+    {
+      "conname": "technician_profiles_starting_price_clp_check",
+      "contype": "c",
+      "definition": "CHECK (starting_price_clp >= 0)",
+      "table_name": "technician_profiles"
+    },
+    {
+      "conname": "technician_profiles_user_id_fkey",
+      "contype": "f",
+      "definition": "FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE",
+      "table_name": "technician_profiles"
+    },
+    {
+      "conname": "technician_profiles_years_of_experience_check",
+      "contype": "c",
+      "definition": "CHECK (years_of_experience >= 0 AND years_of_experience <= 80)",
+      "table_name": "technician_profiles"
+    },
+    {
+      "conname": "technician_specialties_name_check",
+      "contype": "c",
+      "definition": "CHECK (char_length(TRIM(BOTH FROM name)) >= 2 AND char_length(TRIM(BOTH FROM name)) <= 100)",
+      "table_name": "technician_specialties"
+    },
+    {
+      "conname": "technician_specialties_pkey",
+      "contype": "p",
+      "definition": "PRIMARY KEY (id)",
+      "table_name": "technician_specialties"
+    },
+    {
+      "conname": "technician_specialties_technician_id_fkey",
+      "contype": "f",
+      "definition": "FOREIGN KEY (technician_id) REFERENCES technician_profiles(user_id) ON DELETE CASCADE",
+      "table_name": "technician_specialties"
+    },
+    {
+      "conname": "technician_specialties_technician_id_name_key",
+      "contype": "u",
+      "definition": "UNIQUE (technician_id, name)",
+      "table_name": "technician_specialties"
+    }
+  ]
+}

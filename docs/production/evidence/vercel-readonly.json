@@ -1,0 +1,101 @@
+{
+  "date": "2026-11-08",
+  "scope": "authorized read-only Vercel audit; no credential or environment values retained",
+  "token_available": true,
+  "project": {
+    "status": 200,
+    "data": {
+      "id": "prj_IhxaB4GigA5ScJxByG02xVGL7x1O",
+      "name": "fixo-marketplace",
+      "framework": "nextjs",
+      "nodeVersion": "24.x",
+      "buildCommand": null,
+      "installCommand": null,
+      "rootDirectory": null,
+      "gitLink": null,
+      "targets": {
+        "production": {
+          "id": "dpl_5VZGc19sPaCQbGeySKdozZCHy1Nv",
+          "url": "fixo-marketplace-jsmozt2mi-sebastian-guerreros-projects.vercel.app",
+          "readyState": "READY",
+          "createdAt": 1787006691045
+        }
+      }
+    }
+  },
+  "deployments": {
+    "status": 200,
+    "data": [
+      {
+        "id": "dpl_5VZGc19sPaCQbGeySKdozZCHy1Nv",
+        "url": "fixo-marketplace-jsmozt2mi-sebastian-guerreros-projects.vercel.app",
+        "state": "READY",
+        "target": "production",
+        "created": 1787006691045,
+        "source": "cli",
+        "gitMeta": {},
+        "cliMeta": {}
+      },
+      {
+        "id": "dpl_AzULv8GyZShHpe8EfX5omfL1q6qf",
+        "url": "fixo-marketplace-benahj2fb-sebastian-guerreros-projects.vercel.app",
+        "state": "READY",
+        "target": "production",
+        "created": 1786659886237,
+        "source": "cli",
+        "gitMeta": {},
+        "cliMeta": {}
+      }
+    ]
+  },
+  "env_names": {
+    "status": 200,
+    "data": [
+      {
+        "name": "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive"
+      },
+      {
+        "name": "NEXT_PUBLIC_SUPABASE_URL",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive"
+      }
+    ]
+  },
+  "domains": {
+    "status": 200,
+    "data": [
+      {
+        "name": "fixo-marketplace.vercel.app",
+        "verified": true,
+        "redirect": null,
+        "gitBranch": null
+      }
+    ]
+  },
+  "production_detail": {
+    "status": 200,
+    "data": {
+      "id": "dpl_5VZGc19sPaCQbGeySKdozZCHy1Nv",
+      "source": "cli",
+      "target": "production",
+      "readyState": "READY",
+      "createdAt": 1787006691045,
+      "alias": [
+        "fixo-marketplace.vercel.app",
+        "fixo-marketplace-sebastian-guerreros-projects.vercel.app"
+      ],
+      "gitMetadata": {},
+      "metadataKeys": [
+        "actor",
+        "lambdaRuntimeStats"
+      ],
+      "nodeVersion": "24.x"
+    }
+  }
+}
