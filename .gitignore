@@ -16,3 +16,11 @@
 .DS_Store
 Thumbs.db
 *.tsbuildinfo
+
+.vercel
+.env*
+!.env.example
+
+# Local audit backups and historical execution logs
+/.audit-backups/
+/.execution-*.log

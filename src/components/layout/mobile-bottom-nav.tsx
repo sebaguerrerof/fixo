@@ -26,7 +26,11 @@ export function MobileBottomNav() {
   const pathname = usePathname();
   const [session, setSession] = useState<AuthSession | null>(null);
 
-  useEffect(() => setSession(new AuthenticationService().getCurrentSession()), []);
+  useEffect(() => {
+    let isMounted = true;
+    void new AuthenticationService().getCurrentSession().then((nextSession) => { if (isMounted) setSession(nextSession); });
+    return () => { isMounted = false; };
+  }, []);
   const accountHref = session ? dashboardForRole(session.user.role) : "/login";
   const accountActive = pathname === accountHref;
 

@@ -1,6 +1,6 @@
 # fixo — Marketplace de técnicos
 
-Plataforma para encontrar, contratar y gestionar servicios de técnicos y especialistas. Parte con información de ejemplo para explorar el producto sin depender todavía de Supabase, pagos, IA ni mapas.
+Plataforma para encontrar, contratar y gestionar servicios de técnicos y especialistas. Usa Supabase como fuente de verdad para cuentas, perfiles, técnicos, solicitudes y acciones administrativas.
 
 ## Inicio rápido
 
@@ -10,15 +10,7 @@ npm install
 npm run dev
 ```
 
-La aplicación mantiene la información local de ejemplo mientras `NEXT_PUBLIC_USE_SAMPLE_DATA=true`.
-
-## Accesos de ejemplo
-
-Contraseña compartida: `fixo2026`
-
-- Cliente: `cliente@fixo.cl`
-- Técnico: `tecnico@fixo.cl`
-- Administración: `admin@fixo.cl`
+Antes de iniciar, ejecuta la migración [202608170001_initial_marketplace.sql](supabase/migrations/202608170001_initial_marketplace.sql) en el SQL Editor de tu proyecto Supabase y configura las tres variables de `.env.example`.
 
 ## Arquitectura
 
@@ -29,7 +21,7 @@ Servicios de aplicación
         ↓
 Contratos de repositorio y proveedores
         ↓
-Datos locales de ejemplo / adapters Supabase y externos
+Adapters Supabase y proveedores externos
 ```
 
 La interfaz no usa SDKs de infraestructura directamente. La autenticación, los repositorios y proveedores externos se mantienen detrás de servicios y contratos intercambiables.
@@ -43,4 +35,4 @@ npm run test
 npm run build
 ```
 
-Consulta [docs/integrations.md](docs/integrations.md) para conectar los proveedores reales y [marketplace_tecnicos_master.md](marketplace_tecnicos_master.md) para la especificación de producto.
+Consulta [supabase/README.md](supabase/README.md) para la configuración de producción y [marketplace_tecnicos_master.md](marketplace_tecnicos_master.md) para la especificación de producto.

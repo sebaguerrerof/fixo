@@ -17,6 +17,7 @@ export interface TechnicianRepository {
   listCategories(): Promise<readonly Category[]>;
   search(filters?: TechnicianSearchFilters): Promise<readonly Technician[]>;
   findBySlug(slug: string): Promise<Technician | null>;
+  findByUserId(userId: string): Promise<Technician | null>;
   featured(limit: number): Promise<readonly Technician[]>;
   listForAdministration(): Promise<readonly Technician[]>;
 }

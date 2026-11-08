@@ -7,6 +7,7 @@ export interface ServiceRequest {
   readonly customerId: string;
   readonly title: string;
   readonly categoryId: string;
+  readonly description: string;
   readonly priority: ServicePriority;
   readonly status: ServiceRequestStatus;
   readonly locationLabel: string;

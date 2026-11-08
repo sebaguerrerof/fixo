@@ -3,7 +3,7 @@ import typescriptEslintPlugin from "@typescript-eslint/eslint-plugin";
 import typescriptParser from "@typescript-eslint/parser";
 
 export default [
-  { ignores: [".next/**", "coverage/**", "node_modules/**"] },
+  { ignores: [".next/**", ".next-dev/**", "coverage/**", "node_modules/**"] },
   {
     files: ["**/*.{js,mjs,ts,tsx}"],
     languageOptions: {

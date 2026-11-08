@@ -1,19 +1,23 @@
 # Puntos de integración
 
-La aplicación no importa SDKs externos desde componentes. Cada integración se incorpora detrás de su contrato y puede usar los datos locales de ejemplo mientras se construyen los proveedores reales.
+La aplicación no importa SDKs externos desde componentes. Cada integración se incorpora detrás de su contrato y usa proveedores reales configurados por entorno.
+
+## Demo Mode
+
+`src/config/demo-mode.ts` decide en tiempo de ejecución si `src/repositories/repository-factory.ts` entrega repositorios `Mock*` (fixtures en `src/repositories/mock/`) o `Supabase*`. Se activa con `NEXT_PUBLIC_DEMO_MODE=true`, o automáticamente cuando faltan credenciales de Supabase. La autenticación demo (`MockAuthProvider`) usa una cookie no sensible (`fixo_demo_session`) en vez de Supabase Auth. La UI nunca cambia entre ambos modos.
 
 ## Supabase
 
-1. Añadir el cliente server/browser en `src/integrations/supabase/`.
-2. Implementar los contratos de `src/repositories/contracts/` en `src/repositories/supabase/`.
-3. Reemplazar las ramas de ejemplo de `src/repositories/repository-factory.ts` cuando `NEXT_PUBLIC_USE_SAMPLE_DATA=false`.
-4. Crear migraciones y políticas RLS por entidad antes de habilitar escritura real.
+1. El cliente server/browser vive en `src/integrations/supabase/`.
+2. Los contratos de `src/repositories/contracts/` se implementan en `src/repositories/supabase/`.
+3. Las migraciones y políticas RLS por entidad se mantienen en `supabase/migrations/`.
+4. Las credenciales públicas se configuran en cada entorno y la service role permanece sólo en el servidor.
 
 Nunca se debe importar el cliente Supabase desde la UI ni exponer una service role key.
 
 ## Autenticación
 
-`AuthProvider` define el contrato y `SampleAuthProvider` habilita los tres roles para desarrollo visual. La siguiente integración debe implementar Supabase Auth detrás del mismo contrato, guardar la sesión de forma segura y reemplazar los datos locales por perfiles autorizados server-side.
+`AuthProvider` define el contrato y `SupabaseAuthProvider` implementa Supabase Auth. Los perfiles y roles se resuelven desde `profiles` y se validan también en el servidor para las rutas protegidas.
 
 ## IA, pagos, ubicación y notificaciones
 

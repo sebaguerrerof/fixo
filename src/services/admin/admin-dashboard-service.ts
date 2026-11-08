@@ -13,9 +13,6 @@ export class AdminDashboardService {
         activeTechnicians,
         pendingVerification,
         restrictedTechnicians,
-        openReports: 2,
-        mockGmvClp: 2840000,
-        completedJobs: 312,
       },
     };
   }

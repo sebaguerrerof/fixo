@@ -1,12 +1,41 @@
-export type QuoteStatus = "draft" | "submitted" | "accepted" | "rejected" | "withdrawn" | "expired";
+import type { QuoteStatus } from "@/domain/enums/quote-status";
 
 export interface Quote {
   readonly id: string;
   readonly serviceRequestId: string;
   readonly technicianId: string;
-  readonly amountClp: number;
-  readonly status: QuoteStatus;
+  readonly priceClp: number;
+  readonly currency: "CLP";
   readonly description: string;
+  readonly materialsIncluded: string;
+  readonly materialsNotIncluded: string;
+  readonly diagnosticVisit: boolean;
   readonly estimatedDuration: string;
-  readonly availableOn: string;
+  readonly availableDate: string;
+  readonly conditions: string;
+  readonly expiresAt: string;
+  readonly status: QuoteStatus;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+/**
+ * Términos congelados al momento de aceptar una cotización: evita que
+ * cambios posteriores al técnico, la solicitud o la cotización alteren
+ * retroactivamente lo contratado.
+ */
+export interface AcceptedQuoteSnapshot {
+  readonly quoteId: string;
+  readonly serviceRequestId: string;
+  readonly technicianId: string;
+  readonly priceClp: number;
+  readonly currency: "CLP";
+  readonly description: string;
+  readonly materialsIncluded: string;
+  readonly materialsNotIncluded: string;
+  readonly diagnosticVisit: boolean;
+  readonly estimatedDuration: string;
+  readonly availableDate: string;
+  readonly conditions: string;
+  readonly acceptedAt: string;
 }

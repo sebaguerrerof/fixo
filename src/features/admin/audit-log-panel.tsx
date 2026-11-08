@@ -6,12 +6,16 @@ import { useEffect, useState } from "react";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import type { AdminAuditEntry } from "@/domain/entities/audit-log";
-import { LocalAdminManagementStore } from "@/services/admin/local-admin-management-store";
+import { getAdminManagementStore } from "@/services/admin/admin-management-store-factory";
 
 export function AuditLogPanel() {
   const [entries, setEntries] = useState<AdminAuditEntry[]>([]);
 
-  useEffect(() => setEntries(new LocalAdminManagementStore().readAuditEntries()), []);
+  useEffect(() => {
+    let isMounted = true;
+    void getAdminManagementStore().readAuditEntries().then((nextEntries) => { if (isMounted) setEntries(nextEntries); });
+    return () => { isMounted = false; };
+  }, []);
 
   if (!entries.length) {
     return <Card><CardContent className="flex flex-col items-center py-14 text-center"><span className="flex size-12 items-center justify-center rounded-2xl bg-secondary text-primary"><History className="size-6" /></span><h2 className="mt-4 font-bold">Aún no hay acciones registradas</h2><p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">Cuando apruebes, suspendas, reactives o rechaces un técnico, su acción aparecerá aquí con el motivo y responsable.</p></CardContent></Card>;

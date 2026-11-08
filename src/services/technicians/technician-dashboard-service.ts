@@ -1,16 +1,16 @@
 import { TechnicianDirectoryService } from "@/services/technicians/technician-directory-service";
 
 export class TechnicianDashboardService {
-  async getOverview(slug: string) {
-    const technician = await new TechnicianDirectoryService().getPublicProfile(slug);
+  async getOverview(userId: string) {
+    const technician = await new TechnicianDirectoryService().getByUserId(userId);
     if (!technician) return null;
 
     return {
       technician,
       metrics: {
-        newOpportunities: 4,
-        activeJobs: 2,
-        monthlyRevenueClp: 486000,
+        newOpportunities: 0,
+        activeJobs: 0,
+        monthlyRevenueClp: 0,
       },
     };
   }

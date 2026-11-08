@@ -38,7 +38,7 @@ export function DashboardShell({ roleLabel, requiredRole, userName, navigation, 
             {navigation.map((item) => <Link key={item.href} href={item.href} className={cn("inline-flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition hover:bg-background hover:text-foreground", item.href === activeHref && "bg-background text-foreground shadow-sm")}><span>{item.label}</span><ChevronRight className="hidden size-4 lg:block" /></Link>)}
           </nav>
         </aside>
-        <main className="min-w-0"><ProtectedDashboard allowedRoles={[requiredRole]}>{children}</ProtectedDashboard></main>
+        <main className="min-w-0"><ProtectedDashboard allowedRoles={requiredRole === "superadmin" ? ["moderator", "superadmin"] : [requiredRole]}>{children}</ProtectedDashboard></main>
       </div>
     </div>
   );

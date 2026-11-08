@@ -1,43 +1,36 @@
 import {
-  authSessionSchema,
   type AuthSession,
+  type CustomerRegistrationInput,
+  type RegistrationResult,
   type SignInInput,
+  type TechnicianRegistrationInput,
 } from "@/integrations/auth/auth-provider";
-import { SampleAuthProvider } from "@/integrations/auth/sample-auth-provider";
-import { usesSampleData } from "@/config/runtime";
+import { isDemoModeEnabled } from "@/config/demo-mode";
+import { MockAuthProvider } from "@/integrations/auth/mock-auth-provider";
+import { SupabaseAuthProvider } from "@/integrations/auth/supabase-auth-provider";
 
-const sessionStorageKey = "fixo.session";
-
-function writeSession(session: AuthSession): void {
-  window.localStorage.setItem(sessionStorageKey, JSON.stringify(session));
+function resolveProvider() {
+  return isDemoModeEnabled() ? new MockAuthProvider() : new SupabaseAuthProvider();
 }
 
 export class AuthenticationService {
   async signIn(input: SignInInput): Promise<AuthSession> {
-    if (!usesSampleData()) {
-      throw new Error("El acceso requiere configurar el proveedor de autenticación.");
-    }
-
-    const session = await new SampleAuthProvider().signIn(input);
-    writeSession(session);
-    return session;
+    return resolveProvider().signIn(input);
   }
 
-  getCurrentSession(): AuthSession | null {
-    if (typeof window === "undefined") return null;
-
-    const rawSession = window.localStorage.getItem(sessionStorageKey);
-    if (!rawSession) return null;
-
-    try {
-      const parsed = authSessionSchema.safeParse(JSON.parse(rawSession));
-      return parsed.success ? parsed.data : null;
-    } catch {
-      return null;
-    }
+  async getCurrentSession(): Promise<AuthSession | null> {
+    return resolveProvider().getCurrentSession();
   }
 
-  signOut(): void {
-    if (typeof window !== "undefined") window.localStorage.removeItem(sessionStorageKey);
+  async signOut(): Promise<void> {
+    return resolveProvider().signOut();
+  }
+
+  async registerCustomer(input: CustomerRegistrationInput): Promise<RegistrationResult> {
+    return resolveProvider().registerCustomer(input);
+  }
+
+  async registerTechnician(input: TechnicianRegistrationInput): Promise<RegistrationResult> {
+    return resolveProvider().registerTechnician(input);
   }
 }

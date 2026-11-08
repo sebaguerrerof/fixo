@@ -15,10 +15,14 @@ export function AccountAccess() {
   const router = useRouter();
   const [session, setSession] = useState<AuthSession | null>(null);
 
-  useEffect(() => setSession(new AuthenticationService().getCurrentSession()), []);
+  useEffect(() => {
+    let isMounted = true;
+    void new AuthenticationService().getCurrentSession().then((nextSession) => { if (isMounted) setSession(nextSession); });
+    return () => { isMounted = false; };
+  }, []);
 
-  function signOut(): void {
-    new AuthenticationService().signOut();
+  async function signOut(): Promise<void> {
+    await new AuthenticationService().signOut();
     setSession(null);
     router.push("/");
   }

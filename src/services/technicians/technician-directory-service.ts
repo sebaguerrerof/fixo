@@ -15,6 +15,10 @@ export class TechnicianDirectoryService {
     return getTechnicianRepository().findBySlug(slug);
   }
 
+  async getByUserId(userId: string): Promise<Technician | null> {
+    return getTechnicianRepository().findByUserId(userId);
+  }
+
   async getFeaturedTechnicians(limit = 3) {
     return getTechnicianRepository().featured(limit);
   }

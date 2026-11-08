@@ -19,18 +19,23 @@ export function ProtectedDashboard({ allowedRoles, children }: ProtectedDashboar
   const [hasAccess, setHasAccess] = useState(false);
 
   useEffect(() => {
-    const session = new AuthenticationService().getCurrentSession();
-    if (!session) {
-      router.replace(`/login?continuar=${encodeURIComponent(pathname)}`);
-      return;
-    }
+    let isMounted = true;
+    void new AuthenticationService().getCurrentSession().then((session) => {
+      if (!isMounted) return;
+      if (!session) {
+        router.replace(`/login?continuar=${encodeURIComponent(pathname)}`);
+        return;
+      }
 
-    if (!allowedRoles.includes(session.user.role)) {
-      router.replace("/login");
-      return;
-    }
+      if (!allowedRoles.includes(session.user.role)) {
+        router.replace("/login");
+        return;
+      }
 
-    setHasAccess(true);
+      setHasAccess(true);
+    }).catch(() => router.replace("/login"));
+
+    return () => { isMounted = false; };
   }, [allowedRoles, pathname, router]);
 
   if (!hasAccess) {

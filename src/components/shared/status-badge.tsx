@@ -1,8 +1,11 @@
 import type { ServiceRequestStatus } from "@/domain/enums/service-request-status";
 import type { TechnicianStatus } from "@/domain/enums/technician-status";
+import type { QuoteStatus } from "@/domain/enums/quote-status";
+import type { JobStatus } from "@/domain/enums/job-status";
+import type { EmergencyStatus } from "@/domain/enums/emergency-status";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 
-type DisplayStatus = TechnicianStatus | ServiceRequestStatus;
+type DisplayStatus = TechnicianStatus | ServiceRequestStatus | QuoteStatus | JobStatus | EmergencyStatus;
 
 const labels: Record<DisplayStatus, string> = {
   draft: "Borrador",
@@ -13,7 +16,7 @@ const labels: Record<DisplayStatus, string> = {
   temporarily_suspended: "Suspendido temporalmente",
   suspended: "Suspendido",
   banned: "Bloqueado",
-  rejected: "Rechazado",
+  rejected: "Rechazada",
   submitted: "Enviada",
   matching: "Buscando técnicos",
   receiving_quotes: "Recibiendo cotizaciones",
@@ -25,6 +28,12 @@ const labels: Record<DisplayStatus, string> = {
   cancelled: "Cancelada",
   expired: "Expirada",
   disputed: "En revisión",
+  accepted: "Aceptada",
+  withdrawn: "Retirada",
+  created: "Creada",
+  broadcasting: "Buscando técnico",
+  technician_en_route: "Técnico en camino",
+  arrived: "Técnico en el lugar",
 };
 
 export function technicianStatusLabel(status: TechnicianStatus): string {
@@ -32,9 +41,9 @@ export function technicianStatusLabel(status: TechnicianStatus): string {
 }
 
 function variantFor(status: DisplayStatus): BadgeProps["variant"] {
-  if (["active", "verified", "completed"].includes(status)) return "success";
-  if (["temporarily_suspended", "suspended", "banned", "cancelled", "rejected"].includes(status)) return "danger";
-  if (["pending_verification", "needs_information", "awaiting_payment"].includes(status)) return "warning";
+  if (["active", "verified", "completed", "accepted"].includes(status)) return "success";
+  if (["temporarily_suspended", "suspended", "banned", "cancelled", "rejected", "withdrawn", "disputed"].includes(status)) return "danger";
+  if (["pending_verification", "needs_information", "awaiting_payment", "expired"].includes(status)) return "warning";
   return "info";
 }
 
