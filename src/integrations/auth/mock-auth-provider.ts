@@ -45,13 +45,13 @@ export class MockAuthProvider implements AuthProvider {
   }
 
   async registerCustomer(input: CustomerRegistrationInput): Promise<RegistrationResult> {
-    const user: AuthSession["user"] = { id: `demo-customer-${Date.now()}`, name: input.fullName, email: input.email, role: "customer" };
+    const user: AuthSession["user"] = { id: `demo-customer-${Date.now()}`, name: `${input.firstName} ${input.lastName}`, email: input.email, role: "customer" };
     writeSessionCookie(user);
     return { session: { user, createdAt: new Date().toISOString() }, requiresEmailConfirmation: false };
   }
 
   async registerTechnician(input: TechnicianRegistrationInput): Promise<RegistrationResult> {
-    const user: AuthSession["user"] = { id: `demo-technician-${Date.now()}`, name: input.fullName, email: input.email, role: "technician" };
+    const user: AuthSession["user"] = { id: `demo-technician-${Date.now()}`, name: `${input.firstName} ${input.lastName}`, email: input.email, role: "technician" };
     writeSessionCookie(user);
     return { session: { user, createdAt: new Date().toISOString() }, requiresEmailConfirmation: false };
   }

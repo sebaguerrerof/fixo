@@ -10,6 +10,7 @@ import { getServerAuthenticatedUser } from "@/services/auth/server-authenticatio
 import { CustomerDashboardService } from "@/services/customer/customer-dashboard-service";
 
 const customerNavigation = [
+  { href: "/perfil", label: "Mi perfil" },
   { href: "/cliente", label: "Resumen" },
   { href: "/cliente#solicitudes", label: "Mis solicitudes" },
   { href: "/cliente#pagos", label: "Pagos" },

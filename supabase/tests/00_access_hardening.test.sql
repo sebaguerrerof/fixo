@@ -19,14 +19,17 @@ select ok((select not public and allowed_mime_types = array['application/pdf','i
 
 -- Auth trigger is exercised, including an attempted role claim.
 insert into auth.users(id,email,raw_user_meta_data) values
- ('10000000-0000-4000-8000-000000000001','customer-one@local.invalid','{"full_name":"Local Customer One","account_type":"superadmin","role":"superadmin"}'),
- ('10000000-0000-4000-8000-000000000002','customer-two@local.invalid','{"full_name":"Local Customer Two","account_type":"customer"}'),
- ('20000000-0000-4000-8000-000000000001','technician-one@local.invalid','{"full_name":"Local Technician One","account_type":"technician","category_ids":["electricidad"]}'),
- ('20000000-0000-4000-8000-000000000002','technician-two@local.invalid','{"full_name":"Local Technician Two","account_type":"technician","category_ids":["electricidad"]}');
+ ('10000000-0000-4000-8000-000000000001','customer-one@local.invalid','{"terms_accepted":true,"first_name":"Local","last_name":"Fixture","phone":"+56912345678","full_name":"Local Customer One","account_type":"superadmin","role":"superadmin"}'),
+ ('10000000-0000-4000-8000-000000000002','customer-two@local.invalid','{"terms_accepted":true,"first_name":"Local","last_name":"Fixture","phone":"+56912345678","full_name":"Local Customer Two","account_type":"customer"}'),
+ ('20000000-0000-4000-8000-000000000001','technician-one@local.invalid','{"terms_accepted":true,"first_name":"Local","last_name":"Fixture","phone":"+56912345678","full_name":"Local Technician One","account_type":"technician","category_ids":["electricidad"]}'),
+ ('20000000-0000-4000-8000-000000000002','technician-two@local.invalid','{"terms_accepted":true,"first_name":"Local","last_name":"Fixture","phone":"+56912345678","full_name":"Local Technician Two","account_type":"technician","category_ids":["electricidad"]}');
+update auth.users set email_confirmed_at=now() where email like '%@local.invalid';
+insert into auth.sessions(id,user_id,created_at,updated_at) select id,id,now(),now() from auth.users where email like '%@local.invalid';
 select is((select role::text from public.profiles where id='10000000-0000-4000-8000-000000000001'),'customer','registration metadata cannot create a superadmin');
 select is((select status::text from public.technician_profiles where user_id='20000000-0000-4000-8000-000000000001'),'pending_verification','technician registration stays pending');
 
 select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000001',true);
+select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000001","session_id":"10000000-0000-4000-8000-000000000001","role":"authenticated"}',true);
 set local role authenticated;
 select lives_ok($$insert into public.service_requests(id,customer_id,category_id,title,description,location_label)
   values ('30000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001','electricidad','Solicitud local válida','Descripción local de prueba','Ñuñoa')$$,'customer creates a submitted own request');
@@ -36,27 +39,33 @@ select throws_ok($$insert into public.service_requests(customer_id,category_id,t
   values ('10000000-0000-4000-8000-000000000001','electricidad','Asignación manipulada','Ñuñoa','20000000-0000-4000-8000-000000000001')$$,'42501',null,'customer cannot preassign a technician');
 select throws_ok($$select public.change_technician_status('20000000-0000-4000-8000-000000000001','verified','Unauthorized test')$$,'42501',null,'customer cannot approve technicians');
 select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000002',true);
+select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000002","session_id":"10000000-0000-4000-8000-000000000002","role":"authenticated"}',true);
 select is((select count(*) from public.service_requests),0::bigint,'another customer cannot read the request');
 reset role;
 
 insert into storage.objects(bucket_id,name) values ('technician-documents','20000000-0000-4000-8000-000000000001/certificate.pdf');
 select set_config('request.jwt.claim.sub','20000000-0000-4000-8000-000000000001',true);
+select set_config('request.jwt.claims','{"sub":"20000000-0000-4000-8000-000000000001","session_id":"20000000-0000-4000-8000-000000000001","role":"authenticated"}',true);
 set local role authenticated;
 select is((select count(*) from storage.objects where bucket_id='technician-documents'),1::bigint,'technician can read own file metadata');
 select set_config('request.jwt.claim.sub','20000000-0000-4000-8000-000000000002',true);
+select set_config('request.jwt.claims','{"sub":"20000000-0000-4000-8000-000000000002","session_id":"20000000-0000-4000-8000-000000000002","role":"authenticated"}',true);
 select is((select count(*) from storage.objects where bucket_id='technician-documents'),0::bigint,'another technician cannot read the file');
 select throws_ok($$insert into storage.objects(bucket_id,name) values ('technician-documents','20000000-0000-4000-8000-000000000001/forged.pdf')$$,'42501',null,'cross-owner file upload rejected');
 select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000001',true);
+select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000001","session_id":"10000000-0000-4000-8000-000000000001","role":"authenticated"}',true);
 select throws_ok($$insert into storage.objects(bucket_id,name) values ('technician-documents','10000000-0000-4000-8000-000000000001/customer.pdf')$$,'42501',null,'customers cannot upload verification files');
 reset role;
 update public.technician_profiles set status='suspended' where user_id='20000000-0000-4000-8000-000000000002';
 select set_config('request.jwt.claim.sub','20000000-0000-4000-8000-000000000002',true);
+select set_config('request.jwt.claims','{"sub":"20000000-0000-4000-8000-000000000002","session_id":"20000000-0000-4000-8000-000000000002","role":"authenticated"}',true);
 set local role authenticated;
 select throws_ok($$insert into storage.objects(bucket_id,name) values ('technician-documents','20000000-0000-4000-8000-000000000002/suspended.pdf')$$,'42501',null,'suspended technician cannot upload');
 reset role;
 
 update public.profiles set role='moderator' where id='10000000-0000-4000-8000-000000000002';
 select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000002',true);
+select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000002","session_id":"10000000-0000-4000-8000-000000000002","role":"authenticated"}',true);
 set local role authenticated;
 select is((select count(*) from storage.objects where bucket_id='technician-documents'),1::bigint,'moderator can inspect verification file metadata');
 select lives_ok($$select public.change_technician_status('20000000-0000-4000-8000-000000000001','verified','Local authorized review')$$,'moderator uses guarded RPC after public helper execute was revoked');

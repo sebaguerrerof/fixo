@@ -1,33 +1,33 @@
 import { z } from "zod";
 
 import type { UserRole } from "@/domain/enums/roles";
+import { nameSchema, phoneSchema, newPasswordSchema } from "@/domain/auth/account";
 
 export const signInInputSchema = z.object({
   email: z.string().trim().email("Ingresa un correo válido."),
-  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres."),
+  password: z.string().min(1, "Ingresa tu contraseña.").max(128),
 });
 
 export type SignInInput = z.infer<typeof signInInputSchema>;
 
-const fullNameSchema = z.string().trim().min(2, "Ingresa tu nombre completo.").max(120, "El nombre es demasiado largo.");
-const passwordSchema = z.string().min(8, "La contraseña debe tener al menos 8 caracteres.");
-
 export const customerRegistrationInputSchema = z.object({
-  fullName: fullNameSchema,
-  email: z.string().trim().email("Ingresa un correo válido."),
-  password: passwordSchema,
-});
+  firstName: nameSchema, lastName: nameSchema, phone: phoneSchema,
+  email: z.string().trim().toLowerCase().email("Ingresa un correo válido.").max(254),
+  password: newPasswordSchema, confirmPassword: z.string(),
+  acceptTerms: z.boolean().refine(value => value, "Debes aceptar los términos y la privacidad."),
+}).refine(value => value.password === value.confirmPassword, { path: ["confirmPassword"], message: "Las contraseñas no coinciden." })
+  .refine(value => value.firstName.length + value.lastName.length + 1 <= 120, { path: ["lastName"], message: "El nombre completo admite hasta 120 caracteres." });
 
-export const technicianRegistrationInputSchema = customerRegistrationInputSchema.extend({
+export const technicianRegistrationInputSchema = customerRegistrationInputSchema.safeExtend({
   city: z.string().trim().min(2, "Indica tu comuna o ciudad.").max(80),
   coverageAreas: z.string().trim().min(2, "Indica al menos una zona de cobertura.").max(320),
-  headline: z.string().trim().min(12, "Describe brevemente tu servicio.").max(180),
-  bio: z.string().trim().min(30, "Cuéntanos un poco más sobre tu experiencia.").max(2000),
-  categoryIds: z.array(z.string()).min(1, "Selecciona al menos un rubro."),
-  specialties: z.string().trim().min(2, "Indica al menos una especialidad.").max(320),
-  yearsOfExperience: z.coerce.number().int().min(0).max(80),
-  emergencyEnabled: z.boolean(),
-  startingPriceClp: z.coerce.number().int().min(0).max(10000000),
+  headline: z.string().trim().max(180).default(""),
+  bio: z.string().trim().max(2000).default(""),
+  categoryIds: z.array(z.string().regex(/^[a-z0-9-]+$/)).min(1, "Selecciona al menos un rubro.").max(8),
+  specialties: z.string().trim().max(320).default(""),
+  yearsOfExperience: z.coerce.number().int().min(0).max(80).default(0),
+  emergencyEnabled: z.boolean().default(false),
+  startingPriceClp: z.coerce.number().int().min(0).max(10000000).default(0),
 });
 
 export type CustomerRegistrationInput = z.infer<typeof customerRegistrationInputSchema>;

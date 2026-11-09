@@ -1,8 +1,13 @@
 import type { UserRole } from "@/domain/enums/roles";
 
-/** Foundation for Sprint 01. Call with a server-verified profile role only. */
+/** Application permissions. Call with a server-verified current profile; PostgreSQL independently authorizes RPC/RLS. */
 export const PERMISSIONS = {
   "profile:read_own": ["customer", "technician", "moderator", "superadmin"],
+  "profile:edit_own": ["customer", "technician", "moderator", "superadmin"],
+  "user:list": ["moderator", "superadmin"],
+  "user:invite_customer": ["moderator", "superadmin"],
+  "audit:read_operational": ["moderator", "superadmin"],
+  "audit:read_all": ["superadmin"],
   "request:create": ["customer"],
   "document:read_own": ["technician"],
   "document:read_all": ["moderator", "superadmin"],

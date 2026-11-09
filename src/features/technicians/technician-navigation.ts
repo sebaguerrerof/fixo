@@ -4,5 +4,6 @@ export const technicianNavigation = [
   { href: "/tecnico/trabajos", label: "Trabajos activos" },
   { href: "/tecnico/agenda", label: "Agenda" },
   { href: "/tecnico/perfil", label: "Mi perfil profesional" },
+  { href: "/perfil", label: "Editar mi cuenta" },
   { href: "/tecnico/pagos", label: "Pagos" },
 ] as const;

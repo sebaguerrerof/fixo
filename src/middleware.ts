@@ -5,6 +5,7 @@ import { assertServerEnvironment } from "@/config/server-environment";
 import { getSupabasePublicConfig } from "@/integrations/supabase/config";
 import { allowedRouteRoles } from "@/domain/auth/protected-routes";
 import type { UserRole } from "@/domain/enums/roles";
+import { accountAccessSchema } from "@/domain/auth/account";
 
 export async function middleware(request: NextRequest) {
   try { assertServerEnvironment(); } catch {
@@ -33,14 +34,26 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const roles = allowedRouteRoles(request.nextUrl.pathname);
   if (roles) {
-    const profile = user ? await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle() : null;
-    const role: unknown = profile?.error ? null : profile?.data?.role;
+    const profile = user ? await supabase.rpc("my_account_access") : null;
+    const access = accountAccessSchema.safeParse(profile?.data);
+    const role: unknown = profile?.error || !access.success ? null : access.data.role;
+    if (user && access.success && !access.data.allowed) {
+      const denied = NextResponse.redirect(new URL("/cuenta-no-disponible", request.url));
+      denied.headers.set("Cache-Control", "no-store");
+      response.cookies.getAll().forEach(cookie => denied.cookies.set(cookie));
+      return denied;
+    }
     if (!user || typeof role !== "string" || !roles.includes(role as UserRole)) {
       const denied = NextResponse.redirect(new URL("/login", request.url));
       denied.headers.set("Cache-Control", "no-store");
       response.cookies.getAll().forEach(cookie => denied.cookies.set(cookie));
       return denied;
     }
+  }
+  if (request.nextUrl.pathname.startsWith("/auth")) {
+    response.headers.set("Cache-Control", "no-store");
+    response.headers.set("Referrer-Policy", "no-referrer");
+    response.headers.set("X-Robots-Tag", "noindex");
   }
   return response;
 }

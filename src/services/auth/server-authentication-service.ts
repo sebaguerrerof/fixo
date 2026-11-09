@@ -7,6 +7,7 @@ import type { UserRole } from "@/domain/enums/roles";
 import type { AuthenticatedUser } from "@/integrations/auth/auth-provider";
 import { DEMO_SESSION_COOKIE, decodeDemoSession } from "@/integrations/auth/demo-session-cookie";
 import { getSupabaseServerClient } from "@/integrations/supabase/server-client";
+import { accountAccessSchema } from "@/domain/auth/account";
 
 async function getDemoAuthenticatedUser(): Promise<AuthenticatedUser | null> {
   const cookieStore = await cookies();
@@ -21,16 +22,14 @@ export async function getServerAuthenticatedUser(): Promise<AuthenticatedUser | 
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user || !userData.user.email) return null;
 
-  const { data: profile, error } = await supabase.from("profiles").select("full_name, role").eq("id", userData.user.id).maybeSingle();
-  if (error || !profile) return null;
-
-  const role = profile.role;
-  if (role !== "customer" && role !== "technician" && role !== "moderator" && role !== "superadmin") return null;
-
-  return { id: userData.user.id, name: profile.full_name, email: userData.user.email, role };
+  const { data, error } = await supabase.rpc("my_account_access");
+  const profile = accountAccessSchema.safeParse(data);
+  if (error || !profile.success) return null;
+  if (!profile.data.allowed) redirect("/cuenta-no-disponible");
+  return { id: userData.user.id, name: profile.data.name, email: userData.user.email, role: profile.data.role };
 }
 
-export async function requireServerRole(roles: readonly UserRole[]): Promise<AuthenticatedUser | null> {
+export async function requireServerRole(roles: readonly UserRole[]): Promise<AuthenticatedUser> {
   const user = await getServerAuthenticatedUser();
   if (!user || !roles.includes(user.role)) redirect("/login");
   return user;
