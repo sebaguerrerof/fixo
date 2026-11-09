@@ -9,7 +9,8 @@ export const accountAccessSchema = z.object({
 });
 export type AccountAccess = z.infer<typeof accountAccessSchema>;
 
-export const phoneSchema = z.string().trim().regex(/^\+?[0-9 ()-]{8,24}$/, "Ingresa un teléfono válido.");
+export const phoneSchema = z.string().trim().regex(/^\+?[0-9 ()-]{8,24}$/, "Ingresa un teléfono válido.")
+  .refine(value => { const digits=value.replace(/\D/g, ""); return digits.length>=8&&digits.length<=15; }, "El teléfono debe incluir entre 8 y 15 dígitos.");
 export const nameSchema = z.string().trim().min(1, "Completa este campo.").max(60);
 export const newPasswordSchema = z.string().min(12, "Usa al menos 12 caracteres.").max(128)
   .regex(/[a-z]/, "Incluye una minúscula.").regex(/[A-Z]/, "Incluye una mayúscula.").regex(/[0-9]/, "Incluye un número.");

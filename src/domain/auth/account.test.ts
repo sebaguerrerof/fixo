@@ -12,6 +12,7 @@ describe("account boundaries",()=>{
     const result=technicianRegistrationInputSchema.parse({...customer,city:"Ñuñoa",coverageAreas:"Ñuñoa",categoryIds:["electricidad"]});
     expect(result.headline).toBe("");expect(result.startingPriceClp).toBe(0);
   });
+  it.each(["--------","1234567","+1234567890123456"])("rejects an unusable phone %s",phone=>{expect(customerRegistrationInputSchema.safeParse({...customer,phone}).success).toBe(false);});
   it("strips access fields from own profile updates",()=>{
     const result=profileUpdateSchema.parse({...customer,role:"superadmin",accountStatus:"active",professional:null});
     expect(result).not.toHaveProperty("role");expect(result).not.toHaveProperty("accountStatus");

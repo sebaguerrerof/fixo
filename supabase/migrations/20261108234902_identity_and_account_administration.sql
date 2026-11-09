@@ -81,6 +81,11 @@ returns uuid language sql stable security definer set search_path=pg_catalog as 
 $$;
 
 -- Bounds/type checks prevent malformed user metadata from crashing the signup trigger.
+create function private.valid_phone(phone_value text)
+returns boolean language sql immutable set search_path=pg_catalog as $$
+  select coalesce(phone_value ~ '^\+?[0-9 ()-]{8,24}$'
+    and char_length(regexp_replace(phone_value,'[^0-9]','','g')) between 8 and 15,false);
+$$;
 create function private.metadata_array(data jsonb, key_name text)
 returns text[] language sql immutable set search_path=pg_catalog as $$
   select coalesce(array(select left(value #>> '{}',100) from jsonb_array_elements(
@@ -116,7 +121,7 @@ begin
     if new.raw_user_meta_data->>'terms_accepted' is distinct from 'true'
       or char_length(trim(coalesce(new.raw_user_meta_data->>'first_name',''))) not between 1 and 60
       or char_length(trim(coalesce(new.raw_user_meta_data->>'last_name',''))) not between 1 and 60
-      or coalesce(new.raw_user_meta_data->>'phone','') !~ '^\+?[0-9 ()-]{8,24}$'
+      or not private.valid_phone(new.raw_user_meta_data->>'phone')
       or char_length(trim(new.raw_user_meta_data->>'first_name')||' '||trim(new.raw_user_meta_data->>'last_name'))>120
     then raise exception 'Datos de registro incompletos' using errcode='22023'; end if;
   end if;
@@ -159,7 +164,7 @@ returns void language plpgsql security definer set search_path=pg_catalog as $$
 declare current_role public.app_role; current_state public.technician_status; item text;
 begin
   if not private.is_active_account() then raise exception 'Cuenta no habilitada' using errcode='42501'; end if;
-  if char_length(trim(first_name)||' '||trim(last_name))>120 or char_length(trim(first_name)) not between 1 and 60 or char_length(trim(last_name)) not between 1 and 60 or phone_number !~ '^\+?[0-9 ()-]{8,24}$' then raise exception 'Datos inválidos' using errcode='22023'; end if;
+  if char_length(trim(first_name)||' '||trim(last_name))>120 or char_length(trim(first_name)) not between 1 and 60 or char_length(trim(last_name)) not between 1 and 60 or not private.valid_phone(phone_number) then raise exception 'Datos inválidos' using errcode='22023'; end if;
   select role into current_role from public.profiles where id=auth.uid() for update;
   update public.profiles set full_name=trim(first_name)||' '||trim(last_name) where id=auth.uid();
   update private.account_details set first_name=trim(update_my_profile.first_name),last_name=trim(update_my_profile.last_name),phone=phone_number where user_id=auth.uid();
@@ -343,7 +348,7 @@ begin
   if not found or inv.state<>'pending' or inv.expires_at<=now() or not exists(select 1 from auth.users where id=auth.uid() and lower(email)=inv.email and email_confirmed_at is not null and invited_at is not null) then raise exception 'Invitación no disponible' using errcode='42501'; end if;
   select * into actor from public.profiles where id=inv.actor_id;
   if actor.account_status<>'active' or actor.role not in ('moderator','superadmin') or (inv.role in ('moderator','superadmin') and actor.role<>'superadmin') then raise exception 'Invitación no autorizada' using errcode='42501'; end if;
-  if char_length(trim(first_name)||' '||trim(last_name))>120 or not terms_accepted or terms_accepted is null or char_length(trim(coalesce(first_name,''))) not between 1 and 60 or char_length(trim(coalesce(last_name,''))) not between 1 and 60 or phone_number is null or phone_number !~ '^\+?[0-9 ()-]{8,24}$' then raise exception 'Datos inválidos' using errcode='22023'; end if;
+  if char_length(trim(first_name)||' '||trim(last_name))>120 or not terms_accepted or terms_accepted is null or char_length(trim(coalesce(first_name,''))) not between 1 and 60 or char_length(trim(coalesce(last_name,''))) not between 1 and 60 or not private.valid_phone(phone_number) then raise exception 'Datos inválidos' using errcode='22023'; end if;
   if inv.role='technician' then perform private.ensure_technician(auth.uid()); end if;
   update public.profiles set role=inv.role,full_name=trim(first_name)||' '||trim(last_name) where id=auth.uid() and account_status='active';
   if not found then raise exception 'Cuenta no habilitada' using errcode='42501'; end if;

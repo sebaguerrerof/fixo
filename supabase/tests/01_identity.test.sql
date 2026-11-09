@@ -5,6 +5,7 @@ create extension if not exists pgtap with schema extensions;
 select no_plan();
 select throws_ok($$insert into auth.users(id,email,raw_user_meta_data) values('41000000-0000-4000-8000-000000000099','no-consent@local.invalid','{"first_name":"Local","last_name":"Fixture","phone":"+56912345678","terms_accepted":false}')$$,'22023',null,'signup without consent rejected transactionally');
 select throws_ok($$insert into auth.users(id,email,raw_user_meta_data) values('41000000-0000-4000-8000-000000000098','no-phone@local.invalid','{"first_name":"Local","last_name":"Fixture","terms_accepted":true}')$$,'22023',null,'signup without contact rejected transactionally');
+select throws_ok($$insert into auth.users(id,email,raw_user_meta_data) values('41000000-0000-4000-8000-000000000097','invalid-phone@local.invalid','{"first_name":"Local","last_name":"Fixture","phone":"--------","terms_accepted":true}')$$,'22023',null,'punctuation-only phone rejected in database');
 insert into auth.users(id,email,email_confirmed_at,raw_user_meta_data) values
 ('41000000-0000-4000-8000-000000000001','s1-customer@local.invalid',now(),'{"terms_accepted":true,"first_name":"Local","last_name":"Fixture","phone":"+56912345678","full_name":"Customer One","role":"superadmin","account_type":"superadmin"}'),
 ('41000000-0000-4000-8000-000000000002','s1-other@local.invalid',now(),'{"terms_accepted":true,"first_name":"Local","last_name":"Fixture","phone":"+56912345678","full_name":"Customer Two"}'),
