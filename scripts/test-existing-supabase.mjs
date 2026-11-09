@@ -76,7 +76,7 @@ try {
   });
   let requestId;
   await test("own submitted request persists and overposting is denied", async () => {
-    const result = await c1.api.from("service_requests").insert({ customer_id: c1.user.id, category_id: "electricidad", title: "Solicitud sintética", location_label: "Ñuñoa" }).select("id,status").single();
+    const result = await c1.api.rpc("marketplace_create_request", { operation_id: randomUUID(), payload: { categoryId: "electricidad", title: "Solicitud sintética", description: "Descripción sintética para validar persistencia de solicitudes.", locationLabel: "Ñuñoa" } });
     assert.equal(result.error, null); assert.equal(result.data.status, "submitted"); requestId = result.data.id;
     assert.ok((await c1.api.from("service_requests").insert({ customer_id: c1.user.id, category_id: "electricidad", title: "Estado manipulado", location_label: "Ñuñoa", status: "completed" })).error);
     assert.equal((await c2.api.from("service_requests").select("id").eq("id", requestId)).data.length, 0);
@@ -90,7 +90,7 @@ try {
   await test("suspension blocks the previous JWT and reactivation is audited", async () => {
     assert.equal((await rpcChange(m, c1, "suspended")).error, null);
     assert.equal((await c1.api.rpc("my_account_access")).data.allowed, false);
-    assert.ok((await c1.api.from("service_requests").insert({ customer_id: c1.user.id, category_id: "electricidad", title: "Suspended", location_label: "Ñuñoa" })).error);
+    assert.ok((await c1.api.rpc("marketplace_create_request", { operation_id: randomUUID(), payload: { categoryId: "electricidad", title: "Solicitud suspendida", description: "Descripción sintética para validar bloqueo de solicitudes.", locationLabel: "Ñuñoa" } })).error);
     assert.equal((await rpcChange(m, c1, "active")).error, null);
     assert.equal((await c1.api.rpc("my_account_access")).data.allowed, true);
     const detail = await s1.api.rpc("admin_user_detail", { target_user: c1.user.id });

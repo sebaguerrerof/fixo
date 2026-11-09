@@ -31,8 +31,8 @@ select is((select status::text from public.technician_profiles where user_id='20
 select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000001',true);
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000001","session_id":"10000000-0000-4000-8000-000000000001","role":"authenticated"}',true);
 set local role authenticated;
-select lives_ok($$insert into public.service_requests(id,customer_id,category_id,title,description,location_label)
-  values ('30000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001','electricidad','Solicitud local válida','Descripción local de prueba','Ñuñoa')$$,'customer creates a submitted own request');
+-- Sprint 03 retires direct INSERT; creation remains possible through the guarded atomic RPC.
+select lives_ok($$select public.marketplace_create_request('30000000-0000-4000-8000-000000000001','{"categoryId":"electricidad","title":"Solicitud local válida","description":"Descripción local de prueba para publicar una solicitud","locationLabel":"Ñuñoa"}'::jsonb)$$,'customer publishes an own request through the authorized RPC');
 select throws_ok($$insert into public.service_requests(customer_id,category_id,title,location_label,status)
   values ('10000000-0000-4000-8000-000000000001','electricidad','Estado manipulado','Ñuñoa','completed')$$,'42501',null,'customer cannot forge completed state');
 select throws_ok($$insert into public.service_requests(customer_id,category_id,title,location_label,assigned_technician_id)
@@ -75,7 +75,7 @@ update private.technician_applications set approved_fingerprint=private.professi
 select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000002',true);
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000002","session_id":"10000000-0000-4000-8000-000000000002","role":"authenticated"}',true);
 set local role authenticated;
-select is((select count(*) from storage.objects where bucket_id='technician-documents'),1::bigint,'moderator can inspect verification file metadata');
+select is((select count(*) from storage.objects where bucket_id='technician-documents' and name='20000000-0000-4000-8000-000000000001/certificate.pdf'),1::bigint,'moderator can inspect verification file metadata');
 select lives_ok($$select public.change_technician_status('20000000-0000-4000-8000-000000000001','verified','Local authorized review')$$,'moderator uses guarded RPC after public helper execute was revoked');
 select is((select count(*) from public.admin_audit_entries where technician_id='20000000-0000-4000-8000-000000000001' and actor_id='10000000-0000-4000-8000-000000000002' and previous_status='pending_verification' and next_status='verified'),1::bigint,'authorized approval preserves one attributable audit entry');
 reset role;

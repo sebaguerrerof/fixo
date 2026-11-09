@@ -7,6 +7,7 @@ import type { JobStatus } from "@/domain/enums/job-status";
  * para el ciclo de vida del trabajo en terreno.
  */
 export interface Job {
+  readonly paymentState?: "not_enabled";
   readonly id: string;
   readonly serviceRequestId: string;
   readonly quoteId: string | null;

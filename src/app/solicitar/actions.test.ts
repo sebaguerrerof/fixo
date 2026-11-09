@@ -4,7 +4,7 @@ import { submitServiceRequest } from "./actions";
 const mocks = vi.hoisted(() => ({user:vi.fn(),create:vi.fn(),updateStatus:vi.fn()}));
 vi.mock("@/services/auth/server-authentication-service",()=>({getServerAuthenticatedUser:mocks.user}));
 vi.mock("@/repositories/repository-factory",()=>({getServiceRequestRepository:()=>({create:mocks.create,updateStatus:mocks.updateStatus})}));
-const input = {title:"Revisión de instalación",categoryId:"electricidad",description:"Necesito una revisión de la instalación de mi cocina.",locationLabel:"Ñuñoa",priority:"standard" as const,scheduledFor:""};
+const input = {operationId:"1eb6edba-f201-433e-8c7b-6020b4193333",title:"Revisión de instalación",categoryId:"electricidad",description:"Necesito una revisión de la instalación de mi cocina.",locationLabel:"Ñuñoa",priority:"standard" as const,scheduledFor:""};
 afterEach(()=>{vi.resetAllMocks();vi.unstubAllEnvs();});
 describe("service request submission",()=>{
   it("persists a real request without attempting forbidden commercial updates",async()=>{

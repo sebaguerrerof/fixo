@@ -1,0 +1,26 @@
+[Unit]
+Description=Fixo professional document inspection
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=fixo-inspection
+Group=fixo-inspection
+WorkingDirectory=/opt/fixo
+EnvironmentFile=/etc/fixo/inspection.env
+ExecStart=/usr/bin/node /opt/fixo/scripts/inspection-worker.mjs
+Restart=on-failure
+RestartSec=20
+TimeoutStopSec=150
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+RestrictSUIDSGID=true
+CapabilityBoundingSet=
+MemoryMax=3G
+
+[Install]
+WantedBy=multi-user.target

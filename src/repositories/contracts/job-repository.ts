@@ -13,6 +13,7 @@ export interface CreateJobInput {
 }
 
 export interface JobRepository {
+  findByServiceRequest?(requestId: string): Promise<Job | null>;
   getById(id: string): Promise<Job | null>;
   listForCustomer(customerId: string): Promise<readonly Job[]>;
   listForTechnician(technicianId: string): Promise<readonly Job[]>;

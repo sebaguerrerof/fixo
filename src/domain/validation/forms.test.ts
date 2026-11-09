@@ -4,7 +4,7 @@ import { technicianRegistrationInputSchema } from "@/integrations/auth/auth-prov
 
 describe("Zod 4 form compatibility",()=>{
   it("coerces valid quote CLP and applies defaults",()=>{
-    const result=quoteInputSchema.parse({serviceRequestId:"request",priceClp:"25000",description:"Revisión completa de la instalación eléctrica",estimatedDuration:"2 horas",availableDate:"2026-12-01T10:00",expiresAt:"2026-12-02T10:00"});
+    const result=quoteInputSchema.parse({serviceRequestId:"request",priceClp:"25000",description:"Revisión completa de la instalación eléctrica",estimatedDuration:"2 horas",availableDate:new Date(Date.now()+86400000).toISOString(),expiresAt:new Date(Date.now()+172800000).toISOString()});
     expect(result.priceClp).toBe(25000);
     expect(result.materialsIncluded).toBe("");
     expect(result.diagnosticVisit).toBe(false);

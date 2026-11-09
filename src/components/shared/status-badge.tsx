@@ -8,6 +8,7 @@ import { Badge, type BadgeProps } from "@/components/ui/badge";
 type DisplayStatus = TechnicianStatus | ServiceRequestStatus | QuoteStatus | JobStatus | EmergencyStatus;
 
 const labels: Record<DisplayStatus, string> = {
+  awarded: "Adjudicado · ejecución pendiente",
   draft: "Borrador",
   pending_verification: "Pendiente de verificación",
   needs_information: "Requiere antecedentes",

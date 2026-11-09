@@ -1,0 +1,27 @@
+{
+  "status": "FAIL",
+  "project": "rjzyqdhotcshvbdcrgon",
+  "run": "7e499fce-e490-46b0-ac6e-325f1865ce24",
+  "checks": [
+    "customer login and unauthenticated/role navigation guard",
+    "desktop creates a real request with private address and normal priority",
+    "private photo uploads through actual raster decoder and remains scoped",
+    "mobile opportunity shows eligible request and supports keyboard input",
+    "mobile saves draft, resumes it, edits and submits quote",
+    "customer explicitly confirms quote and sees awarded job and history",
+    "technician sees adjudication, frozen terms and no execution controls",
+    "admin supervises request, quotes, job and actor history",
+    "customer mobile history, empty pagination and controlled invalid action"
+  ],
+  "failedCheck": "customer mobile history, empty pagination and controlled invalid action",
+  "runtimeErrors": [
+    "Error: Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+    "Error: Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings.",
+    "Error: Minified React error #418; visit https://react.dev/errors/418?args[]=HTML&args[]= for the full message or use the non-minified dev environment for full errors and additional helpful warnings."
+  ],
+  "viewports": [
+    "1440×1000",
+    "390×844"
+  ],
+  "completedAt": "2026-11-09T20:11:39.729Z"
+}

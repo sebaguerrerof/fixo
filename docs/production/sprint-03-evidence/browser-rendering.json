@@ -1,0 +1,11 @@
+{
+  "status": "PASS integración",
+  "checks": [
+    "/cliente/solicitudes/e180d77c-662b-43fb-878b-abf1dba78779",
+    "/cliente/solicitudes/e180d77c-662b-43fb-878b-abf1dba78779",
+    "/tecnico/trabajos",
+    "/admin/solicitudes/e180d77c-662b-43fb-878b-abf1dba78779",
+    "assigned private photo denied after suspension with old cookie"
+  ],
+  "runtimeErrors": 0
+}

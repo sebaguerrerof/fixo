@@ -51,7 +51,7 @@ select set_config('request.jwt.claims','{"sub":"41000000-0000-4000-8000-00000000
 set local role authenticated;
 select is(public.my_account_access()->>'allowed','false','old JWT cannot bypass suspension');
 select throws_ok($$select public.update_my_profile('Forged','Active','+56912345678',null)$$,'42501',null,'suspended profile update denied');
-select throws_ok($$insert into public.service_requests(customer_id,category_id,title,location_label) values(auth.uid(),'electricidad','Solicitud suspendida','Ñuñoa')$$,'42501',null,'suspended customer cannot create requests');
+select throws_ok($$select public.marketplace_create_request('51000000-0000-4000-8000-000000000099','{"categoryId":"electricidad","title":"Solicitud suspendida","description":"Descripción sintética para comprobar la suspensión","locationLabel":"Ñuñoa"}')$$,'42501',null,'suspended customer cannot publish through the request RPC');
 reset role;
 
 select set_config('request.jwt.claims','{"sub":"41000000-0000-4000-8000-000000000005","session_id":"41000000-0000-4000-8000-000000000005","role":"authenticated"}',true);

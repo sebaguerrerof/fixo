@@ -1,0 +1,16 @@
+{
+  "status": "PASS integración",
+  "checks": [
+    "captured signup OTP confirms in a different browser without PKCE verifier; external next ignored",
+    "captured signup OTP cannot be reused",
+    "captured recovery OTP creates session-bound flow, updates password and logs out",
+    "recovery OTP and fabricated PKCE recovery cannot be reused or elevate access",
+    "superseded invitation OTP is rejected after explicit resend",
+    "captured invitation completes password/contact/consent without gaining privileged role"
+  ],
+  "failedCheck": null,
+  "hostedAuthSmtp": "NOT TESTED",
+  "actualAuthOtpExpiry": "NOT TESTED — no clock/config mutation",
+  "runtimeErrors": 0,
+  "completedAt": "2026-11-09T20:00:31.155Z"
+}

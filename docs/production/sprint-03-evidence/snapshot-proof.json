@@ -1,0 +1,6 @@
+{
+  "status": "PASS integración",
+  "award_audit": "one correct customer actor",
+  "rolled_back": true,
+  "immutable_snapshot_trigger": "PT409"
+}

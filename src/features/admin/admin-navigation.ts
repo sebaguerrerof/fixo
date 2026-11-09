@@ -1,5 +1,6 @@
 export const adminNavigation = [
   { href: "/admin", label: "Resumen" },
+  { href: "/admin/solicitudes", label: "Solicitudes y adjudicaciones" },
   { href: "/admin/usuarios", label: "Usuarios" },
   { href: "/admin/usuarios/auditoria", label: "Auditoría de cuentas" },
   { href: "/perfil", label: "Mi cuenta" },

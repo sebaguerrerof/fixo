@@ -18,10 +18,16 @@ export async function submitServiceRequest(input: ServiceRequestInput): Promise<
 
   const parsed = serviceRequestInputSchema.safeParse(input);
   if (!parsed.success) return { ok: false, message: "No pudimos validar tu solicitud. Revisa los datos ingresados." };
+  if (!isDemoModeEnabled() && (!parsed.data.operationId || parsed.data.priority !== "standard")) return { ok: false, message: "Actualiza el formulario antes de registrar una solicitud normal." };
 
   try {
     const request = await getServiceRequestRepository().create({
       customerId: user.id,
+      operationId: parsed.data.operationId,
+      address: parsed.data.address,
+      reference: parsed.data.reference,
+      preferredSlot: parsed.data.preferredSlot,
+      complementaryInfo: parsed.data.complementaryInfo,
       title: parsed.data.title,
       categoryId: parsed.data.categoryId,
       description: parsed.data.description,

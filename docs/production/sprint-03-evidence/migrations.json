@@ -1,0 +1,18 @@
+{
+  "project": "rjzyqdhotcshvbdcrgon",
+  "explicitApprovals": true,
+  "appliedOnce": true,
+  "canonicalHistory": true,
+  "migrations": [
+    {
+      "file": "20261109185924_inspection_queue_and_marketplace_transactions.sql",
+      "sourceSha256": "8704b4b88a73b54ac50cd1c7cd9d6387622fe5c2f863f0845e10d73018c73a9c",
+      "adaptedBodyMd5": "5dd2e3efb2860f5a5160e2fc0304ae56"
+    },
+    {
+      "file": "20261109194648_require_category_scoped_professional_approval.sql",
+      "sourceSha256": "0a8aebb2a76637976dfb42c513e31a95aeb25f327fa816a0cb0f399acc0a43f5",
+      "adaptedBodyMd5": "edc862e65caaed4a76435cf99ec30425"
+    }
+  ]
+}
