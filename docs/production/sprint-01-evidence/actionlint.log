@@ -1,0 +1,1 @@
+PASS actionlint 1.7.12: unchanged .github/workflows/ci.yml; exit 0.

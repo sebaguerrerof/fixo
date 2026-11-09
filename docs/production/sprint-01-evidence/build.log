@@ -1,0 +1,68 @@
+
+> fixo-marketplace-tecnicos@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.29
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 15.8s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/32) ...
+   Generating static pages (8/32)
+   Generating static pages (16/32)
+   Generating static pages (24/32)
+ ✓ Generating static pages (32/32)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ƒ /                                      880 B         212 kB
+├ ○ /_not-found                            144 B         103 kB
+├ ƒ /admin                                 138 B         211 kB
+├ ƒ /admin/audit-log                     1.11 kB         216 kB
+├ ƒ /admin/configuracion                   138 B         211 kB
+├ ƒ /admin/reportes                        139 B         211 kB
+├ ƒ /admin/tecnicos                      2.61 kB         218 kB
+├ ƒ /admin/tecnicos/[slug]               2.74 kB         218 kB
+├ ƒ /admin/usuarios                        139 B         211 kB
+├ ƒ /admin/usuarios/[id]                 5.46 kB         212 kB
+├ ƒ /admin/usuarios/auditoria              138 B         211 kB
+├ ƒ /admin/usuarios/invitaciones         5.83 kB         212 kB
+├ ƒ /admin/verificaciones                  139 B         211 kB
+├ ƒ /api/auth                              144 B         103 kB
+├ ƒ /auth/callback                         948 B         114 kB
+├ ƒ /auth/update-password                  948 B         114 kB
+├ ƒ /cliente                               139 B         211 kB
+├ ƒ /cliente/solicitudes/[id]            4.95 kB         212 kB
+├ ○ /como-funciona                         880 B         212 kB
+├ ƒ /cuenta-no-disponible                3.62 kB         210 kB
+├ ○ /login                               5.64 kB         224 kB
+├ ƒ /perfil                              4.92 kB         212 kB
+├ ○ /privacidad                            168 B         106 kB
+├ ○ /recuperar-contrasena                1.38 kB         115 kB
+├ ○ /registro                              187 B         212 kB
+├ ƒ /registro/tecnico                      187 B         212 kB
+├ ƒ /solicitar                           2.27 kB         226 kB
+├ ƒ /tecnico                               138 B         211 kB
+├ ƒ /tecnico/agenda                        138 B         211 kB
+├ ƒ /tecnico/oportunidades               4.96 kB         212 kB
+├ ƒ /tecnico/oportunidades/[id]/cotizar  5.95 kB         225 kB
+├ ƒ /tecnico/pagos                         139 B         211 kB
+├ ƒ /tecnico/perfil                        139 B         211 kB
+├ ƒ /tecnico/trabajos                    5.01 kB         212 kB
+├ ƒ /tecnicos                              880 B         212 kB
+├ ƒ /tecnicos/[slug]                       880 B         212 kB
+├ ○ /terminos                              168 B         106 kB
+└ ○ /urgencia                            4.48 kB         228 kB
++ First Load JS shared by all             103 kB
+  ├ chunks/1255-b84741b894bb9354.js      46.6 kB
+  ├ chunks/4bd1b696-f785427dddbba9fb.js  54.2 kB
+  └ other shared chunks (total)             2 kB
+
+
+ƒ Middleware                              119 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand

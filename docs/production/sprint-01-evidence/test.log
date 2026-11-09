@@ -1,0 +1,15 @@
+
+> fixo-marketplace-tecnicos@0.1.0 test
+> vitest run
+
+
+ RUN  v5.1.0 C:/Git/fixo
+
+
+ Test Files  26 passed (26)
+      Tests  174 passed (174)
+   Start at  21:43:59
+   Duration  4.13s (import 65%, transform 27%, tests 5%, worker 3%)
+
+    Isolate  26 workers spawned · ~811ms startup each (spawn + environment, per file)
+             at least ~595ms faster with isolate: false — reuses workers across files instead of one per file

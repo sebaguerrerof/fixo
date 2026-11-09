@@ -13,6 +13,7 @@ Archivos:
 - `supabase/migrations/202608170001_initial_marketplace.sql`: baseline existente; se conserva intacto, incluido su identificador de doce dígitos.
 - `supabase/migrations/20261108223021_harden_marketplace_access.sql`: corrección nueva generada con `supabase migration new`, pendiente de prueba DB y aprobación remota.
 - `supabase/tests/00_access_hardening.test.sql`: 27 aserciones pgTAP con fixtures locales y rollback.
+- Sprint 01 agrega `20261108234902_identity_and_account_administration.sql` y `tests/01_identity.test.sql` (53 aserciones). Ninguno fue ejecutado en DB; integración BLOCKED por decisión del propietario después de los fallos y rechazo de arranque. Ver [reporte 01](SPRINT_01_REPORT.md).
 
 ## Precondiciones antes de cualquier escritura remota
 
@@ -34,11 +35,13 @@ npx --yes supabase@3.0.0 migration list --remote=$fixoProjectRef
 npx --yes supabase@3.0.0 db push --dry-run --skip-vault --remote=$fixoProjectRef
 ```
 
-`migration repair --status applied` modifica solo la tabla de historial: **no ejecuta el SQL inicial ni vuelve a insertar categorías/usuarios**. Su uso es correcto solo cuando ya se verificó que el esquema está aplicado. El dry-run debe mostrar únicamente la migración correctiva esperada como pendiente; si muestra el baseline o cualquier archivo inesperado, detenerse. No ejecutar `db pull` como si fuera una lectura inocua: puede ofrecer actualizar historial y necesita revisión separada.
+`migration repair --status applied` modifica solo la tabla de historial: **no ejecuta el SQL inicial ni vuelve a insertar categorías/usuarios**. Su uso es correcto solo cuando ya se verificó que el esquema está aplicado. El dry-run debe coincidir exactamente con la lista de migraciones aprobadas; si muestra el baseline o un archivo inesperado, detenerse. En el HEAD de Sprint 01 aparecerían **dos** correcciones pendientes (00.5 y 01), no solo hardening. No ejecutar `db push` aprobando implícitamente ambas. Para aplicar únicamente 00.5 se requiere un snapshot revisado de `69fa1d5`, con su carpeta de migraciones e historial verificados; no borrar/mover archivos del checkout actual para alterar la lista. No ejecutar `db pull` como si fuera una lectura inocua: puede ofrecer actualizar historial y necesita revisión separada.
 
 ## Hardening, con aprobación independiente y pruebas verdes
 
 Después del dry-run revisado, una segunda aprobación habilita aplicar únicamente los cambios correctivos pendientes. No hay un comando de despliegue automático en este repositorio. Si se autoriza `db push --skip-vault --remote=... --yes`, primero confirmar que su lista contiene exactamente el archivo revisado. No incluir seeds/roles; usar skip-vault también en el dry-run para excluir la sincronización adicional de secretos Vault mencionada por la ayuda del CLI.
+
+La identidad de Sprint 01 requiere aprobación propia y coordinación con la aplicación nueva: su trigger exige nombres, teléfono y consentimiento para altas nuevas. La aplicación 00.5 no envía ese contrato completo. Mantener el registro cerrado durante la transición; probar la combinación exacta en staging y acordar rollback compatible. Volver solo al frontend anterior no revierte el contrato Auth ni las políticas/sesiones.
 
 El cambio es aditivo/restrictivo y transaccional: crea helpers privados, conserva las firmas públicas y los roles, altera políticas/grants y limita el bucket. No elimina tablas, columnas, filas, documentos ni estados existentes. No concede UPDATE comercial genérico. Preserva el bloqueo de fila y la auditoría del RPC administrativo. Tiene lock_timeout de 5 segundos y statement_timeout de 30 segundos.
 

@@ -1,0 +1,35 @@
+{
+  "tool": "pgsql-parser 18.3.3 / libpg-query WASM",
+  "targetRuntime": "PostgreSQL 17 NOT TESTED",
+  "scope": "Offline parsing only, no catalog resolution, SQL execution, RLS or Supabase validation",
+  "results": [
+    {
+      "file": "supabase/migrations/202608170001_initial_marketplace.sql",
+      "status": "PASS syntax only",
+      "statements": 60,
+      "plpgsql": "PASS syntax only"
+    },
+    {
+      "file": "supabase/migrations/20261108223021_harden_marketplace_access.sql",
+      "status": "PASS syntax only",
+      "statements": 38,
+      "plpgsql": "PASS syntax only"
+    },
+    {
+      "file": "supabase/migrations/20261108234902_identity_and_account_administration.sql",
+      "status": "PASS syntax only",
+      "statements": 69,
+      "plpgsql": "PASS syntax only"
+    },
+    {
+      "file": "supabase/tests/00_access_hardening.test.sql",
+      "status": "PASS syntax only",
+      "statements": 61
+    },
+    {
+      "file": "supabase/tests/01_identity.test.sql",
+      "status": "PASS syntax only",
+      "statements": 112
+    }
+  ]
+}
