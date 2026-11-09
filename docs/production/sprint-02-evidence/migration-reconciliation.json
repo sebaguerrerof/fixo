@@ -1,0 +1,63 @@
+{
+  "project": "rjzyqdhotcshvbdcrgon",
+  "date": "2026-11-09",
+  "status": "PASS",
+  "baselineInitialDdlReplayed": false,
+  "normalization": "CRLF, outer whitespace, transaction wrapper; legacy hardening/identity additionally ignore blank lines only. MD5 identifies bodies, SHA256 identifies source files.",
+  "migrations": [
+    {
+      "version": "202608170001",
+      "name": "initial_marketplace",
+      "body_md5": "119f7e3e8365c8d627ae01034b372be1",
+      "file": "202608170001_initial_marketplace.sql",
+      "sourceSha256": "7e1d0ad1bf76844974e39b73ad5f8248eaa18a59949b78c8a719c5bf53904d7a",
+      "adaptedBodyMd5": "115271d75477575fadbb04facf892583",
+      "match": "baseline metadata only"
+    },
+    {
+      "version": "20261108223021",
+      "name": "harden_marketplace_access",
+      "body_md5": "62cbc4e82f3b9a18bcab777f5d2955fb",
+      "file": "20261108223021_harden_marketplace_access.sql",
+      "sourceSha256": "144deb3cfdce65f3eeba6d9af8eae031a63e0adf047b71e2041785af1b3e1c20",
+      "adaptedBodyMd5": "834bc042da6b8490b292078be82dd7f3",
+      "match": true
+    },
+    {
+      "version": "20261108234902",
+      "name": "identity_and_account_administration",
+      "body_md5": "1db273c2fab69cd1f1d07e5dbe6bbb99",
+      "file": "20261108234902_identity_and_account_administration.sql",
+      "sourceSha256": "88293102154c63f075205c868081f2a43761a8c5baffca5cdd95a4517ae8cb95",
+      "adaptedBodyMd5": "e8291903c5830fdc0a0bf0c8b42cffbe",
+      "match": true
+    },
+    {
+      "version": "20261109141115",
+      "name": "close_invitation_binding_window",
+      "body_md5": "90eab18d1aed51b7da6f3f9b137badf9",
+      "file": "20261109141115_close_invitation_binding_window.sql",
+      "sourceSha256": "4224e0d13320d03254c7af81917b36cb87f38bc539c4efe22e209597673f76ee",
+      "adaptedBodyMd5": "90eab18d1aed51b7da6f3f9b137badf9",
+      "match": true
+    },
+    {
+      "version": "20261109141946",
+      "name": "professional_applications_and_document_quarantine",
+      "body_md5": "6937f06ff3b7a015dfeefdbf988be229",
+      "file": "20261109141946_professional_applications_and_document_quarantine.sql",
+      "sourceSha256": "5c0238253afe5c90d97336d0453a3b3d3f3d25387f82c0b11e15b174be851376",
+      "adaptedBodyMd5": "6937f06ff3b7a015dfeefdbf988be229",
+      "match": true
+    },
+    {
+      "version": "20261109155802",
+      "name": "stabilize_professional_review_retries",
+      "body_md5": "1740d37f27c962a1fea74719a7ac202b",
+      "file": "20261109155802_stabilize_professional_review_retries.sql",
+      "sourceSha256": "ee79cc2dd5619153549b18918bbfe9d5a328dad561cc7a368806ea791817375b",
+      "adaptedBodyMd5": "1740d37f27c962a1fea74719a7ac202b",
+      "match": true
+    }
+  ]
+}

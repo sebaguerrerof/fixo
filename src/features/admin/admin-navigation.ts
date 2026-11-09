@@ -5,6 +5,8 @@ export const adminNavigation = [
   { href: "/perfil", label: "Mi cuenta" },
   { href: "/admin/tecnicos", label: "Técnicos" },
   { href: "/admin/verificaciones", label: "Verificaciones" },
+  { href: "/admin/postulaciones", label: "Postulaciones" },
+  { href: "/admin/requisitos", label: "Requisitos por rubro" },
   { href: "/admin/reportes", label: "Reportes" },
   { href: "/admin/audit-log", label: "Audit log" },
   { href: "/admin/configuracion", label: "Configuración" },

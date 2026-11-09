@@ -1,0 +1,30 @@
+{
+  "project": "rjzyqdhotcshvbdcrgon",
+  "runId": "2b7bb4ee-936d-4a38-a7ed-b190de368ada",
+  "status": "PASS",
+  "checks": [
+    "browser authenticates real technician and superadmin with session cookies",
+    "superadmin configures an internal category requirement through the UI",
+    "technician saves a draft through Next.js server actions",
+    "browser rejects disguised PDF and uploads valid bytes into quarantine",
+    "trusted worker scans real stored bytes before browser download",
+    "browser submits with consent and administrator reviews document and application",
+    "mobile layout and keyboard navigation work with a real session",
+    "old browser session loses access immediately after global suspension"
+  ],
+  "failedCheck": null,
+  "runtimeErrors": 0,
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "browser": "Microsoft Edge headless, isolated contexts",
+  "fixtureCleanup": "PASS: final-state.json confirms only the two original accounts remain and all synthetic application/Storage data is gone",
+  "completedAt": "2026-11-09T16:52:26.215Z"
+}

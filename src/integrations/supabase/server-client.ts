@@ -11,6 +11,8 @@ export async function getSupabaseServerClient() {
   const { url, publishableKey } = getSupabasePublicConfig();
 
   return createServerClient(url, publishableKey, {
+    // Account access and review revisions must never reuse Next.js Data Cache entries.
+    global: { fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }) },
     cookies: {
       getAll() {
         return cookieStore.getAll();

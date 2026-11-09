@@ -1,4 +1,4 @@
--- Synthetic fixtures, isolated Supabase only. This entire test rolls back.
+-- Synthetic fixtures, authorized integration target only. This entire test rolls back.
 begin;
 set local search_path=public,extensions;
 create extension if not exists pgtap with schema extensions;
@@ -13,7 +13,7 @@ insert into auth.users(id,email,email_confirmed_at,raw_user_meta_data) values
 ('41000000-0000-4000-8000-000000000004','s1-moderator@local.invalid',now(),'{"terms_accepted":true,"first_name":"Local","last_name":"Fixture","phone":"+56912345678","full_name":"Moderator One"}'),
 ('41000000-0000-4000-8000-000000000005','s1-admin-one@local.invalid',now(),'{"terms_accepted":true,"first_name":"Local","last_name":"Fixture","phone":"+56912345678","full_name":"Administrator One"}'),
 ('41000000-0000-4000-8000-000000000006','s1-admin-two@local.invalid',now(),'{"terms_accepted":true,"first_name":"Local","last_name":"Fixture","phone":"+56912345678","full_name":"Administrator Two"}');
-insert into auth.sessions(id,user_id,created_at,updated_at) select id,id,now(),now() from auth.users where email like 's1-%@local.invalid';
+insert into auth.sessions(id,user_id,created_at,updated_at) select id,id,now(),now() from auth.users where id in ('41000000-0000-4000-8000-000000000001','41000000-0000-4000-8000-000000000002','41000000-0000-4000-8000-000000000003','41000000-0000-4000-8000-000000000004','41000000-0000-4000-8000-000000000005','41000000-0000-4000-8000-000000000006');
 update public.profiles set role='moderator' where id='41000000-0000-4000-8000-000000000004';
 update public.profiles set role='superadmin' where id in ('41000000-0000-4000-8000-000000000005','41000000-0000-4000-8000-000000000006');
 select is((select role::text from public.profiles where id='41000000-0000-4000-8000-000000000001'),'customer','metadata cannot assign privileged roles');
@@ -39,7 +39,7 @@ reset role;
 
 select set_config('request.jwt.claims','{"sub":"41000000-0000-4000-8000-000000000004","session_id":"41000000-0000-4000-8000-000000000004","role":"authenticated"}',true);
 set local role authenticated;
-select is(jsonb_array_length(public.admin_list_users()->'users'),6,'moderator lists real accounts');
+select is((select count(*)::integer from jsonb_array_elements(public.admin_list_users()->'users') value where value->>'id' in ('41000000-0000-4000-8000-000000000001','41000000-0000-4000-8000-000000000002','41000000-0000-4000-8000-000000000003','41000000-0000-4000-8000-000000000004','41000000-0000-4000-8000-000000000005','41000000-0000-4000-8000-000000000006')),6,'moderator lists all six synthetic accounts alongside existing accounts');
 select throws_ok($$select public.admin_change_account('41000000-0000-4000-8000-000000000005','suspended',null,'Unauthorized admin suspension','51000000-0000-4000-8000-000000000003')$$,'42501',null,'moderator cannot suspend administrators');
 select throws_ok($$select public.admin_change_account('41000000-0000-4000-8000-000000000002',null,'moderator','Unauthorized role change','51000000-0000-4000-8000-000000000004')$$,'42501',null,'moderator cannot change roles');
 select throws_ok($$select public.admin_reserve_invitation('illegal@local.invalid','Illegal Invite','superadmin','51000000-0000-4000-8000-000000000005',false)$$,'42501',null,'moderator cannot invite privileged roles');
@@ -106,6 +106,11 @@ set local role authenticated;
 select throws_ok($$select public.accept_my_invitation('Expired','Identity','+56912345678',true)$$,'42501',null,'revoked invitation cannot be accepted');
 reset role;
 -- Approved professional profile is hidden as soon as the global account is suspended.
+-- Reviewed-application fixture for the newer Sprint 02 publication gate.
+insert into private.category_requirements(id,category_id,requirement_key,version,kind,required,document_type,description,created_by)
+values('74000000-0000-4000-8000-000000000002','electricidad','pgtap-identity',1,'optional',false,'other','SQL visibility fixture only','41000000-0000-4000-8000-000000000005');
+update private.technician_applications set primary_category='electricidad',consent_at=now(),requirement_snapshot=array['74000000-0000-4000-8000-000000000002'::uuid],state='approved' where technician_id='41000000-0000-4000-8000-000000000003';
+update private.technician_applications set approved_fingerprint=private.professional_fingerprint(technician_id) where technician_id='41000000-0000-4000-8000-000000000003';
 update public.technician_profiles set status='active' where user_id='41000000-0000-4000-8000-000000000003';
 select set_config('request.jwt.claims','{}',true);
 set local role anon;

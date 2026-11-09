@@ -1,6 +1,6 @@
 # Fixo — Pruebas aisladas de identidad
 
-Estado **BLOCKED / NOT TESTED**. El propietario eligió continuar con la integración bloqueada. Este documento prepara una ejecución futura; no autoriza arrancarla.
+Procedimiento local preparado en el corte del 8 de noviembre, que entonces quedó **BLOCKED / NOT TESTED**. **Actualización 9 de noviembre:** el propietario autorizó la base Fixo existente y se ejecutaron pruebas reales por otra estrategia. Consultar [informe vigente](SPRINT_01_INTEGRATION_REPORT.md), [plan ejecutado](SUPABASE_EXISTING_DATABASE_EXECUTION_PLAN.md) y [Sprint 02](SPRINT_02_REPORT.md). Este procedimiento de Docker aislado sigue sin ejecutarse y no autoriza reset ni arranque sobre otra instancia.
 
 ## Seguridad y entorno
 

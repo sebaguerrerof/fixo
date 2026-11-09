@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   // active `next dev` session from losing its chunks when `next build` runs.
   distDir: process.env.NODE_ENV === "development" ? ".next-dev" : ".next",
   reactStrictMode: true,
+  experimental: { cpus: 1, serverActions: { bodySizeLimit: "12mb" } },
 };
 
 export default nextConfig;

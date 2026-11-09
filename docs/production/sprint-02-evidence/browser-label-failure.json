@@ -1,0 +1,24 @@
+{
+  "project": "rjzyqdhotcshvbdcrgon",
+  "runId": "62bf282c-48d4-437a-a07e-98eae801fbe2",
+  "status": "FAIL",
+  "checks": [
+    "browser authenticates real technician and superadmin with session cookies",
+    "superadmin configures an internal category requirement through the UI"
+  ],
+  "failedCheck": "technician saves a draft through Next.js server actions",
+  "runtimeErrors": 0,
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "browser": "Microsoft Edge headless, isolated contexts",
+  "fixtureCleanup": "PENDING",
+  "completedAt": "2026-11-09T16:15:14.607Z"
+}

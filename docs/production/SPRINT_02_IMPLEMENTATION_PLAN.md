@@ -1,6 +1,6 @@
 # Fixo — Sprint 02: técnicos y validación profesional
 
-Fecha: 8 de noviembre de 2026. **Plan preparado; no iniciado.** Base de código local: Sprint 01. Su aceptación funcional permanece BLOCKED por las pruebas aisladas.
+Plan original: 8 de noviembre de 2026. **Actualización 9 de noviembre: implementado y con integración real en curso de cierre.** Ver [informe vigente](SPRINT_02_REPORT.md) y [evidencia](sprint-02-evidence/) para estados comprobados; los bloqueos de la planificación inicial no sustituyen los resultados actuales.
 
 ## Entrada
 

@@ -1,0 +1,31 @@
+{
+  "project": "rjzyqdhotcshvbdcrgon",
+  "runId": "f4582933-8b24-4067-8bdc-ffd86f256d3f",
+  "status": "FAIL",
+  "checks": [
+    "metadata cannot grant privileged roles",
+    "pending technician is hidden from public directory",
+    "customers cannot read each other or elevate access",
+    "own profile persists through guarded RPC",
+    "own submitted request persists and overposting is denied",
+    "moderator filters accounts and cannot administer privileged actors",
+    "suspension blocks the previous JWT and reactivation is audited",
+    "Storage owner upload works and cross-owner access is denied",
+    "Storage HTTP rejects MIME and oversize files",
+    "owner receives a working signed URL with a 60-second lifetime",
+    "approved professional disappears on account suspension",
+    "native signup link creates an unconfirmed identity without sending email",
+    "confirmation OTP works in another client and rejects reuse",
+    "native recovery verifies once and changes password",
+    "invitation reservation is idempotent and rejects moderator escalation",
+    "native invite OTP permits acceptance but never professional approval",
+    "recovery proof is session-bound and consumed exactly once concurrently",
+    "refresh rotates a real session",
+    "concurrent synthetic administrator suspensions serialize",
+    "global signout blocks operations using the old JWT"
+  ],
+  "failedCheck": "signed Storage URL expires",
+  "emailDelivery": "NOT TESTED: no mail-sending API called",
+  "fixtureCleanup": "PENDING",
+  "completedAt": "2026-11-09T14:14:23.172Z"
+}

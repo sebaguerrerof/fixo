@@ -1,0 +1,70 @@
+{
+  "date": "2026-11-09",
+  "runtime": "Node 24.22.2 portable",
+  "npmCi": {
+    "status": "PASS",
+    "installedPackages": 428
+  },
+  "lint": "PASS",
+  "typecheck": "PASS",
+  "unitTests": {
+    "status": "PASS",
+    "files": 27,
+    "tests": 186
+  },
+  "build": "PASS",
+  "productionHttpSmoke": "PASS",
+  "audit": {
+    "all": {
+      "status": "PASS",
+      "vulnerabilities": 0
+    },
+    "production": {
+      "status": "PASS",
+      "vulnerabilities": 0
+    }
+  },
+  "pgtap": {
+    "status": "PASS",
+    "assertions": 105,
+    "rolledBack": true
+  },
+  "nativeIdentity": {
+    "status": "PASS",
+    "checks": 21,
+    "stage": "Before professional migration; email transport not exercised"
+  },
+  "nativeProfessional": {
+    "status": "PASS",
+    "checks": 14
+  },
+  "browser": {
+    "status": "PASS",
+    "checks": 8,
+    "desktop": "1440x1000",
+    "mobile": "390x844",
+    "runtimeErrors": 0
+  },
+  "workerCli": {
+    "status": "PASS",
+    "engine": "ClamAV 1.5.4",
+    "syntheticPdfBytes": 583
+  },
+  "clientArtifactSecretCheck": {
+    "status": "PASS",
+    "files": 77,
+    "privateValues": 2,
+    "findings": 0
+  },
+  "repositorySecretScan": {
+    "status": "PASS",
+    "findings": 0
+  },
+  "actionlint": "PASS",
+  "githubActions": "NOT TESTED: no push",
+  "deployment": "NOT TESTED: no deploy",
+  "emailTransport": "BLOCKED: isolated capture/SMTP not configured",
+  "continuousInspectionHosting": "BLOCKED: worker not deployed",
+  "emptyDatabaseMigrationReplay": "NOT TESTED: existing baseline retained",
+  "singletonSuperadminCase": "NOT TESTED: two previous administrators preserved"
+}

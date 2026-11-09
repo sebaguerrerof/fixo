@@ -1,4 +1,4 @@
--- Local/staging only. All synthetic rows are rolled back; never run against production.
+-- Authorized integration target only. All synthetic rows are rolled back.
 begin;
 set local search_path = public, extensions;
 create extension if not exists pgtap with schema extensions;
@@ -23,8 +23,8 @@ insert into auth.users(id,email,raw_user_meta_data) values
  ('10000000-0000-4000-8000-000000000002','customer-two@local.invalid','{"terms_accepted":true,"first_name":"Local","last_name":"Fixture","phone":"+56912345678","full_name":"Local Customer Two","account_type":"customer"}'),
  ('20000000-0000-4000-8000-000000000001','technician-one@local.invalid','{"terms_accepted":true,"first_name":"Local","last_name":"Fixture","phone":"+56912345678","full_name":"Local Technician One","account_type":"technician","category_ids":["electricidad"]}'),
  ('20000000-0000-4000-8000-000000000002','technician-two@local.invalid','{"terms_accepted":true,"first_name":"Local","last_name":"Fixture","phone":"+56912345678","full_name":"Local Technician Two","account_type":"technician","category_ids":["electricidad"]}');
-update auth.users set email_confirmed_at=now() where email like '%@local.invalid';
-insert into auth.sessions(id,user_id,created_at,updated_at) select id,id,now(),now() from auth.users where email like '%@local.invalid';
+update auth.users set email_confirmed_at=now() where id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000002');
+insert into auth.sessions(id,user_id,created_at,updated_at) select id,id,now(),now() from auth.users where id in ('10000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000002');
 select is((select role::text from public.profiles where id='10000000-0000-4000-8000-000000000001'),'customer','registration metadata cannot create a superadmin');
 select is((select status::text from public.technician_profiles where user_id='20000000-0000-4000-8000-000000000001'),'pending_verification','technician registration stays pending');
 
@@ -44,6 +44,9 @@ select is((select count(*) from public.service_requests),0::bigint,'another cust
 reset role;
 
 insert into storage.objects(bucket_id,name) values ('technician-documents','20000000-0000-4000-8000-000000000001/certificate.pdf');
+-- SQL fixture for access-policy tests; actual antivirus behavior has a separate native integration test.
+insert into public.technician_documents(technician_id,document_type,storage_path,inspection_status)
+values('20000000-0000-4000-8000-000000000001','certificate','20000000-0000-4000-8000-000000000001/certificate.pdf','clean');
 select set_config('request.jwt.claim.sub','20000000-0000-4000-8000-000000000001',true);
 select set_config('request.jwt.claims','{"sub":"20000000-0000-4000-8000-000000000001","session_id":"20000000-0000-4000-8000-000000000001","role":"authenticated"}',true);
 set local role authenticated;
@@ -64,6 +67,11 @@ select throws_ok($$insert into storage.objects(bucket_id,name) values ('technici
 reset role;
 
 update public.profiles set role='moderator' where id='10000000-0000-4000-8000-000000000002';
+-- A reviewed application is now required even for the legacy guarded status RPC.
+insert into private.category_requirements(id,category_id,requirement_key,version,kind,required,document_type,description,created_by)
+values('74000000-0000-4000-8000-000000000001','electricidad','pgtap-access',1,'optional',false,'other','SQL policy fixture only','10000000-0000-4000-8000-000000000002');
+update private.technician_applications set primary_category='electricidad',consent_at=now(),requirement_snapshot=array['74000000-0000-4000-8000-000000000001'::uuid],state='approved' where technician_id='20000000-0000-4000-8000-000000000001';
+update private.technician_applications set approved_fingerprint=private.professional_fingerprint(technician_id) where technician_id='20000000-0000-4000-8000-000000000001';
 select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000002',true);
 select set_config('request.jwt.claims','{"sub":"10000000-0000-4000-8000-000000000002","session_id":"10000000-0000-4000-8000-000000000002","role":"authenticated"}',true);
 set local role authenticated;

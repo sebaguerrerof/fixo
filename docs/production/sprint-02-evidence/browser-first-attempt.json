@@ -1,0 +1,21 @@
+{
+  "project": "rjzyqdhotcshvbdcrgon",
+  "runId": "faee522f-8ead-401d-86c7-0038cb997f80",
+  "status": "FAIL",
+  "checks": [],
+  "failedCheck": "browser authenticates real technician and superadmin with session cookies",
+  "runtimeErrors": 0,
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "browser": "Microsoft Edge headless, isolated contexts",
+  "fixtureCleanup": "PENDING",
+  "completedAt": "2026-11-09T16:10:17.434Z"
+}
