@@ -8,5 +8,10 @@ export interface NotificationMessage {
 }
 
 export interface NotificationService {
-  send(message: NotificationMessage): Promise<void>;
+  send(message: NotificationMessage): Promise<NotificationReceipt>;
+}
+/** Provider acceptance is not proof of final delivery. */
+export interface NotificationReceipt {
+  readonly reference: string;
+  readonly state: "captured" | "accepted";
 }

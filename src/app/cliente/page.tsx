@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { requireServerRole } from "@/services/auth/server-authentication-service";
 import { getServiceRequestRepository } from "@/repositories/repository-factory";
 
-const navigation = [{ href: "/perfil", label: "Mi perfil" }, { href: "/cliente", label: "Mis solicitudes" }];
+const navigation = [{ href: "/perfil", label: "Mi perfil" }, { href: "/cliente", label: "Mis solicitudes" }, { href: "/cliente/trabajos", label: "Mis trabajos" }];
 export default async function CustomerDashboardPage({ searchParams }: { readonly searchParams: Promise<{ page?: string }> }) {
   const user = await requireServerRole(["customer"]);
   const query = await searchParams;

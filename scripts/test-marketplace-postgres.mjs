@@ -6,22 +6,23 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import EmbeddedPostgres from '../.audit-backups/tooling/sprint03-postgres/node_modules/embedded-postgres/dist/index.js';
 
-const root=resolve('.audit-backups/sprint03-postgres',randomUUID());
+const sprint04=process.env.FIXO_JOB_TEST_MODULE==='sprint04';
+const root=resolve(sprint04?'.audit-backups/sprint04-postgres':'.audit-backups/sprint03-postgres',randomUUID());
 await mkdir(root,{recursive:true});
 const logs=[];
-const server=new EmbeddedPostgres({databaseDir:resolve(root,'data'),port:54403,user:'postgres',password:randomBytes(32).toString('hex'),
+const server=new EmbeddedPostgres({databaseDir:resolve(root,'data'),port:sprint04?54404:54403,user:'postgres',password:randomBytes(32).toString('hex'),
  persistent:true,createPostgresUser:false,authMethod:'scram-sha-256',initdbFlags:['--encoding=UTF8','--locale=C'],
- postgresFlags:['-c','listen_addresses=127.0.0.1','-c','max_connections=12','-c','shared_buffers=32MB'],
+ postgresFlags:['-c','listen_addresses=127.0.0.1','-c','max_connections=20','-c','shared_buffers=32MB'],
  onLog:m=>logs.push(String(m)),onError:m=>logs.push(String(m))});
 let admin; const clients=[]; let passed=0;
 async function check(name,fn){await fn();passed++;console.log('PASS '+name);}
 try{
  await server.initialise();await server.start();admin=server.getPgClient('postgres','127.0.0.1');await admin.connect();
  console.log((await admin.query('select version()')).rows[0].version);
- await admin.query(`create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
+ const bootstrapSql=`create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
  create schema auth; create schema storage; create schema extensions;
  create table auth.users(id uuid primary key,email text,raw_user_meta_data jsonb default '{}',email_confirmed_at timestamptz,invited_at timestamptz);
- create table auth.sessions(id uuid primary key,user_id uuid references auth.users(id) on delete cascade,not_after timestamptz);
+ create table auth.sessions(id uuid primary key,user_id uuid references auth.users(id) on delete cascade,not_after timestamptz,created_at timestamptz default now(),updated_at timestamptz default now());
  create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb $$;
  create function auth.uid() returns uuid language sql stable as $$ select (auth.jwt()->>'sub')::uuid $$;
  create function auth.role() returns text language sql stable as $$ select auth.jwt()->>'role' $$;
@@ -33,17 +34,19 @@ try{
  create function storage.foldername(text) returns text[] language sql immutable as $$ select (string_to_array($1,'/'))[1:array_length(string_to_array($1,'/'),1)-1] $$;
  grant select,insert,update,delete on storage.objects to authenticated;
  alter default privileges in schema public grant all on tables to service_role;
- alter default privileges in schema public grant all on sequences to service_role;`);
+ alter default privileges in schema public grant all on sequences to service_role;`;
+ await admin.query(bootstrapSql);
  for(const file of (await readdir('supabase/migrations')).filter(f=>f.endsWith('.sql')).sort()){
    try{await admin.query(await readFile(resolve('supabase/migrations',file),'utf8'));console.log('MIGRATION '+file);}
    catch(e){throw new Error('Migration '+file+': '+e.message,{cause:e});}
  }
  const actors={};
- for(const name of ['customerA','customerB','technicianA','technicianB','ineligible','admin']){
+ for(const name of ['customerA','customerB','technicianA','technicianB','ineligible','admin',...(sprint04?['moderator']:[])]){
  const id=randomUUID(),session=randomUUID(),tech=name.startsWith('technician')||name==='ineligible';
  await admin.query(`insert into auth.users(id,email,email_confirmed_at,raw_user_meta_data) values($1,$2,now(),$3)`,[id,name+'@local.invalid',{first_name:'Synthetic',last_name:name,phone:'+56911111111',terms_accepted:true,account_type:tech?'technician':'customer',category_ids:['gasfiteria'],coverage_areas:['Ñuñoa']}]);
  await admin.query('insert into auth.sessions(id,user_id) values($1,$2)',[session,id]);
  if(name==='admin')await admin.query("update public.profiles set role='superadmin' where id=$1",[id]);
+ if(name==='moderator')await admin.query("update public.profiles set role='moderator' where id=$1",[id]);
  const client=server.getPgClient('postgres','127.0.0.1');await client.connect();clients.push(client);
  await client.query('set role authenticated');await client.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:id,session_id:session,role:'authenticated'})]);
  actors[name]={id,client};
@@ -138,6 +141,7 @@ try{
  assert.equal((await admin.query('select inspection_status from public.technician_documents where id=$1',[id])).rows[0].inspection_status,'clean');
  assert.equal((await admin.query('select count(*)::int n from private.professional_events where details->>\'document_id\'=$1',[id])).rows[0].n,1);
  });
+ if(sprint04){const {runJobOperationTests}=await import('./lib/job-operation-tests.mjs');await runJobOperationTests({admin,actors,server,clients,check,call,customer,request,award,payload,quotePayload,root});const {testSyntheticRestore}=await import('./lib/test-synthetic-restore.mjs');await check('S04 synthetic data export/restore into a second new database',()=>testSyntheticRestore({admin,server,bootstrapSql,root,actors,jobId:award.job.id}));}
  console.log(JSON.stringify({status:'PASS local',checks:passed,provider:'PostgreSQL with Auth/Storage contract fixtures',remote:false}));
  await writeFile(resolve(root,'result.json'),JSON.stringify({status:'PASS local',checks:passed,remote:false},null,2));
 }finally{

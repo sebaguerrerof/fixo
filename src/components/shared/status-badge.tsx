@@ -9,6 +9,10 @@ type DisplayStatus = TechnicianStatus | ServiceRequestStatus | QuoteStatus | Job
 
 const labels: Record<DisplayStatus, string> = {
   awarded: "Adjudicado · ejecución pendiente",
+  coordination_pending: "Pendiente de coordinación",
+  date_proposed: "Fecha propuesta",
+  ready: "Preparado para ejecución",
+  completion_reported: "Finalización informada · por confirmar",
   draft: "Borrador",
   pending_verification: "Pendiente de verificación",
   needs_information: "Requiere antecedentes",

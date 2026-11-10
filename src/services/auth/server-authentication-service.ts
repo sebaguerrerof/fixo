@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+import { cache } from "react";
 
 import { isDemoModeEnabled } from "@/config/demo-mode";
 import { assertServerEnvironment } from "@/config/server-environment";
@@ -14,7 +15,8 @@ async function getDemoAuthenticatedUser(): Promise<AuthenticatedUser | null> {
   return decodeDemoSession(cookieStore.get(DEMO_SESSION_COOKIE)?.value);
 }
 
-export async function getServerAuthenticatedUser(): Promise<AuthenticatedUser | null> {
+// React memoizes within one server render only. Mutations and new requests reauthorize afresh.
+export const getServerAuthenticatedUser = cache(async function getServerAuthenticatedUser(): Promise<AuthenticatedUser | null> {
   assertServerEnvironment();
   if (isDemoModeEnabled()) return getDemoAuthenticatedUser();
 
@@ -27,7 +29,7 @@ export async function getServerAuthenticatedUser(): Promise<AuthenticatedUser | 
   if (error || !profile.success) return null;
   if (!profile.data.allowed) redirect("/cuenta-no-disponible");
   return { id: userData.user.id, name: profile.data.name, email: userData.user.email, role: profile.data.role };
-}
+});
 
 export async function requireServerRole(roles: readonly UserRole[]): Promise<AuthenticatedUser> {
   const user = await getServerAuthenticatedUser();

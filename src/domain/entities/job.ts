@@ -7,6 +7,11 @@ import type { JobStatus } from "@/domain/enums/job-status";
  * para el ciclo de vida del trabajo en terreno.
  */
 export interface Job {
+  readonly revision?: number;
+  readonly confirmedScheduleId?: string | null;
+  readonly startedAt?: string | null;
+  readonly completionReportedAt?: string | null;
+  readonly customerConfirmedAt?: string | null;
   readonly paymentState?: "not_enabled";
   readonly id: string;
   readonly serviceRequestId: string;
