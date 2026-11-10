@@ -1,0 +1,41 @@
+[
+  {
+    "type": "security",
+    "lints": [
+      {
+        "name": "rls_enabled_no_policy",
+        "level": "INFO",
+        "count": 22
+      },
+      {
+        "name": "authenticated_security_definer_function_executable",
+        "level": "WARN",
+        "count": 41
+      },
+      {
+        "name": "auth_leaked_password_protection",
+        "level": "WARN",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "type": "performance",
+    "lints": [
+      {
+        "name": "unindexed_foreign_keys",
+        "level": "INFO",
+        "count": 7
+      },
+      {
+        "name": "unused_index",
+        "level": "INFO",
+        "count": 12
+      }
+    ]
+  },
+  {
+    "type": "health",
+    "lints": []
+  }
+]

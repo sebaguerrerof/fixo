@@ -1,0 +1,18 @@
+{
+  "status": "PASS integración",
+  "checks": [
+    "unauthenticated guard, customer list/filter/empty state and keyboard",
+    "mobile technician proposes a future Santiago schedule with explicit confirmation",
+    "customer confirms counterpart schedule, technician prepares/starts/reports",
+    "customer alone confirms completion; financial state remains separate",
+    "customer opens incident and uploads private reencoded evidence",
+    "third parties cannot download evidence, change state or read jobs",
+    "moderator asks for information, participant responds and admin resolves",
+    "default disabled hides execution; cancellation is reviewed by admin",
+    "mobile history has no overflow and stale updates produce controlled errors"
+  ],
+  "uncaughtErrors": [],
+  "desktop": true,
+  "mobile": true,
+  "keyboard": true
+}

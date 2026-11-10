@@ -1,0 +1,31 @@
+{
+  "actorRoles": [
+    "customer",
+    "customer",
+    "technician",
+    "technician",
+    "moderator",
+    "superadmin"
+  ],
+  "externalMail": false,
+  "checks": [
+    "JWT customer/technician isolation, moderator/admin history and address scope",
+    "no generic job UPDATE, financial overposting or frontend pilot activation",
+    "default disabled blocks prepare/start/finalization; invalid timezone rejected",
+    "coordination, replay, self confirmation forbidden and reschedule version",
+    "start/progress/report and network replay; only customer confirms; never paid",
+    "prestart cancellation blocks coordination and moderator cancels without refunds",
+    "sensitive poststart cancellation stays pending without commercial policy",
+    "concurrent cancellation versus start produces one transition and PT409",
+    "concurrent completion versus incident preserves history",
+    "claim/information/response/observation/resolution keeps financial states separate",
+    "account suspension blocks old JWT and cannot elevate moderator",
+    "transactional outbox has no replay duplicates; capture worker has no external mail"
+  ],
+  "status": "PASS integración",
+  "workerChecks": [
+    "two concurrent service workers claim distinct notices",
+    "lease fencing and rejection of unverified delivery; capture replay is idempotent",
+    "unavailable adapter records retry without external mail"
+  ]
+}
