@@ -23,6 +23,42 @@ export async function runPaymentTests({admin,actors,server,clients,check,call,cu
  // attempt first push every other one out of the way (test isolation only; no production behaviour is relaxed).
  const isolate=id=>admin.query("update private.payment_attempts set next_check_at=now()+interval '1 day' where id<>$1",[id]);
  let flow=7000;const T_of=p=>p.total_clp;
+ // Sandbox payments exist only for explicitly authorized synthetic accounts (database-enforced). The suite's customer is one; customerB deliberately is not.
+ await check('S05 Sandbox allowlist: only a superadmin authorizes synthetic accounts; a non-authorized customer cannot prepare; revocation takes effect immediately',async()=>{
+  const j0=await newJob();const v0=await current();
+  await assert.rejects(()=>call('customerA','select public.payment_prepare($1,null,$2,true,$3) value',[j0,v0,randomUUID()]),{code:'42501'});
+  assert.equal((await admin.query('select count(*)::int n from private.payment_orders where job_id=$1',[j0])).rows[0].n,0);
+  assert.equal((await call('customerA','select public.job_payments($1) value',[j0])).sandbox_enabled,false);
+  for(const label of['customerA','moderator',tech])await assert.rejects(()=>call(label,'select public.payment_sandbox_account_set($1,true,$2) value',[actors.customerA.id,'Intento sin permiso de superadmin']),{code:'42501'});
+  await assert.rejects(()=>call('admin','select public.payment_sandbox_account_set($1,true,$2) value',[actors.customerA.id,'corto']),{code:'22023'});
+  await assert.rejects(()=>call('admin','select public.payment_sandbox_account_set($1,true,$2) value',[randomUUID(),'Cuenta inexistente para la prueba']),{code:'22023'});
+  await admin.query("update auth.users set email='real.person@example.com' where id=$1",[actors.customerB.id]);
+  await assert.rejects(()=>call('admin','select public.payment_sandbox_account_set($1,true,$2) value',[actors.customerB.id,'Correo enrutable, no sintético']),{code:'PT409'});
+  await admin.query("update auth.users set email='customerB@local.invalid' where id=$1",[actors.customerB.id]);
+  assert.equal((await call('admin','select public.payment_sandbox_account_set($1,true,$2) value',[actors.customerA.id,'Cuenta sintética de la suite S05'])).enabled,true);
+  assert.equal((await call('customerA','select public.job_payments($1) value',[j0])).sandbox_enabled,true);
+  assert.equal(((await call('moderator','select public.payment_admin_overview() value')).sandbox_accounts).some(a=>a.user_id===actors.customerA.id&&a.active),true);
+  // Revocation is immediate; an authorized account whose email stops being synthetic loses access too (defence in depth).
+  await call('admin','select public.payment_sandbox_account_set($1,false,$2) value',[actors.customerA.id,'Revocación de prueba de la suite S05']);
+  await assert.rejects(()=>call('customerA','select public.payment_prepare($1,null,$2,true,$3) value',[j0,v0,randomUUID()]),{code:'42501'});
+  await call('admin','select public.payment_sandbox_account_set($1,true,$2) value',[actors.customerA.id,'Reautorización de la suite S05']);
+  await admin.query("update auth.users set email='customerA@example.com' where id=$1",[actors.customerA.id]);
+  await assert.rejects(()=>call('customerA','select public.payment_prepare($1,null,$2,true,$3) value',[j0,v0,randomUUID()]),{code:'42501'});
+  await admin.query("update auth.users set email='customerA@local.invalid' where id=$1",[actors.customerA.id]);
+  assert.ok((await call('customerA','select public.payment_prepare($1,null,$2,true,$3) value',[j0,v0,randomUUID()])).order_id);
+ });
+ await check('S05 Sandbox allowlist is re-checked before reserving (worker) and before reopening a checkout: a revoked customer cannot reach Flow',async()=>{
+  const j=await newJob();await schedule(j);const p=await prepare('customerA',j);
+  await call('admin','select public.payment_sandbox_account_set($1,false,$2) value',[actors.customerA.id,'Revocación entre prepare y reserva']);
+  await assert.rejects(()=>wcall(w,'select public.payment_attempt_begin_create($1) value',[p.attempt_id]),{code:'PT409'});
+  assert.equal((await admin.query('select state from private.payment_attempts where id=$1',[p.attempt_id])).rows[0].state,'prepared');   // never reserved, so never sent to Flow
+  await call('admin','select public.payment_sandbox_account_set($1,true,$2) value',[actors.customerA.id,'Reautorización tras la prueba de reserva']);
+  await checkout(p,++flow);
+  await call('admin','select public.payment_sandbox_account_set($1,false,$2) value',[actors.customerA.id,'Revocación antes de reabrir el checkout']);
+  await assert.rejects(()=>wcall(w,'select public.payment_attempt_checkout($1,$2) value',[p.attempt_id,actors.customerA.id]),{code:'PT409'});
+  await call('admin','select public.payment_sandbox_account_set($1,true,$2) value',[actors.customerA.id,'Reautorización final de la prueba']);
+  assert.ok((await wcall(w,'select public.payment_attempt_checkout($1,$2) value',[p.attempt_id,actors.customerA.id])).ciphertext);
+ });
 
  await check('S05 fee policy: 5 % seeded, versioned superadmin edit, moderator denied, invalid input rejected',async()=>{
   assert.deepEqual(await call('customerA','select public.payment_policy_current() value'),{version:1,fee_basis_points:500});

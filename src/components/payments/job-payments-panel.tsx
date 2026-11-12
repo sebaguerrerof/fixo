@@ -47,9 +47,11 @@ function Order({ order, label, role, jobId, canPay }: { readonly order: JobPayme
 export async function JobPaymentsPanel({ jobId, jobStatus, role, snapshotPriceClp }: Props) {
   const loaded = await loadJobPayments(jobId);
   if (loaded.status === "unavailable") return <Card><CardHeader><CardTitle>Pagos</CardTitle></CardHeader><CardContent className="space-y-2"><p className="font-semibold">Pagos no disponibles</p><p className="text-sm text-muted-foreground">No pudimos cargar el estado de los pagos. No se asume que haya o no deudas. La adjudicación y el cierre operacional no acreditan un cobro.</p></CardContent></Card>;
-  const view: JobPaymentsView = loaded.view, initial = initialOrder(view), canPay = jobAcceptsNewPayments(jobStatus), preview = previewTerms(snapshotPriceClp, view.policy);
+  // Sandbox payments exist only for authorized synthetic accounts: everyone else sees nothing (no breakdown, no button) unless an order already exists (history).
+  if (!loaded.view.sandboxEnabled && loaded.view.orders.length === 0 && loaded.view.extras.length === 0) return null;
+  const view: JobPaymentsView = loaded.view, initial = initialOrder(view), acceptsPayments = jobAcceptsNewPayments(jobStatus), canPay = view.sandboxEnabled && acceptsPayments, preview = previewTerms(snapshotPriceClp, view.policy);
   // UI hint only: the DB requires the assigned enabled professional, paid initial payment, a live job and fewer than 3 pending proposals.
-  const canPropose = canPay && view.paymentState === "paid" && ["scheduled", "ready", "in_progress", "completion_reported"].includes(jobStatus) && view.extras.filter((x) => x.state === "proposed").length < 3;
+  const canPropose = acceptsPayments && view.paymentState === "paid" && ["scheduled", "ready", "in_progress", "completion_reported"].includes(jobStatus) && view.extras.filter((x) => x.state === "proposed").length < 3;
   return <Card><CardHeader><CardTitle>Pagos (Sandbox)</CardTitle></CardHeader><CardContent className="space-y-4 break-words">
     <p className="rounded-lg bg-muted p-3 text-sm">Entorno de prueba: no se realizan cobros reales. Sólo una verificación autenticada con el proveedor acredita un pago; volver desde el checkout no lo confirma.</p>
     {initial ? <Order order={initial} label="Pago inicial" role={role} jobId={jobId} canPay={canPay} />

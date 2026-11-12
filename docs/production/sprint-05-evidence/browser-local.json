@@ -3,6 +3,7 @@
   "checks": [
     "unauthenticated users are sent to login from every payment screen",
     "customer: Q/F/T breakdown, explicit consent by keyboard, and an unavailable service never looks like a payment",
+    "a customer who is NOT authorized for Sandbox sees no payment panel and no pay button; revoking mirrors immediately; the database refuses a forged attempt",
     "customer list shows the initial payment state per job",
     "technician: sees only the assigned amount Q, no fee/total, no pay controls; payments page says assigned, not transferred",
     "a customer who is not a participant sees a not-found screen with no financial data",

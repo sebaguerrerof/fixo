@@ -9,7 +9,10 @@ export interface PendingAttemptView {
   readonly errorCode: string | null;
 }
 export interface PaymentReviewView { readonly orderId: string; readonly jobId: string; readonly reason: string; readonly status: string; readonly updatedAt: string }
+export interface SandboxAccountView { readonly userId: string; readonly name: string; readonly reason: string; readonly authorizedAt: string; readonly revokedAt: string | null; readonly active: boolean }
 export interface PaymentAdminOverview {
   readonly policy: FeePolicyVersion | null; readonly history: readonly FeePolicyVersion[];
   readonly pending: readonly PendingAttemptView[]; readonly reviews: readonly PaymentReviewView[]; readonly quarantinedInbox: number;
+  /** Synthetic accounts authorized to use Sandbox payments (read-only list; authorization is a superadmin RPC). */
+  readonly sandboxAccounts: readonly SandboxAccountView[];
 }

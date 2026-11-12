@@ -68,6 +68,7 @@ export function mapAdminOverview(value: unknown): PaymentAdminOverview {
       lastCheckedAt: nullableString(a.last_checked_at), nextCheckAt: nullableString(a.next_check_at), checkCount: asNumber(a.check_count), errorCode: nullableString(a.error_code) })),
     reviews: asRecords(r.reviews).map((o) => ({ orderId: asString(o.order_id), jobId: asString(o.job_id), reason: asString(o.reason), status: asString(o.status), updatedAt: asString(o.updated_at) })),
     quarantinedInbox: asNumber(r.quarantined_inbox),
+    sandboxAccounts: asRecords(r.sandbox_accounts).map((a) => ({ userId: asString(a.user_id), name: asString(a.name), reason: asString(a.reason), authorizedAt: asString(a.authorized_at), revokedAt: nullableString(a.revoked_at), active: a.active === true })),
   };
 }
 
@@ -77,7 +78,7 @@ const nullableString = (v: unknown): string | null => (typeof v === "string" ? v
 export function mapJobPayments(value: unknown): JobPaymentsView {
   const r = asRecord(value), policy = asRecord(r.policy);
   return {
-    jobId: asString(r.job_id), paymentState: parseJobPaymentState(r.payment_state), environment: "sandbox",
+    jobId: asString(r.job_id), paymentState: parseJobPaymentState(r.payment_state), environment: "sandbox", sandboxEnabled: r.sandbox_enabled === true,
     policy: typeof policy.version === "number" ? { version: policy.version, feeBasisPoints: asNumber(policy.fee_basis_points) } : null,
     unpaidExtras: r.unpaid_extras === true,
     orders: asRecords(r.orders).map((o) => ({

@@ -95,6 +95,8 @@ try {
   await db.query('update private.technician_applications set approved_fingerprint=private.professional_fingerprint(technician_id) where technician_id=$1', [actors.technician.id]);
   await db.query("update public.technician_profiles set status='active' where user_id=$1", [actors.technician.id]);
 
+  // Sandbox payments are limited to authorized SYNTHETIC accounts (database-enforced, mirrored in the UI): authorize only the customer used for payments.
+  await db.query("insert into private.payment_sandbox_accounts(user_id,authorized_by,reason) values($1,$2,'Cuenta sintética de la prueba de navegador local')", [actors.customer.id, actors.superadmin.id]);
   const jobA = await newJob(), jobB = await newJob();               // A: awarded, nothing paid. B: initial payment verified, scheduled.
   await payInitial(jobB); await db.query("update public.jobs set status='scheduled',revision=revision+1 where id=$1", [jobB]);
 
@@ -125,12 +127,28 @@ try {
     assert.ok(page.url().includes(jobA) && !page.url().includes('token'));
   });
 
+  await check('a customer who is NOT authorized for Sandbox sees no payment panel and no pay button; revoking mirrors immediately; the database refuses a forged attempt', async () => {
+    await db.query('update private.payment_sandbox_accounts set revoked_at=now(),revoked_by=authorized_by where user_id=$1', [actors.customer.id]);
+    const step = m => console.log('      · ' + m);
+    try {
+      step('revoked: loading job page'); await show(customer, `/cliente/trabajos/${jobA}`); step('loaded');
+      assert.equal(await page.getByRole('button', { name: /Pagar/ }).count(), 0); assert.equal(await page.getByText('Pagos (Sandbox)').count(), 0); assert.equal(await page.getByText('Total a pagar').count(), 0);
+      const policy = (await db.query('select max(version)::int v from private.payment_pricing_policies')).rows[0].v;
+      step('forged prepare'); await assert.rejects(() => rpc('customer', 'payment_prepare', { target_job: jobA, target_extra: null, expected_policy_version: policy, consent: true, idempotency_key: randomUUID() }));
+      assert.equal((await db.query('select count(*)::int n from private.payment_orders where job_id=$1', [jobA])).rows[0].n, 0);
+    } finally { await db.query('update private.payment_sandbox_accounts set revoked_at=null,revoked_by=null where user_id=$1', [actors.customer.id]); }
+    step('restored: loading job page'); await show(customer, `/cliente/trabajos/${jobA}`); await expect(page.getByText('Pagos (Sandbox)')).toBeVisible();
+  });
+
   await check('customer list shows the initial payment state per job', async () => {
     await show(customer, '/cliente/trabajos'); const t = await text(); assert.match(t, /Pago inicial pendiente/); assert.match(t, /Pago inicial verificado/);
   });
 
   await check('technician: sees only the assigned amount Q, no fee/total, no pay controls; payments page says assigned, not transferred', async () => {
-    await login(tech, 'technician'); await show(tech, `/tecnico/trabajos/${jobA}`);
+    await login(tech, 'technician');
+    await show(tech, `/tecnico/trabajos/${jobA}`);                     // no order and the technician is not authorized: the Sandbox panel is simply absent
+    assert.equal(await page.getByText('Pagos (Sandbox)').count(), 0); assert.equal(await page.getByRole('button', { name: /Pagar/ }).count(), 0);
+    await show(tech, `/tecnico/trabajos/${jobB}`);                     // paid job: the history is visible, with Q only
     await expect(page.getByText('Importe asignado al profesional (Q)')).toBeVisible();
     const t = await text(); assert.ok(!/Comisión Fixo/.test(t) && !/26\.250/.test(t), 'technician sees F/T'); assert.equal(await page.getByRole('button', { name: /Pagar/ }).count(), 0);
     await show(tech, '/tecnico/pagos'); const p = await text();

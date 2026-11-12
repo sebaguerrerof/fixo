@@ -26,6 +26,8 @@ export interface JobPaymentOrderView {
 export interface JobExtraChargeView { readonly id: string; readonly concept: string; readonly amountClp: number; readonly state: ExtraChargeState; readonly createdAt: string }
 export interface JobPaymentsView {
   readonly jobId: string; readonly paymentState: JobPaymentState; readonly environment: "sandbox";
+  /** Mirror of the database allowlist: only authorized synthetic accounts may use Sandbox payments. Fails closed; the database decides. */
+  readonly sandboxEnabled: boolean;
   readonly policy: { readonly version: number; readonly feeBasisPoints: number } | null;
   readonly unpaidExtras: boolean; readonly orders: readonly JobPaymentOrderView[]; readonly extras: readonly JobExtraChargeView[];
 }

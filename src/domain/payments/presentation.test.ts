@@ -4,7 +4,7 @@ import type { JobPaymentOrderView, JobPaymentsView } from "@/domain/entities/job
 
 const order = (over: Partial<JobPaymentOrderView> = {}): JobPaymentOrderView => ({ id: "o", origin: "initial", extraChargeId: null, status: "awaiting_payment", review: false, policyVersion: 1, professionalAmountClp: 100000, platformFeeClp: 5000, totalClp: 105000,
   paidAt: null, createdAt: "", latestAttemptState: null, latestAttemptId: null, flowCostClp: null, reviewReason: null, marginStatus: null, platformMarginClp: null, simulatedSettlementClp: null, ...over });
-const view = (orders: JobPaymentOrderView[]): JobPaymentsView => ({ jobId: "j", paymentState: "not_enabled", environment: "sandbox", policy: { version: 1, feeBasisPoints: 500 }, unpaidExtras: false, orders, extras: [] });
+const view = (orders: JobPaymentOrderView[]): JobPaymentsView => ({ jobId: "j", paymentState: "not_enabled", environment: "sandbox", sandboxEnabled: true, policy: { version: 1, feeBasisPoints: 500 }, unpaidExtras: false, orders, extras: [] });
 
 describe("payment presentation", () => {
   it("approved example: Q 100.000 -> F 5.000 -> T 105.000, professional keeps Q", () => {

@@ -64,6 +64,8 @@ describe.skipIf(!enabled)("payments through real PostgREST with the real reposit
     expect((await db.query("select count(*)::int n from auth.users where email not like 's05-%@local.invalid'")).rows[0].n, "instancia con usuarios ajenos").toBe(0);
     for (const [l, t] of [["customerA", "customer"], ["customerB", "customer"], ["technicianA", "technician"], ["admin", "customer"]] as const) await makeActor(l, t);
     await db.query("update public.profiles set role='superadmin' where id=$1", [actors.admin.id]);
+    // Sandbox payments need an authorized synthetic account (database-enforced): authorize the suite's customer through the real superadmin RPC.
+    await rpc("admin", "payment_sandbox_account_set", { target_user: actors.customerA.id, enabled: true, change_reason: "Cuenta sintética de la prueba de integración local" });
     await (db.query(`insert into private.category_requirements(category_id,requirement_key,version,kind,required,document_type,description,created_by)
       values('gasfiteria',$2,1,'internal',false,'other','Synthetic test criterion',$1) returning id`, [actors.admin.id, `s05-${randomUUID().slice(0, 8)}`]));
     await db.query("update private.technician_applications set state='approved',primary_category='gasfiteria',requirement_snapshot=array(select id from private.category_requirements where active and category_id='gasfiteria' order by id),consent_at=now() where technician_id=$1", [actors.technicianA.id]);

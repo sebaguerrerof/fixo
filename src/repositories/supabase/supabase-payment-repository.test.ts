@@ -91,6 +91,10 @@ describe("job payments read model and extra response (Sprint 05 stage 5)", () =>
     expect(view.paymentState).toBe("not_enabled"); expect(view.unpaidExtras).toBe(true);
     expect(view.orders[0]).toMatchObject({ policyVersion: 4, platformFeeClp: null, totalClp: null, latestAttemptId: null, flowCostClp: null, simulatedSettlementClp: 100000, professionalAmountClp: 100000 });
     expect(view.extras[0]).toMatchObject({ amountClp: 20000, state: "proposed" });
+    // The Sandbox allowlist mirror fails closed: anything other than an explicit true is "not authorized".
+    expect(mapJobPayments({}).sandboxEnabled).toBe(false); expect(mapJobPayments({ sandbox_enabled: "true" }).sandboxEnabled).toBe(false); expect(mapJobPayments({ sandbox_enabled: true }).sandboxEnabled).toBe(true);
+    const acc = mapAdminOverview({ sandbox_accounts: [{ user_id: "u1", name: "Cuenta S", reason: "Prueba", authorized_at: "t", revoked_at: null, active: true }, { user_id: "u2", active: "yes" }] }).sandboxAccounts;
+    expect(acc[0]).toEqual({ userId: "u1", name: "Cuenta S", reason: "Prueba", authorizedAt: "t", revokedAt: null, active: true }); expect(acc[1].active).toBe(false);
     expect(mapJobPayments({}).policy).toBeNull(); expect(mapJobPayments({ orders: "x" }).orders).toEqual([]);
   });
 });
@@ -119,6 +123,6 @@ describe("administrative RPCs (Sprint 05 stage 5, step C)", () => {
       reviews: [{ order_id: "o", job_id: "j", reason: "duplicate_payment", status: "paid", updated_at: "u" }], quarantined_inbox: 3 });
     expect(o.history).toHaveLength(2); expect(o.history[1].authorName).toBeNull(); expect(o.pending[0]).toMatchObject({ costPending: true, exhausted: true, lastCheckedAt: null, checkCount: 10 });
     expect(o.reviews[0].reason).toBe("duplicate_payment"); expect(o.quarantinedInbox).toBe(3);
-    expect(mapAdminOverview(null)).toEqual({ policy: null, history: [], pending: [], reviews: [], quarantinedInbox: 0 });
+    expect(mapAdminOverview(null)).toEqual({ policy: null, history: [], pending: [], reviews: [], quarantinedInbox: 0, sandboxAccounts: [] });
   });
 });

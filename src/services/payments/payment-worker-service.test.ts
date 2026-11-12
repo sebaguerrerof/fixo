@@ -164,4 +164,17 @@ describe("payments worker endpoint", () => {
     const ok = await handleWorkerRun(req(`Bearer ${secret}`), secret, () => setup().deps); expect(ok.status).toBe(200); expect(await ok.json()).toEqual({ inbox: 0, attempts: 0, quarantined: 0, retried: 0, failures: 0, cleaned: 0, purged: 0, housekeepingFailures: 0 });
     const bad = await handleWorkerRun(req(`Bearer ${secret}`), secret, () => { throw new Error("secret detail"); }); expect(bad.status).toBe(503); expect(await bad.text()).not.toContain("secret detail");
   });
+  it("emits one JSON log line per run (counters / error class only) and never leaks the secret, the bearer header or error messages", async () => {
+    const spy = vi.spyOn(console, "info").mockImplementation(() => {});
+    try {
+      await handleWorkerRun(req(`Bearer ${secret}`), secret, () => setup().deps);
+      await handleWorkerRun(req(`Bearer ${secret}`), secret, () => { throw new Error("secret detail token=abc"); });
+      await handleWorkerRun(req("Bearer wrong-value"), secret, () => setup().deps);
+      const lines = spy.mock.calls.map((c) => String(c[0])); expect(lines).toHaveLength(3);
+      const [run, err, rej] = lines.map((l) => JSON.parse(l));
+      expect(run).toMatchObject({ event: "payments_worker_run", status: 200, inbox: 0, housekeepingFailures: 0 }); expect(typeof run.ms).toBe("number");
+      expect(err).toMatchObject({ event: "payments_worker_error", status: 503, error: "Error" }); expect(rej).toMatchObject({ event: "payments_worker_rejected", status: 401 });
+      const all = lines.join(" | "); for (const forbidden of [secret, "wrong-value", "secret detail", "token=abc", "Bearer"]) expect(all).not.toContain(forbidden);
+    } finally { spy.mockRestore(); }
+  });
 });

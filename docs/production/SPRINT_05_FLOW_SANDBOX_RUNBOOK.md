@@ -1,6 +1,6 @@
 # Flow Sandbox — runbook operativo (Sprint 05)
 
-Estado: **nada habilitado**. Flow, la creación de cobros y la recepción de notificaciones están apagados por defecto. Este runbook describe cómo operar el modelo cuando el propietario autorice un destino aislado. Producción, push, deploy, cobros reales y migraciones remotas quedan fuera de alcance. Existen **tres** migraciones de pagos, en este orden: 1) `20261110140000_flow_sandbox_payments.sql`, 2) `20261111120000_payment_rate_limits.sql`, 3) `20261111130000_payment_sensitive_retention.sql` (RPC de purga; sin ella no hay retención de tokens). **Ninguna se ha aplicado en una base remota.**
+Estado: **nada habilitado**. Flow, la creación de cobros y la recepción de notificaciones están apagados por defecto. Este runbook describe cómo operar el modelo. El propietario autorizó el 2026-11-12 usar el proyecto Fixo `rjzy…` y `www.soyfixo.cl` (migraciones, push y deploy de las tres primeras migraciones y del código de ese día, con los pagos apagados); **cada fase posterior (cuarta migración, cron, pruebas remotas) exige una aprobación propia**. Los cobros reales no existen: Flow está fijado a Sandbox. Existen **cuatro** migraciones de pagos, en este orden: 1) `20261110140000_flow_sandbox_payments.sql`, 2) `20261111120000_payment_rate_limits.sql`, 3) `20261111130000_payment_sensitive_retention.sql` (RPC de purga), 4) `20261112090000_payment_sandbox_accounts.sql` (allowlist de cuentas Sandbox; **pendiente de aplicar en producción**). Las tres primeras ya están aplicadas en `rjzy…`; la cuarta sólo existe en el repositorio local.
 
 ## 0. Preflight (antes de habilitar nada)
 
@@ -12,7 +12,8 @@ select to_regprocedure('public.payment_prepare(uuid,uuid,integer,boolean,uuid)')
        to_regprocedure('public.payment_purge_sensitive(integer)') is not null                 as retention_migration,
        has_function_privilege('service_role','public.payment_purge_sensitive(integer)','EXECUTE')
          and not has_function_privilege('authenticated','public.payment_purge_sensitive(integer)','EXECUTE') as retention_privileges,
-       exists(select 1 from pg_trigger where tgname='a_job_cancellation_payment_review')      as cancellation_review_trigger;
+       exists(select 1 from pg_trigger where tgname='a_job_cancellation_payment_review')      as cancellation_review_trigger,
+       to_regprocedure('public.payment_sandbox_account_set(uuid,boolean,text)') is not null   as sandbox_allowlist_migration;
 ```
 
 Después, una pasada del worker (`POST /api/payments/worker`, aun con las notificaciones apagadas) debe responder con `"housekeepingFailures":0`; un valor mayor indica una RPC ausente o un fallo de la base y **no** debe ignorarse (el worker no se detiene por ello).
@@ -45,15 +46,22 @@ Cualquier otro valor equivale a apagado. Con la creación apagada la acción res
 - **Clave de tokens:** el ciphertext guarda `key_id`. Para rotar, introducir un `FIXO_PAYMENT_TOKEN_KEY_ID` nuevo; **la implementación actual lee una sola clave**, por lo que rotar mientras hay bandeja/intentos con tokens cifrados con la clave anterior los dejaría indescifrables (el worker los pondría en cuarentena `token_undecryptable`). Rotar sólo con la bandeja vacía y sin intentos `pending`, o con autorización para extender el código a varias claves. **Pendiente conocido.**
 - **`FIXO_PAYMENTS_WORKER_SECRET`:** actualizar en el secret manager y en el programador a la vez.
 
-## 3. Quién ejecuta el worker (DECISIÓN DEL PROPIETARIO PENDIENTE, PLAN §4)
+## 3. Ejecutor del worker: Supabase Cron (decisión del propietario, 2026-11-12)
 
-El procesamiento es `runPaymentWorkerBatch` (lote acotado de 20 por fase). Está expuesto como `POST /api/payments/worker` con Bearer. Opciones:
-- **A. Programador externo (Vercel Cron u otro) que invoque la ruta.** No existe `vercel.json` ni cron: no se añadió nada. Requiere que la ruta sea alcanzable y el secreto en el programador.
-- **B. Runner `.mjs` supervisado** como `scripts/notification-worker.mjs` (host independiente de Vercel). No existe aún.
+**Decisión:** `pg_cron` de Supabase (cada minuto) llama con `pg_net` al endpoint protegido `POST /api/payments/worker` de Vercel, que ejecuta el worker existente (`runPaymentWorkerBatch`, lote acotado de 20 por fase). **No** se usa Vercel Cron Hobby y no existe `vercel.json`.
 
-Hasta decidir, el worker no corre. Un pago aprobado en Flow **no se reflejará en Fixo** mientras no corra el worker o la conciliación: la verificación autenticada es la única que acredita el pago.
+**Disponibilidad:** en el proyecto Fixo (`rjzy…`) `pg_cron 1.6.4` y `pg_net 0.20.4` figuran como extensiones disponibles (aún **no instaladas**) y `supabase_vault 0.3.1` ya está instalada (consulta de catálogo, sólo lectura). Los límites exactos del plan Free no se pueden consultar por CLI; el intervalo de un minuto es el mínimo de la sintaxis estándar y la carga es de una petición HTTP por minuto.
 
-Frecuencia sugerida (no implementada como configuración): cada 30–60 s con trabajo; la propia BD aplica backoff.
+**Piezas (todo fuera de `supabase/migrations`, porque habilita extensiones y un calendario por entorno):**
+- `supabase/ops/payments-worker-cron.sql` (idempotente): extensiones, tabla `private.payment_worker_ticks`, `private.payment_worker_tick()`, `private.payment_worker_health()` y `cron.schedule('fixo-payments-worker','* * * * *',…)`.
+- `supabase/ops/payments-worker-cron-rollback.sql`: `cron.unschedule`; no borra datos, funciones ni secretos.
+- **Secretos sólo en Supabase Vault:** `fixo_payments_worker_url` (`https://www.soyfixo.cl/api/payments/worker`) y `fixo_payments_worker_secret` (el mismo valor que `FIXO_PAYMENTS_WORKER_SECRET` de Vercel). El texto del cron y el registro de ticks no contienen el secreto; una configuración ausente, un secreto < 32 caracteres o una URL fuera del patrón estricto (https, ruta exacta; http sólo a loopback para pruebas) **no envía nada** (falla cerrado).
+- **Autenticación:** Bearer con comparación en tiempo constante; sin credencial 401.
+- **Idempotencia y reintentos:** viven en la BD/worker (leases, fencing, `SKIP LOCKED`, backoff exponencial por elemento). Un tick perdido, repetido o solapado es inocuo; el siguiente minuto es el reintento. `maxDuration=30 s` en la ruta y `timeout_milliseconds=25000` en `pg_net`.
+- **Logs:** el endpoint emite una línea JSON por ejecución (`payments_worker_run|error|rejected`, estado, ms y contadores; sólo la *clase* del error; nunca secretos, tokens, URLs ni datos de usuario). `private.payment_worker_health()` (consulta SQL por un administrador de la base) resume los últimos 15 min: `ok_15m`, `failed_15m`, `unanswered_15m`, `last_status`, `last_summary` (contadores) y `degraded` (alguna de las 5 últimas peticiones no fue 200).
+- **Prueba local:** `node scripts/test-payments-worker-cron.mjs` (pg_cron/pg_net reales del Supabase local contra un servidor HTTP local; 5 checks).
+
+**Activación (requiere aprobación explícita del propietario, no se hace sola):** (1) desplegar el código con el endpoint endurecido; (2) crear los dos secretos en Vault; (3) aplicar `payments-worker-cron.sql`; (4) comprobar `private.payment_worker_health()` (`ok_15m ≥ 1`, `degraded=false`). Con las notificaciones apagadas el tick sólo hace mantenimiento (limpieza de límites y retención). Un pago aprobado en Flow **no se refleja** en Fixo sin el worker: la verificación autenticada es la única que acredita el pago.
 
 ## 4. Qué hace una pasada
 
@@ -96,27 +104,44 @@ Un superadmin puede pedir "Reconsultar coste Flow" (`payment_request_reconciliat
 
 `payment_enable_sandbox_job(job, window_hours, reason)` (superadmin) abre una ventana acotada en la que el trabajo exige pago inicial verificado para iniciar y los importes aceptados pagados para cerrar. Sin ella la compuerta está deshabilitada aunque haya pagos.
 
-## 9. Procedimiento de pruebas Sandbox (cuando se autorice)
+### Cuentas autorizadas para pagos Sandbox (migración `20261112090000_payment_sandbox_accounts.sql`)
+Los pagos Sandbox sólo existen para **cuentas sintéticas autorizadas**, además de los interruptores globales y de la ventana por trabajo:
+- Autoriza/revoca únicamente un **superadmin** con `payment_sandbox_account_set(usuario, habilitar, motivo)`. Sólo se acepta una cuenta cuyo correo de Auth termina en `.invalid` (TLD reservado, sin buzón real); un correo enrutable se rechaza (PT409) y una cuenta autorizada cuyo correo deja de ser `.invalid` pierde el acceso.
+- **Backend (fuente de verdad):** `payment_prepare` (antes de crear orden), `payment_attempt_begin_create` (antes de cualquier llamada a Flow) y `payment_attempt_checkout` (reapertura) exigen la cuenta autorizada y vigente (42501/PT409). Un cliente real no puede preparar, reservar ni reabrir un pago aunque forje la petición y aunque los interruptores estén encendidos.
+- **Frontend (espejo):** `job_payments` devuelve `sandbox_enabled`; quien no está autorizado y no tiene órdenes **no ve el panel de pagos ni el botón** (si ya existe una orden conserva su historial sin botón). Falla cerrado (`!== true` ⇒ no autorizado). `/admin/configuracion` lista las cuentas autorizadas (sólo lectura).
+- Sin cuentas autorizadas, los pagos Sandbox no están disponibles para nadie. Los cobros reales no existen: la API de Flow está fijada a Sandbox.
 
-Prerrequisitos: proyecto Supabase **aislado y autorizado**, las tres migraciones aplicadas por el propietario en orden (§0 Preflight), credenciales Sandbox, origen HTTPS alcanzable por Flow, cuentas sintéticas. Pasos mínimos, registrando para cada uno evidencia sanitizada (estados e identificadores truncados, nunca tokens ni PII):
-1. Pago inicial aprobado; con callback y **sin** callback (sólo conciliación).
-2. Pendiente, rechazado y anulado.
-3. Callback antes y después del retorno; retorno sin sesión y actualización posterior.
-4. Token falso/desconocido, repetición, cambio de estado para el mismo token.
-5. Pérdida de respuesta y caída del worker (reinicio y recuperación por referencia).
-6. Pago tardío y posible duplicado.
-7. Adicional aceptado: saldo pendiente visible antes del cierre y pago posterior.
-Casos adversos que Sandbox no permita provocar se prueban con integración controlada y se declaran como tales (no acreditan escenarios reales).
+## 9. Protocolo de pruebas Sandbox en el proyecto de producción (con aprobaciones por fase)
 
-## 10. Limpieza de fixtures
+Contexto autorizado por el propietario: se usa el proyecto Fixo `rjzy…` y `www.soyfixo.cl`, **sin exponer la función a clientes reales** (allowlist de cuentas `.invalid`), sin cobros reales y sin tocar usuarios existentes. Cada fase remota pide aprobación expresa antes de ejecutarse:
 
-Sólo por manifiesto exacto de IDs creados por la prueba (usuarios `s05-*@local.invalid` o los designados). No borrar por prefijo general. Las órdenes/eventos financieros **no se borran** en una base con datos reales; en bases aisladas descartables se prefiere recrear el proyecto/`db reset` local. Antes de eliminar un destino aislado, exportar la evidencia sanitizada.
+0. **Preflight de sólo lectura** (§0) y estado de usuarios (`auth.users` con sólo los originales).
+1. **Aprobación A — migración + despliegue:** aplicar `20261112090000` y desplegar el código (allowlist + endpoint con logs). Verificar con lectura que nadie está autorizado.
+2. **Aprobación B — cron:** crear secretos en Vault, aplicar `payments-worker-cron.sql`, comprobar salud (§3).
+3. **Aprobación C — pruebas remotas:** crear con la Admin API **cuentas sintéticas nuevas** (`s05-flow-<run>-*@sandbox.fixo.invalid`: superadmin, cliente, técnico) y escribir el **manifiesto** (`docs/production/sprint-05-evidence/flow-sandbox-manifest.json`: UUID de usuarios, solicitudes, cotizaciones, trabajos, órdenes, intentos, eventos y objetos, con la hora de cada creación). Autorizar sólo al cliente sintético, habilitar el trabajo con ventana de 2 h y encender **temporalmente** `FIXO_PAYMENTS_CREATION_ENABLED` y `FIXO_PAYMENTS_NOTIFICATIONS_ENABLED` (el allowlist impide que un cliente real vea o use la función). Matriz, registrando evidencia sanitizada (estados e identificadores truncados, nunca tokens ni PII):
+   1. Pago inicial aprobado, con callback y **sin** callback (sólo conciliación).
+   2. Pendiente, rechazado y anulado.
+   3. Callback antes y después del retorno; retorno sin sesión y actualización posterior.
+   4. Token falso/desconocido, repetición, cambio de estado para el mismo token.
+   5. Pérdida de respuesta y caída del worker (apagar el cron un minuto y reanudar).
+   6. Pago tardío y posible duplicado.
+   7. Adicional aceptado: saldo pendiente visible antes del cierre y pago posterior.
+   En cada caso verificar **una sola orden, un solo intento pagado y una sola ejecución del efecto** (sin cobros ni transacciones duplicadas). Los casos que Sandbox no permita provocar se prueban con integración controlada y se declaran como tales.
+4. **Cierre:** apagar los interruptores, dejar el cron hasta resolver pendientes, revocar la autorización y limpiar (§10).
+
+## 10. Limpieza de fixtures por manifiesto
+
+Sólo por manifiesto exacto de IDs (nada por prefijo ni por patrón de correo). Hay una tensión de diseño que debe decidir el propietario antes de la fase C: **los eventos, intentos y órdenes financieros son append-only a propósito** (triggers `PT409` de no-borrado), de modo que una limpieza total en la base de producción requiere deshabilitar esos triggers dentro de una transacción, acotada al manifiesto, con respaldo previo de las filas.
+- **Opción 1 (recomendada):** *retención etiquetada.* Se conservan órdenes, intentos y eventos sintéticos (marcados por el manifiesto), se revoca la autorización, se suspenden las cuentas sintéticas y se retiran blobs/sesiones. Cero riesgo para la integridad financiera; deja filas sintéticas identificables.
+- **Opción 2:** *purga transaccional por manifiesto* (`session_replication_role=replica` o `ALTER TABLE … DISABLE TRIGGER` dentro de una transacción, borrando sólo los UUID del manifiesto en orden inverso de dependencias, con exportación previa y verificación de cero residuos y del estado de los usuarios originales). Es una operación destructiva sobre producción: requiere aprobación separada y se ensaya primero en local contra la misma base de datos del harness.
+Los usuarios originales no se modifican en ningún caso.
 
 ## 11. Pruebas locales de referencia
 
 | Comando | Qué cubre |
 | --- | --- |
-| `npm run db:test` | pgTAP (incluye `06_flow_payments`, 94 aserciones; 254 en total). |
-| `node scripts/test-payments-postgres.mjs` | 66 checks en PostgreSQL embebido (concurrencia, leases, restauración). |
+| `npm run db:test` | pgTAP (incluye `06_flow_payments`, 122 aserciones; 282 en total). |
+| `node scripts/test-payments-postgres.mjs` | 75 checks en PostgreSQL embebido (concurrencia, leases, allowlist, retención, restauración). |
+| `node scripts/test-payments-worker-cron.mjs` | Ejecutor Supabase Cron contra pg_cron/pg_net locales (5 checks; exige `FIXO_PAYMENTS_LOCAL_SUPABASE=isolated-local` y `FIXO_TEST_DB_URL`). |
 | `npm run test` | Vitest (integración PostgREST local con variables `FIXO_PAYMENTS_LOCAL_SUPABASE=isolated-local`, `FIXO_TEST_*`). |
 | `node scripts/test-payments-browser.mjs` | Navegador por rol, sólo local; deja una versión nueva de política → ejecutar `supabase db reset` después. |

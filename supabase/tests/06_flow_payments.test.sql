@@ -4,21 +4,21 @@
 begin;
 set local search_path=public,extensions;
 create extension if not exists pgtap with schema extensions;
-select plan(107);
+select plan(122);
 
 -- ------------------------------------------------------------------ 1. structure and privileges
 select is((select count(*)::int from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='private' and c.relkind='r'
- and c.relname=any(array['payment_pricing_policies','job_extra_charges','payment_orders','payment_attempts','payment_events','payment_inbox','payment_rate_limits'])),7,'financial tables exist in the private schema');
+ and c.relname=any(array['payment_pricing_policies','job_extra_charges','payment_orders','payment_attempts','payment_events','payment_inbox','payment_rate_limits','payment_sandbox_accounts'])),8,'financial tables exist in the private schema');
 select is((select count(*)::int from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='private' and c.relrowsecurity
- and c.relname=any(array['payment_pricing_policies','job_extra_charges','payment_orders','payment_attempts','payment_events','payment_inbox','payment_rate_limits'])),7,'RLS is enabled on every financial table');
-select is((select count(*)::int from unnest(array['payment_pricing_policies','job_extra_charges','payment_orders','payment_attempts','payment_events','payment_inbox','payment_rate_limits']) t
+ and c.relname=any(array['payment_pricing_policies','job_extra_charges','payment_orders','payment_attempts','payment_events','payment_inbox','payment_rate_limits','payment_sandbox_accounts'])),8,'RLS is enabled on every financial table');
+select is((select count(*)::int from unnest(array['payment_pricing_policies','job_extra_charges','payment_orders','payment_attempts','payment_events','payment_inbox','payment_rate_limits','payment_sandbox_accounts']) t
  cross join unnest(array['anon','authenticated','service_role']) r cross join unnest(array['SELECT','INSERT','UPDATE','DELETE']) p
  where has_table_privilege(r,'private.'||t,p)),0,'no role has direct DML or SELECT on any financial table');
 select is((select count(*)::int from unnest(array['payment_policy_current()','payment_policy_set(integer,integer,text)','payment_prepare(uuid,uuid,integer,boolean,uuid)','job_extra_propose(uuid,uuid,text,bigint)',
- 'job_extra_respond(uuid,text,integer,text)','job_payments(uuid)','payment_request_reconciliation(uuid)','payment_admin_overview()','payment_enable_sandbox_job(uuid,integer,text)']) f
- where has_function_privilege('authenticated','public.'||f,'EXECUTE')),9,'authenticated can run the 9 user-facing payment RPCs');
+ 'job_extra_respond(uuid,text,integer,text)','job_payments(uuid)','payment_request_reconciliation(uuid)','payment_admin_overview()','payment_enable_sandbox_job(uuid,integer,text)','payment_sandbox_account_set(uuid,boolean,text)']) f
+ where has_function_privilege('authenticated','public.'||f,'EXECUTE')),10,'authenticated can run the 10 user-facing payment RPCs');
 select is((select count(*)::int from unnest(array['payment_policy_current()','payment_policy_set(integer,integer,text)','payment_prepare(uuid,uuid,integer,boolean,uuid)','job_extra_propose(uuid,uuid,text,bigint)',
- 'job_extra_respond(uuid,text,integer,text)','job_payments(uuid)','payment_request_reconciliation(uuid)','payment_admin_overview()','payment_enable_sandbox_job(uuid,integer,text)']) f
+ 'job_extra_respond(uuid,text,integer,text)','job_payments(uuid)','payment_request_reconciliation(uuid)','payment_admin_overview()','payment_enable_sandbox_job(uuid,integer,text)','payment_sandbox_account_set(uuid,boolean,text)']) f
  cross join unnest(array['anon','service_role']) r where has_function_privilege(r,'public.'||f,'EXECUTE')),0,'anon and the worker cannot run user-facing payment RPCs');
 select is((select count(*)::int from unnest(array['payment_attempt_begin_create(uuid)','payment_attempt_set_checkout(uuid,bigint,bytea,text)','payment_attempt_mark_ambiguous(uuid,text)','payment_attempt_mark_failed(uuid,text)',
  'payment_attempt_checkout(uuid,uuid)','payment_inbox_receive(text,bytea,text)','payment_inbox_claim()','payment_inbox_finish(uuid,uuid,text,integer,text)','payment_attempt_claim_due()',
@@ -42,7 +42,8 @@ insert into auth.users(id,email,email_confirmed_at,raw_user_meta_data)values
  ('95000000-0000-4000-8000-000000000002','s05-tech@local.invalid',now(),'{"first_name":"Synthetic","last_name":"Technician","phone":"+56912345678","terms_accepted":true,"account_type":"technician"}'),
  ('95000000-0000-4000-8000-000000000003','s05-other@local.invalid',now(),'{"first_name":"Synthetic","last_name":"Other","phone":"+56912345678","terms_accepted":true}'),
  ('95000000-0000-4000-8000-000000000004','s05-moderator@local.invalid',now(),'{"first_name":"Synthetic","last_name":"Moderator","phone":"+56912345678","terms_accepted":true}'),
- ('95000000-0000-4000-8000-000000000005','s05-superadmin@local.invalid',now(),'{"first_name":"Synthetic","last_name":"Superadmin","phone":"+56912345678","terms_accepted":true}');
+ ('95000000-0000-4000-8000-000000000005','s05-superadmin@local.invalid',now(),'{"first_name":"Synthetic","last_name":"Superadmin","phone":"+56912345678","terms_accepted":true}'),
+ ('95000000-0000-4000-8000-000000000006','real.customer@example.com',now(),'{"first_name":"Real","last_name":"Looking","phone":"+56912345678","terms_accepted":true}');
 update public.profiles set role='moderator' where id='95000000-0000-4000-8000-000000000004';
 update public.profiles set role='superadmin' where id='95000000-0000-4000-8000-000000000005';
 insert into auth.sessions(id,user_id,created_at,updated_at)select id,id,now(),now() from auth.users where id::text like '95000000-0000-4000-8000-00000000000%';
@@ -62,6 +63,43 @@ insert into public.jobs(id,service_request_id,quote_id,customer_id,technician_id
   '95000000-0000-4000-8000-000000000001','95000000-0000-4000-8000-000000000002','{"priceClp":25000,"currency":"CLP"}'::jsonb from s05_requests;
 select is((select count(*)::int from public.jobs where id in('95000000-0000-4000-8000-000000000012','95000000-0000-4000-8000-000000000022')),2,'fixture: two jobs with frozen snapshots exist');
 select is((select payment_state from public.jobs where id='95000000-0000-4000-8000-000000000012'),'not_enabled','no order yet: payment_state is not_enabled');
+
+-- ------------------------------------------------------------------ 2b. Sandbox payments only for authorized SYNTHETIC accounts
+select throws_ok($$select public.payment_prepare('95000000-0000-4000-8000-000000000012',null,1,true,'95000000-0000-4000-8000-0000000000c1')$$,'42501',null,'a customer who is not authorized cannot prepare a Sandbox payment (no order is created)');
+select is((select count(*)::int from private.payment_orders where job_id='95000000-0000-4000-8000-000000000012'),0,'the rejected preparation left no order');
+select is((select (public.job_payments('95000000-0000-4000-8000-000000000012'))->>'sandbox_enabled'),'false','the read model tells the UI the viewer is not authorized');
+select pg_temp.as_user(4);
+set local role authenticated;
+select throws_ok($$select public.payment_sandbox_account_set('95000000-0000-4000-8000-000000000001',true,'Un moderador no puede autorizar cuentas')$$,'42501',null,'a moderator cannot authorize accounts');
+reset role;
+select pg_temp.as_user(1);
+set local role authenticated;
+select throws_ok($$select public.payment_sandbox_account_set('95000000-0000-4000-8000-000000000001',true,'Un cliente no se autoriza a sí mismo')$$,'42501',null,'a customer cannot authorize themselves');
+reset role;
+select pg_temp.as_user(5);
+set local role authenticated;
+select throws_ok($$select public.payment_sandbox_account_set('95000000-0000-4000-8000-000000000006',true,'Cuenta con correo real, no sintética')$$,'PT409',null,'a routable (non .invalid) email can never be authorized');
+select throws_ok($$select public.payment_sandbox_account_set('95000000-0000-4000-8000-000000000001',true,'corto')$$,'22023',null,'the authorization needs a reason');
+select lives_ok($$select public.payment_sandbox_account_set('95000000-0000-4000-8000-000000000001',true,'Cuenta sintética de la prueba pgTAP S05')$$,'a superadmin authorizes a synthetic account');
+reset role;
+select ok(private.payment_sandbox_account_allowed('95000000-0000-4000-8000-000000000001'),'the synthetic customer is now authorized');
+select ok(not private.payment_sandbox_account_allowed('95000000-0000-4000-8000-000000000006'),'the real-looking account is not');
+select pg_temp.as_user(5);
+set local role authenticated;
+select lives_ok($$select public.payment_sandbox_account_set('95000000-0000-4000-8000-000000000001',false,'Revocación de prueba pgTAP S05')$$,'a superadmin revokes it');
+reset role;
+select ok(not private.payment_sandbox_account_allowed('95000000-0000-4000-8000-000000000001'),'a revoked account is no longer authorized');
+select pg_temp.as_user(1);
+select throws_ok($$select public.payment_prepare('95000000-0000-4000-8000-000000000012',null,1,true,'95000000-0000-4000-8000-0000000000c2')$$,'42501',null,'a revoked account cannot prepare');
+select pg_temp.as_user(5);
+set local role authenticated;
+select lives_ok($$select public.payment_sandbox_account_set('95000000-0000-4000-8000-000000000001',true,'Reautorización de prueba pgTAP S05')$$,'re-authorization restores access');
+reset role;
+select pg_temp.as_user(4);
+set local role authenticated;
+select is((select jsonb_array_length((public.payment_admin_overview())->'sandbox_accounts')),1,'the moderator can read who is authorized (read-only)');
+reset role;
+select pg_temp.as_user(1);
 
 -- ------------------------------------------------------------------ 3. customer: consent, authorization, idempotent preparation
 set local role authenticated;

@@ -18,8 +18,9 @@ Leyenda: **PASS local** = ejecutado hoy en base/servicios locales aislados; **PA
 
 | Área | Resultado | Evidencia |
 | --- | --- | --- |
-| pgTAP (`npm run db:test`, CLI 3.1.0) | **PASS local** 7 archivos / 267 tests (107 en `06_flow_payments`, incl. cancelación tras pago y retención) | tras `db reset` final |
-| Suite PostgreSQL embebida `scripts/test-payments-postgres.mjs` | **PASS local** 71 checks (concurrencia, leases, replay, cancelación antes/después del pago por RPC reales, retención, restauración financiera) | 2026-11-12 |
+| pgTAP (`npm run db:test`, CLI 3.1.0) | **PASS local** 7 archivos / 282 tests (122 en `06_flow_payments`, incl. cancelación, retención y allowlist de cuentas Sandbox) | 2026-11-12 |
+| Suite PostgreSQL embebida `scripts/test-payments-postgres.mjs` | **PASS local** 75 checks (concurrencia, leases, cancelación por RPC reales, carreras con dos conexiones, allowlist, retención, restauración financiera) | 2026-11-12 |
+| Ejecutor Supabase Cron `scripts/test-payments-worker-cron.mjs` | **PASS local** 5 checks con pg_cron/pg_net reales y servidor HTTP local; **no activado en remoto** | 2026-11-12 |
 | Vitest | **PASS local** 52 archivos / 355 PASS con la integración PostgREST local activa | 2026-11-12 |
 | Integración PostgREST/JWT local (Supabase local) | **PASS local** (callback→bandeja→worker→`paid`, mismatch, desconocida, RPC admin) | `supabase-payment-repository.local.test.ts` |
 | Navegador por rol | **PASS local** 10/10 (corrida 10; 1–9 fallaron por defectos del script) | `docs/production/sprint-05-evidence/browser-local.json` |
@@ -70,7 +71,7 @@ Los casos adversos (callback falso, mismatch, tardío, duplicado, replay, concur
 
 ## 5. Para desbloquear la etapa 6 (decisiones/insumos del propietario)
 
-- Proyecto Supabase aislado autorizado y autorización explícita para aplicar en él las **tres** migraciones de pagos, en este orden: 1) `20261110140000_flow_sandbox_payments.sql`, 2) `20261111120000_payment_rate_limits.sql`, 3) `20261111130000_payment_sensitive_retention.sql` (RPC de purga; sin ella no hay retención de tokens), y comprobar el preflight del runbook (§0) antes de habilitar nada.
+- Proyecto Supabase aislado autorizado y autorización explícita para aplicar en él las **cuatro** migraciones de pagos (tres ya aplicadas en `rjzy…` por decisión del propietario del 2026-11-12; la cuarta, `20261112090000`, pendiente), en este orden: 1) `20261110140000_flow_sandbox_payments.sql`, 2) `20261111120000_payment_rate_limits.sql`, 3) `20261111130000_payment_sensitive_retention.sql` (RPC de purga; sin ella no hay retención de tokens), y comprobar el preflight del runbook (§0) antes de habilitar nada.
 - Cuenta y credenciales Flow **Sandbox**, y un origen HTTPS accesible por Flow (túnel o preview aislado; nunca preview público con DB comercial).
 - Decisión del ejecutor del worker y de la cabecera de IP confiable.
 - Luego: ejecutar la matriz del runbook §9, adjuntar evidencia sanitizada, `npm run build`/`test:smoke`/audits y el ensayo de restauración, y actualizar este reporte.
