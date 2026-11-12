@@ -45,14 +45,20 @@ export async function verifyRestoredPayments({ admin, restored, actors }) {
    (select count(*)::int from private.payment_pricing_policies) policy_versions,
    (select count(*)::int from private.payment_inbox) inbox,
    (select count(*)::int from private.payment_sandbox_accounts where revoked_at is null) sandbox_accounts,
-   (select count(*)::int from private.payment_sandbox_account_events) sandbox_events`)).rows[0];
-  assert.ok(rep.paid_initial >= 1 && rep.extra_orders >= 1 && rep.reviews >= 1 && rep.with_cost >= 1 && rep.accepted_extras >= 1 && rep.attempts >= 5 && rep.event_kinds >= 4 && rep.policy_versions >= 2 && rep.inbox >= 1 && rep.sandbox_accounts >= 1 && rep.sandbox_events >= 3, 'the source lacks representative financial data: ' + JSON.stringify(rep));
+   (select count(*)::int from private.payment_sandbox_account_events) sandbox_events,
+   (select count(*)::int from private.payment_attempts where state='failed' and commerce_order ~ '^fixo-sandbox-[0-9a-f-]{36}$') legacy_failed`)).rows[0];
+  assert.ok(rep.paid_initial >= 1 && rep.extra_orders >= 1 && rep.reviews >= 1 && rep.with_cost >= 1 && rep.accepted_extras >= 1 && rep.attempts >= 5 && rep.event_kinds >= 4 && rep.policy_versions >= 2 && rep.inbox >= 1 && rep.sandbox_accounts >= 1 && rep.sandbox_events >= 3 && rep.legacy_failed >= 1, 'the source lacks representative financial data: ' + JSON.stringify(rep));
 
   // 2. Amounts, references, states and ciphertext fingerprints are identical after restore.
   for (const [name, sql] of Object.entries(PROJECTIONS)) {
     const a = await digest(admin, sql), b = await digest(restored, sql);
     assert.deepEqual(b, a, 'restored financial projection differs: ' + name);
   }
+
+  // The historical failed attempt (legacy 49-character reference, as in production) is preserved byte for byte.
+  const legacy = "select id,commerce_order,state,error_code,flow_order from private.payment_attempts where commerce_order ~ '^fixo-sandbox-' order by id";
+  const legacyBefore = (await admin.query(legacy)).rows; assert.ok(legacyBefore.length >= 1 && legacyBefore.every(r => r.state === 'failed' && r.commerce_order.length === 49), 'faltan intentos históricos en el origen');
+  assert.deepEqual((await restored.query(legacy)).rows, legacyBefore, 'el intento fallido histórico cambió al restaurar');
 
   // 3. Financial invariants hold in the RESTORED database itself.
   const bad = async (label, sql) => assert.equal((await restored.query(sql)).rows[0].n, 0, label);
@@ -62,7 +68,8 @@ export async function verifyRestoredPayments({ admin, restored, actors }) {
   await bad('every paid order points to a paid attempt of its own', "select count(*)::int n from private.payment_orders o where o.status='paid' and not exists(select 1 from private.payment_attempts a where a.id=o.paid_attempt_id and a.order_id=o.id and a.state='paid')");
   await bad('every paid order has a verified event for exactly the frozen total', "select count(*)::int n from private.payment_orders o where o.status='paid' and not exists(select 1 from private.payment_events e where e.attempt_id=o.paid_attempt_id and e.validation in('applied','late_payment') and e.amount_clp=o.total_clp and e.currency='CLP')");
   await bad('one initial order per job', "select count(*)::int n from (select job_id from private.payment_orders where origin='initial' group by job_id having count(*)>1) x");
-  await bad('commerce references stay unique and well formed', "select count(*)::int n from private.payment_attempts where length(commerce_order)>45 or commerce_order !~ '^fixo-sbx-[0-9a-f]{32}$'");
+  await bad('new-format references never exceed the Flow 45-character limit', "select count(*)::int n from private.payment_attempts where commerce_order ~ '^fixo-sbx-' and length(commerce_order)>45");
+  await bad('commerce references match BOTH branches of the constraint (new format; legacy format only on a failed attempt)', "select count(*)::int n from private.payment_attempts where not (commerce_order ~ '^fixo-sbx-[0-9a-f]{32}$' or (state='failed' and commerce_order ~ '^fixo-sandbox-[0-9a-f-]{36}$'))");
   await bad('a job with a verified initial payment never shows an unpaid state', "select count(*)::int n from public.jobs j where j.payment_state in('not_enabled','payment_pending','payment_failed') and exists(select 1 from private.payment_orders o where o.job_id=j.id and o.origin='initial' and o.status='paid')");
 
   // 4. RLS flags, grants, SECURITY DEFINER/search_path and triggers are rebuilt exactly (canonical migrations are the contract, not the dump).

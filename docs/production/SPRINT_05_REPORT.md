@@ -1,6 +1,6 @@
 # Sprint 05 — Flow Chile Sandbox: reporte de entrega
 
-**Fecha de corte: 2026-11-12 (actualizado tras las fases A, B y C).** **Estado global: implementación y pruebas locales completas; matriz Flow Sandbox REAL ejecutada (fase C) con resultados PASS y lagunas declaradas (§2b).** La limpieza de los datos sintéticos (fase D) sigue pendiente de decisión del propietario, por lo que el sprint aún no se declara cerrado. Las únicas operaciones remotas realizadas están listadas en «Estado operativo» y ninguna toca Flow ni habilita cobros.
+**Fecha de corte: 2026-11-12 (actualizado tras las fases A, B y C).** **Estado global: implementación y pruebas locales completas; matriz Flow Sandbox REAL ejecutada (fase C) con resultados PASS y lagunas declaradas (§2b).** La limpieza de los datos sintéticos (fase D) sigue pendiente de decisión del propietario, por lo que el sprint aún no se declara cerrado. Las operaciones remotas realizadas (migraciones, push, deploy, cron y la matriz de la fase C contra **Flow Sandbox real**, nunca cobros reales) están listadas en «Estado operativo» y en §2b. Corte único: todo lo que sigue describe el estado **después** de la fase C.
 
 ## 0. Estado operativo (corte 2026-11-12)
 
@@ -8,13 +8,13 @@
 | --- | --- | --- |
 | Migraciones `20261110140000`, `20261111120000`, `20261111130000` | **APLICADAS en producción** (proyecto Fixo `rjzy…`) | Por decisión expresa del propietario; preflight de sólo lectura previo (2 usuarios originales, sin datos comerciales), `db push` y verificación posterior. Pagos habilitables sólo con interruptores. |
 | Migración `20261112090000_payment_sandbox_accounts.sql` (allowlist de cuentas Sandbox + historial) | **APLICADA en producción** (fase A, aprobada por el propietario) | Verificada: RPC con execute sólo para `authenticated`, tablas con RLS, trigger de historial, **0 cuentas autorizadas** (nadie puede pagar), 2 usuarios intactos. Las cuatro migraciones de pagos están aplicadas. |
-| Push | **Hecho** hasta el commit del reporte de esta fase en la rama `codex/sprint-04-job-management` | Sin force; `main` intacto. |
-| Deploy a `www.soyfixo.cl` | **Hecho** (fase A) con el código completo (allowlist, endpoint con logs, cron preparado) | Variables de Flow y de pagos en Vercel con ambos interruptores en `false`. Smoke de sólo lectura PASS: `/`, `/login`, rutas protegidas 307, worker sin credencial 401, con credencial 200 `housekeepingFailures:0`, callback 503 (recepción apagada). |
+| Push | **Hecho**, rama `codex/sprint-04-job-management` al día con el último commit del corte | Sin force; `main` intacto. |
+| Deploy a `www.soyfixo.cl` | **Hecho** con el código completo (allowlist, endpoint con logs, referencia de 41 caracteres, correo del pagador sintético, parseo del coste) | Interruptores de pagos **apagados** tras la fase C (creación primero, recepción después). Worker 200 y callback 503 verificados. |
 | Interruptores de pagos | **Apagados** (`FIXO_PAYMENTS_CREATION_ENABLED=false`, `FIXO_PAYMENTS_NOTIFICATIONS_ENABLED=false`) | Cobros reales: inexistentes (API fijada a Sandbox). |
 | Ejecutor del worker | **Supabase Cron ACTIVO** (fase B, aprobada) | `pg_cron` y `pg_net` instalados; secretos `fixo_payments_worker_url/secret` en Vault; job `fixo-payments-worker` (`* * * * *`). Primeros ticks reales: `scheduled=true`, 3 de 3 saludables, `degraded=false`, resumen con todos los contadores en 0. Con las notificaciones apagadas sólo hace mantenimiento (limpieza y retención): **no verifica pagos hasta encender `FIXO_PAYMENTS_NOTIFICATIONS_ENABLED`**. |
-| Pruebas Flow Sandbox | **EJECUTADAS (fase C, 2026-11-12)** | Cuentas sintéticas `.invalid`, 7 trabajos, 8 órdenes pagadas; evidencia sanitizada en `docs/production/sprint-05-evidence/flow-sandbox-manifest.json`. Ventana cerrada: creación y recepción de pagos apagadas, autorización Sandbox revocada. **Fase D (limpieza) pendiente de decisión.** |
+| Pruebas Flow Sandbox (fase C) | **EJECUTADAS 2026-11-12** (matriz en §2b; lagunas declaradas) | Cuentas sintéticas `.invalid`, 7 trabajos, 8 órdenes pagadas; evidencia sanitizada en `docs/production/sprint-05-evidence/flow-sandbox-manifest.json`. Ventana cerrada: creación y recepción de pagos apagadas, autorización Sandbox revocada. **Fase D (limpieza de los datos sintéticos) pendiente de decisión del propietario.** El criterio sintético de `category_requirements` ya se retiró (la configuración compartida volvió a su estado previo, comprobado por digest). Existe además una orden Sandbox creada por un diagnóstico fuera de Fixo, reconciliada y registrada en el manifiesto (sin pago). |
 
-Leyenda: **PASS local** = ejecutado hoy en base/servicios locales aislados; **PASS integración/Sandbox** = contra Flow real (ninguno); **FAIL**; **NOT TESTED**. Las cifras del Sprint 04 no se reutilizan.
+Leyenda: **PASS local** = ejecutado en base/servicios locales aislados; **PASS integración/Sandbox** = contra Flow Sandbox real (§2b); **FAIL**; **NOT TESTED**. Las cifras del Sprint 04 no se reutilizan.
 
 ## 1. Qué se entregó
 
@@ -95,7 +95,7 @@ Entorno: `sandbox.flow.cl` real, `www.soyfixo.cl` y proyecto Fixo de producción
 
 ## 4. Limitaciones y riesgos pendientes
 
-1. **Sandbox real sin ejecutar.** Todo el comportamiento frente a Flow (formato real de respuestas, `fee`, tiempos, callbacks reales) está validado sólo contra especificación y dobles.
+1. **Cobertura Sandbox parcial.** La matriz real (§2b) validó creación, estados, callbacks, conciliación y coste con Flow Sandbox; quedan **sin probar** el pago anulado (status 4), el pago duplicado externo, la pérdida de la respuesta de creación, el orden exacto callback/retorno y tres de los cuatro casos de cuarentena. Esos casos se cubren sólo con dobles y SQL local.
 2. **Ejecutor del worker: Supabase Cron activo** desde la fase B (no hay `vercel.json` ni Vercel Cron). Con las notificaciones apagadas no concilia pagos; no hay alertas automáticas (la salud se consulta por SQL con rol propietario).
 3. **Rotación de clave de tokens**: la implementación lee una sola clave; rotar con tokens en vuelo los vuelve indescifrables.
 4. **Trigger `payment_policy_append_only`**: cambio de esquema dentro del alcance del PLAN (§5 "historial inmutable"), **ya aplicado en producción** junto a la primera migración, sin revisión específica de Codex.
@@ -112,14 +112,13 @@ Entorno: `sandbox.flow.cl` real, `www.soyfixo.cl` y proyecto Fixo de producción
 2. **MEDIO, retención de tokens**: corregido. `payment_purge_sensitive(retention_days)` (service_role; 30 días desde el worker). Sólo material cifrado de registros resueltos; los pendientes siguen recuperables (probado).
 3. **MEDIO, restauración**: corregido con el ensayo local descrito en §2. No sustituye una restauración de Auth/Storage administrados.
 
-## 5. Qué falta (aprobaciones e insumos)
+## 5. Qué falta (corte posterior a la fase C)
 
-- ~~A. Cuarta migración y deploy~~ **hecho**. ~~B. Cron~~ **hecho y sano**.
-- **C.** Cuentas sintéticas `.invalid`, manifiesto y la matriz del runbook §9 con los interruptores encendidos sólo durante la ventana de prueba (más el script remoto que conduce el checkout de Flow Sandbox, aún por escribir).
-- **D.** Elección de limpieza (retención etiquetada o purga transaccional por manifiesto; los registros financieros son append-only).
-- Decisión sobre la cabecera de IP confiable (`FIXO_TRUSTED_IP_HEADER`) y sobre alertas operativas del cron.
-- Después: evidencia sanitizada, consulta del resultado de GitHub Actions y actualización de este reporte.
+**Ejecutado:** fases A (migración 4 y deploy), B (Supabase Cron activo) y C (cuentas sintéticas, manifiesto y matriz Sandbox real; scripts en `scripts/flow-sandbox/`).
+**Escenarios pendientes (NOT TESTED en Sandbox real):** pago anulado, pago duplicado externo, pérdida de la respuesta de creación, orden callback/retorno y los casos de cuarentena (b) `provider_mismatch`, (c) consulta fallida de un pago existente y (d) observación válida sin correlación local.
+**Limpieza pendiente (fase D, decisión del propietario):** retención etiquetada (recomendada) o purga transaccional por manifiesto de las filas financieras sintéticas (append-only), más el retiro/suspensión de las cuentas sintéticas. Quedan en producción 5 usuarios (2 originales + 3 sintéticos), 7 trabajos, 8 órdenes pagadas (1 en revisión), 13 intentos y 1 fila de bandeja en cuarentena (token fabricado).
+**Decisiones abiertas:** si el coste G debe incluir los impuestos que informa Flow; cabecera de IP confiable (`FIXO_TRUSTED_IP_HEADER`); alertas operativas del cron; consulta del resultado de GitHub Actions; revisión de Codex de lo posterior a su última revisión.
 
 ## 6. Archivos y evidencia
 
-Ver `docs/ai/HANDOFF.md` (detalle por etapa y por corrección de revisión). Evidencia sanitizada: `docs/production/sprint-05-evidence/browser-local.json`. No incluye tokens, claves ni PII.
+Ver `docs/ai/HANDOFF.md` (detalle por etapa y por corrección de revisión). Evidencia sanitizada: `docs/production/sprint-05-evidence/browser-local.json` (navegador local) y `docs/production/sprint-05-evidence/flow-sandbox-manifest.json` (fase C: cuentas, trabajos, UUID de órdenes, intentos, eventos y bandeja, órdenes externas reconciliadas y 19 entradas de evidencia por escenario). Ninguno incluye tokens, claves, contraseñas ni PII; las contraseñas de las cuentas sintéticas viven fuera del repositorio.

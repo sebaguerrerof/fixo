@@ -126,14 +126,226 @@
       "createdAt": "2026-11-12T19:04:40.673Z"
     }
   ],
-  "orders": [],
-  "attempts": [],
+  "orders": [
+    {
+      "extra_charge_id": null,
+      "flow_cost_clp": 837,
+      "id": "e301a1c6-522b-4719-a947-3e58f14e6498",
+      "job_id": "6056f113-11bc-40ce-85e0-dc911beef950",
+      "origin": "initial",
+      "paid_attempt_id": "a5e4204b-d392-45b9-9cda-6ffa5b101922",
+      "platform_fee_clp": 1250,
+      "professional_amount_clp": 25000,
+      "review_reason": null,
+      "status": "paid",
+      "total_clp": 26250
+    },
+    {
+      "extra_charge_id": null,
+      "flow_cost_clp": 837,
+      "id": "1143bffc-7192-497a-9038-7ce5dc18a445",
+      "job_id": "f8753c1c-72e6-4ac5-9d58-ddd4f9247e60",
+      "origin": "initial",
+      "paid_attempt_id": "451e1a78-0d5c-43d3-b6d5-4907d4c5c60a",
+      "platform_fee_clp": 1250,
+      "professional_amount_clp": 25000,
+      "review_reason": null,
+      "status": "paid",
+      "total_clp": 26250
+    },
+    {
+      "extra_charge_id": null,
+      "flow_cost_clp": 837,
+      "id": "ea9c05d0-7ad0-4ac8-8471-70994bb995f3",
+      "job_id": "36e16355-fa0b-4fd0-8fc5-8099a92cda06",
+      "origin": "initial",
+      "paid_attempt_id": "af491a47-d651-4a5b-b1d4-4c6386cc6185",
+      "platform_fee_clp": 1250,
+      "professional_amount_clp": 25000,
+      "review_reason": null,
+      "status": "paid",
+      "total_clp": 26250
+    },
+    {
+      "extra_charge_id": null,
+      "flow_cost_clp": 837,
+      "id": "c40b6263-c229-4e5a-a843-2bed38960cb4",
+      "job_id": "9fdee44e-97a6-4df1-948e-eddf8176ee9c",
+      "origin": "initial",
+      "paid_attempt_id": "dbdf3b70-2703-43e4-9264-3c12e53f0abe",
+      "platform_fee_clp": 1250,
+      "professional_amount_clp": 25000,
+      "review_reason": "job_cancelled",
+      "status": "paid",
+      "total_clp": 26250
+    },
+    {
+      "extra_charge_id": null,
+      "flow_cost_clp": 837,
+      "id": "052b8d12-bcc9-4eac-aa59-f13d53ff3bde",
+      "job_id": "d0215639-d1df-4f34-916e-5708be05cff3",
+      "origin": "initial",
+      "paid_attempt_id": "e1984d95-1eac-42fa-99dc-3a1befd823f7",
+      "platform_fee_clp": 1250,
+      "professional_amount_clp": 25000,
+      "review_reason": null,
+      "status": "paid",
+      "total_clp": 26250
+    },
+    {
+      "extra_charge_id": null,
+      "flow_cost_clp": 837,
+      "id": "5e6ef392-cb12-4bb1-99c1-a8549a2c6823",
+      "job_id": "0f637045-2106-418f-bf3e-00594c7a4f85",
+      "origin": "initial",
+      "paid_attempt_id": "2121cc3f-d731-48ff-9664-a393c8696f58",
+      "platform_fee_clp": 1250,
+      "professional_amount_clp": 25000,
+      "review_reason": null,
+      "status": "paid",
+      "total_clp": 26250
+    },
+    {
+      "extra_charge_id": null,
+      "flow_cost_clp": 837,
+      "id": "466d9d39-f8ba-4973-b621-45e9589a7919",
+      "job_id": "ecbcbd60-ba57-4a81-a566-529ce9b2c162",
+      "origin": "initial",
+      "paid_attempt_id": "0cfbb63a-8612-4f0f-ade5-e02d75042007",
+      "platform_fee_clp": 1250,
+      "professional_amount_clp": 25000,
+      "review_reason": null,
+      "status": "paid",
+      "total_clp": 26250
+    },
+    {
+      "extra_charge_id": "e35fc19c-8ed2-4593-98e3-6bf60c3a8448",
+      "flow_cost_clp": 335,
+      "id": "1cf20190-d67b-413a-9771-bf9b7a1fedb1",
+      "job_id": "6056f113-11bc-40ce-85e0-dc911beef950",
+      "origin": "extra",
+      "paid_attempt_id": "8dace981-c29f-4e0a-8556-7dba2ec9b9dd",
+      "platform_fee_clp": 500,
+      "professional_amount_clp": 10000,
+      "review_reason": null,
+      "status": "paid",
+      "total_clp": 10500
+    }
+  ],
+  "attempts": [
+    {
+      "commerce_order": "fixo-sandbox-b741e419-1186-48a6-9b51-e0f6d08e5a2e",
+      "error_code": "http_error",
+      "flow_order": null,
+      "id": "b741e419-1186-48a6-9b51-e0f6d08e5a2e",
+      "order_id": "e301a1c6-522b-4719-a947-3e58f14e6498",
+      "state": "failed"
+    },
+    {
+      "commerce_order": "fixo-sbx-e2ad90a2b0304d609c47e99717577a39",
+      "error_code": "http_error",
+      "flow_order": null,
+      "id": "e2ad90a2-b030-4d60-9c47-e99717577a39",
+      "order_id": "e301a1c6-522b-4719-a947-3e58f14e6498",
+      "state": "failed"
+    },
+    {
+      "commerce_order": "fixo-sbx-f459b4b661624795bd2644f96a91015a",
+      "error_code": "http_error",
+      "flow_order": null,
+      "id": "f459b4b6-6162-4795-bd26-44f96a91015a",
+      "order_id": "e301a1c6-522b-4719-a947-3e58f14e6498",
+      "state": "failed"
+    },
+    {
+      "commerce_order": "fixo-sbx-270c4756c198486aaa8cc936adac085f",
+      "error_code": "http_error",
+      "flow_order": null,
+      "id": "270c4756-c198-486a-aa8c-c936adac085f",
+      "order_id": "e301a1c6-522b-4719-a947-3e58f14e6498",
+      "state": "failed"
+    },
+    {
+      "commerce_order": "fixo-sbx-a5e4204bd39245b99cda6ffa5b101922",
+      "error_code": null,
+      "flow_order": "11657326",
+      "id": "a5e4204b-d392-45b9-9cda-6ffa5b101922",
+      "order_id": "e301a1c6-522b-4719-a947-3e58f14e6498",
+      "state": "paid"
+    },
+    {
+      "commerce_order": "fixo-sbx-d1fb3a0cefff48c492e857a967b20956",
+      "error_code": null,
+      "flow_order": "11657333",
+      "id": "d1fb3a0c-efff-48c4-92e8-57a967b20956",
+      "order_id": "1143bffc-7192-497a-9038-7ce5dc18a445",
+      "state": "failed"
+    },
+    {
+      "commerce_order": "fixo-sbx-451e1a780d5c43d3b6d54907d4c5c60a",
+      "error_code": null,
+      "flow_order": "11657336",
+      "id": "451e1a78-0d5c-43d3-b6d5-4907d4c5c60a",
+      "order_id": "1143bffc-7192-497a-9038-7ce5dc18a445",
+      "state": "paid"
+    },
+    {
+      "commerce_order": "fixo-sbx-af491a47d6514a5bb1d44c6386cc6185",
+      "error_code": null,
+      "flow_order": "11657339",
+      "id": "af491a47-d651-4a5b-b1d4-4c6386cc6185",
+      "order_id": "ea9c05d0-7ad0-4ac8-8471-70994bb995f3",
+      "state": "paid"
+    },
+    {
+      "commerce_order": "fixo-sbx-dbdf3b70270343e492643c12e53f0abe",
+      "error_code": null,
+      "flow_order": "11657345",
+      "id": "dbdf3b70-2703-43e4-9264-3c12e53f0abe",
+      "order_id": "c40b6263-c229-4e5a-a843-2bed38960cb4",
+      "state": "paid"
+    },
+    {
+      "commerce_order": "fixo-sbx-e1984d951eac42fa99dc3a1befd823f7",
+      "error_code": null,
+      "flow_order": "11657347",
+      "id": "e1984d95-1eac-42fa-99dc-3a1befd823f7",
+      "order_id": "052b8d12-bcc9-4eac-aa59-f13d53ff3bde",
+      "state": "paid"
+    },
+    {
+      "commerce_order": "fixo-sbx-2121cc3fd73148ff9664a393c8696f58",
+      "error_code": null,
+      "flow_order": "11657348",
+      "id": "2121cc3f-d731-48ff-9664-a393c8696f58",
+      "order_id": "5e6ef392-cb12-4bb1-99c1-a8549a2c6823",
+      "state": "paid"
+    },
+    {
+      "commerce_order": "fixo-sbx-0cfbb63a86124f0fade5e02d75042007",
+      "error_code": null,
+      "flow_order": "11657350",
+      "id": "0cfbb63a-8612-4f0f-ade5-e02d75042007",
+      "order_id": "466d9d39-f8ba-4973-b621-45e9589a7919",
+      "state": "paid"
+    },
+    {
+      "commerce_order": "fixo-sbx-8dace981c29f4e0a85567dba2ec9b9dd",
+      "error_code": null,
+      "flow_order": "11657356",
+      "id": "8dace981-c29f-4e0a-8556-7dba2ec9b9dd",
+      "order_id": "1cf20190-d67b-413a-9771-bf9b7a1fedb1",
+      "state": "paid"
+    }
+  ],
   "notes": [
     "2026-11-12T17:35:14.189Z cuenta cliente autorizada para pagos Sandbox",
     "2026-11-12T19:15:28.851Z autorización Sandbox del cliente sintético revocada (enabled=false)",
     "2026-11-12 matriz ejecutada contra Flow Sandbox real; interruptores de creación y recepción apagados; autorización revocada; limpieza (fase D) pendiente de decisión del propietario",
     "Cuarentena restante: 1 fila de bandeja flow_http_error_400 = token fabricado por la prueba (escenario duplicates); clasificada «sin obligación, con evidencia».",
-    "Orden en revisión: 1 (late/pago tardío tras cancelación, job_cancelled): pago verificado, trabajo cancelado, sin reembolso automático."
+    "Orden en revisión: 1 (late/pago tardío tras cancelación, job_cancelled): pago verificado, trabajo cancelado, sin reembolso automático.",
+    "sharedConfigBefore reconstruido del preflight (category_requirements vacía ⇒ n=0, md5 de la cadena vacía); el setup original no lo registró",
+    "2026-11-12T19:26:52.993Z criterio sintético retirado (1 fila) y configuración compartida idéntica a la previa"
   ],
   "evidence": [
     {
@@ -1296,5 +1508,175 @@
       ],
       "provider_job_events": 2
     }
-  ]
+  ],
+  "sharedConfigBefore": {
+    "n": 0,
+    "d": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "criterionRetiredAt": "2026-11-12T19:26:52.991Z",
+  "externalOrders": [
+    {
+      "reconciledAt": "2026-11-12T19:28:15.037Z",
+      "flowOrder": "11657296",
+      "http": 200,
+      "commerceOrder": "fixo-sbx-6710d0c209d0493582b421f6ca675989",
+      "flowStatus": 1,
+      "amount": "26250",
+      "currency": "CLP",
+      "paidAtFixo": false,
+      "note": "Creada por diagnose-create.mjs fuera de Fixo (sin fila local); nunca se abrió su checkout; no hay pago."
+    }
+  ],
+  "events": [
+    {
+      "attempt_id": "a5e4204b-d392-45b9-9cda-6ffa5b101922",
+      "id": "24e0d0d1-7acc-44c3-b203-1ad3c717c516",
+      "observed_status": 2,
+      "order_id": "e301a1c6-522b-4719-a947-3e58f14e6498",
+      "validation": "applied"
+    },
+    {
+      "attempt_id": "d1fb3a0c-efff-48c4-92e8-57a967b20956",
+      "id": "10e9f2e2-9d57-4811-b91d-88d431fc8b3b",
+      "observed_status": 3,
+      "order_id": "1143bffc-7192-497a-9038-7ce5dc18a445",
+      "validation": "applied"
+    },
+    {
+      "attempt_id": "451e1a78-0d5c-43d3-b6d5-4907d4c5c60a",
+      "id": "47f5fab6-0540-4f61-8950-3bec8d0e86ec",
+      "observed_status": 2,
+      "order_id": "1143bffc-7192-497a-9038-7ce5dc18a445",
+      "validation": "applied"
+    },
+    {
+      "attempt_id": "af491a47-d651-4a5b-b1d4-4c6386cc6185",
+      "id": "10afeb43-c541-46cf-81ca-e91d053c3aaa",
+      "observed_status": 1,
+      "order_id": "ea9c05d0-7ad0-4ac8-8471-70994bb995f3",
+      "validation": "pending"
+    },
+    {
+      "attempt_id": "af491a47-d651-4a5b-b1d4-4c6386cc6185",
+      "id": "ce7e2c7b-04be-4c69-a57f-774da7305ab1",
+      "observed_status": 2,
+      "order_id": "ea9c05d0-7ad0-4ac8-8471-70994bb995f3",
+      "validation": "applied"
+    },
+    {
+      "attempt_id": null,
+      "id": "02556bcb-8ae5-4d7f-a3c4-833830fee4fc",
+      "observed_status": 0,
+      "order_id": "c40b6263-c229-4e5a-a843-2bed38960cb4",
+      "validation": "job_cancelled"
+    },
+    {
+      "attempt_id": "dbdf3b70-2703-43e4-9264-3c12e53f0abe",
+      "id": "1fef26a2-dc6b-4b55-aee3-20b16ad5ad17",
+      "observed_status": 2,
+      "order_id": "c40b6263-c229-4e5a-a843-2bed38960cb4",
+      "validation": "late_payment"
+    },
+    {
+      "attempt_id": "a5e4204b-d392-45b9-9cda-6ffa5b101922",
+      "id": "4741ff2c-50b1-4e75-b473-97567fb67f67",
+      "observed_status": 2,
+      "order_id": "e301a1c6-522b-4719-a947-3e58f14e6498",
+      "validation": "stale"
+    },
+    {
+      "attempt_id": "e1984d95-1eac-42fa-99dc-3a1befd823f7",
+      "id": "6c1cba92-5332-4cb3-adc6-fcfbf83e16c5",
+      "observed_status": 2,
+      "order_id": "052b8d12-bcc9-4eac-aa59-f13d53ff3bde",
+      "validation": "applied"
+    },
+    {
+      "attempt_id": "af491a47-d651-4a5b-b1d4-4c6386cc6185",
+      "id": "65b0c6f9-1803-4c81-bad6-e157192886ad",
+      "observed_status": 2,
+      "order_id": "ea9c05d0-7ad0-4ac8-8471-70994bb995f3",
+      "validation": "stale"
+    },
+    {
+      "attempt_id": "2121cc3f-d731-48ff-9664-a393c8696f58",
+      "id": "16c5f0bb-5dbb-44e4-91ab-314abdaf1308",
+      "observed_status": 2,
+      "order_id": "5e6ef392-cb12-4bb1-99c1-a8549a2c6823",
+      "validation": "applied"
+    },
+    {
+      "attempt_id": "451e1a78-0d5c-43d3-b6d5-4907d4c5c60a",
+      "id": "a5af206a-55b3-44c7-8084-511c58b5c5d4",
+      "observed_status": 2,
+      "order_id": "1143bffc-7192-497a-9038-7ce5dc18a445",
+      "validation": "stale"
+    },
+    {
+      "attempt_id": "0cfbb63a-8612-4f0f-ade5-e02d75042007",
+      "id": "86f06a98-8cf0-4179-a6a4-24490978d38b",
+      "observed_status": 2,
+      "order_id": "466d9d39-f8ba-4973-b621-45e9589a7919",
+      "validation": "applied"
+    },
+    {
+      "attempt_id": "8dace981-c29f-4e0a-8556-7dba2ec9b9dd",
+      "id": "43d3e7d9-9482-4aa7-8230-2a6b6359fb35",
+      "observed_status": 2,
+      "order_id": "1cf20190-d67b-413a-9771-bf9b7a1fedb1",
+      "validation": "applied"
+    }
+  ],
+  "inbox": [
+    {
+      "generation": 1,
+      "id": "d3ad6c2d-3b97-4f2f-a376-aa250f272a47",
+      "processed_generation": 1,
+      "quarantine_reason": null,
+      "state": "done"
+    },
+    {
+      "generation": 1,
+      "id": "5ce6be5e-724c-44c1-b79e-766101adbb50",
+      "processed_generation": 1,
+      "quarantine_reason": null,
+      "state": "done"
+    },
+    {
+      "generation": 7,
+      "id": "27a39bc1-7432-4dbd-9be3-1339a745b81d",
+      "processed_generation": 7,
+      "quarantine_reason": null,
+      "state": "done"
+    },
+    {
+      "generation": 2,
+      "id": "8116ad6f-4ea2-4651-b0e4-10357c592e90",
+      "processed_generation": 0,
+      "quarantine_reason": "flow_http_error_400",
+      "state": "quarantined"
+    },
+    {
+      "generation": 1,
+      "id": "49aaa7af-33a8-4e6a-866f-03430590e462",
+      "processed_generation": 1,
+      "quarantine_reason": null,
+      "state": "done"
+    },
+    {
+      "generation": 1,
+      "id": "f1b01e6d-70ef-448e-8697-a75e8c227481",
+      "processed_generation": 1,
+      "quarantine_reason": null,
+      "state": "done"
+    },
+    {
+      "generation": 1,
+      "id": "20264a48-57f2-4d13-81e8-d35417c05f0f",
+      "processed_generation": 1,
+      "quarantine_reason": null,
+      "state": "done"
+    }
+  ],
+  "financialRecordedAt": "2026-11-12T19:28:35.574Z"
 }

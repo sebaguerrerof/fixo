@@ -658,4 +658,16 @@ export async function runPaymentTests({admin,actors,server,clients,check,call,cu
   for(const label of['customerA','moderator','admin'])await assert.rejects(()=>call(label,'select public.payment_purge_sensitive(30) value'),{code:'42501'});
   for(const bad of[-1,4000,null])await assert.rejects(()=>wcall(w,'select public.payment_purge_sensitive($1) value',[bad]),{code:'22023'});
  });
+ await check('S05 historical attempts: a legacy 49-character reference is tolerated ONLY on a failed attempt (as in production); new references must be fixo-sbx-<32 hex> (<= 45)',async()=>{
+  const j=await newJob();await schedule(j);const p=await prepare('customerA',j);
+  assert.match((await admin.query('select commerce_order from private.payment_attempts where id=$1',[p.attempt_id])).rows[0].commerce_order,/^fixo-sbx-[0-9a-f]{32}$/);
+  const legacy=()=>'fixo-sandbox-'+randomUUID();
+  const ins=(ref,state)=>admin.query('insert into private.payment_attempts(order_id,idempotency_key,commerce_order,state) values($1,$2,$3,$4) returning id',[p.order_id,randomUUID(),ref,state]);
+  await assert.rejects(()=>ins(legacy(),'prepared'),{code:'23514'});                      // a legacy reference can no longer be created for a payable attempt
+  await assert.rejects(()=>ins('fixo-sbx-'+'a'.repeat(33),'failed'),{code:'23514'});     // too long
+  await assert.rejects(()=>ins('fixo-sbx-'+'A'.repeat(32),'failed'),{code:'23514'});     // wrong charset
+  const ref=legacy();const row=(await ins(ref,'failed')).rows[0];                          // the historical failed attempt of the first real Sandbox call
+  assert.equal((await admin.query('select commerce_order,length(commerce_order) n from private.payment_attempts where id=$1',[row.id])).rows[0].n,49);
+  await assert.rejects(()=>admin.query("update private.payment_attempts set state='pending' where id=$1",[row.id]),{code:'PT409'});   // final technical state
+ });
 }

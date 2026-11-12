@@ -5,13 +5,28 @@ import { PROJECT_REF, SITE, actorClient, lit, readManifest, readSecrets, rpc, se
 
 const password = () => `Flow-${randomBytes(14).toString('hex')}9aZ`;
 
+/** Digest of the SHARED configuration this run is allowed to touch (category requirements). It must be identical before the run and after `retireCriterion`. */
+export const sharedConfigDigest = async () => (await sql(`select count(*)::int n, md5(coalesce(string_agg(t::text,E'\n' order by t::text),'')) d from private.category_requirements t`))[0];
+
+/** Removes the run's synthetic requirement BY ITS UUID (after checking that nothing but the synthetic application references it) and proves the shared configuration is back to its pre-run state. */
+export async function retireCriterion() {
+  const m = await readManifest(); assert.ok(m?.criterion && m.sharedConfigBefore, 'sin criterio ni digest previo en el manifiesto');
+  const refs = (await sql(`select a.technician_id from private.technician_applications a where ${lit(m.criterion)}::uuid = any(a.requirement_snapshot)`)).map(r => r.technician_id);
+  assert.ok(refs.every(id => id === m.accounts.technician.id), 'el criterio lo referencia algo ajeno al técnico sintético: ' + JSON.stringify(refs));
+  const gone = await sql(`delete from private.category_requirements where id=${lit(m.criterion)} and requirement_key=${lit(m.run)} returning id`);
+  const after = await sharedConfigDigest(); assert.deepEqual(after, m.sharedConfigBefore, 'la configuración compartida no quedó igual que antes de la prueba');
+  m.criterionRetiredAt = stamp(); m.notes.push(`${stamp()} criterio sintético retirado (${gone.length} fila) y configuración compartida idéntica a la previa`); await writeManifest(m); return { removed: gone.length, digest: after };
+}
+
 /** Creates the three synthetic accounts, approves the technician with a synthetic criterion and authorizes ONLY the customer for Sandbox payments. */
 export async function setup(env) {
   assert.equal(await readManifest(), null, 'ya existe un manifiesto: use cleanup antes de repetir setup');
-  const pre = (await sql(`select (select count(*)::int from auth.users) users,(select count(*)::int from public.jobs) jobs,(select count(*)::int from private.payment_orders) orders,(select count(*)::int from private.payment_sandbox_accounts) allowed,(select count(*)::int from private.category_requirements) reqs`))[0];
-  assert.deepEqual(pre, { users: 2, jobs: 0, orders: 0, allowed: 0, reqs: 0 }, 'el estado remoto no es el esperado (sólo los dos usuarios originales y sin datos): ' + JSON.stringify(pre));
+  const pre = (await sql(`select (select count(*)::int from auth.users) users,(select count(*)::int from public.jobs) jobs,(select count(*)::int from private.payment_orders) orders,(select count(*)::int from private.payment_sandbox_accounts) allowed,(select count(*)::int from private.category_requirements) reqs,(select count(*)::int from private.technician_applications) apps`))[0];
+  // The technician approval below needs ONE active requirement for the category (SHARED configuration): refuse to touch it while a real applicant could be affected.
+  assert.deepEqual(pre, { users: 2, jobs: 0, orders: 0, allowed: 0, reqs: 0, apps: 0 }, 'el estado remoto no es el esperado (sólo los dos usuarios originales y sin datos): ' + JSON.stringify(pre));
   const run = 's05f' + randomBytes(3).toString('hex'), admin = serviceClient(env);
-  const manifest = { run, project: PROJECT_REF, site: SITE, createdAt: stamp(), state: 'setup', preflight: pre, accounts: {}, criterion: null, requests: [], quotes: [], jobs: [], orders: [], attempts: [], notes: [] };
+  const sharedConfigBefore = await sharedConfigDigest();
+  const manifest = { run, project: PROJECT_REF, sharedConfigBefore, site: SITE, createdAt: stamp(), state: 'setup', preflight: pre, accounts: {}, criterion: null, requests: [], quotes: [], jobs: [], orders: [], attempts: [], notes: [] };
   const secrets = { run, accounts: {} };
   await writeManifest(manifest); await writeSecrets(secrets);                           // manifest first: nothing exists that it does not list
   for (const [label, type] of [['customer', 'customer'], ['technician', 'technician'], ['superadmin', 'customer']]) {
