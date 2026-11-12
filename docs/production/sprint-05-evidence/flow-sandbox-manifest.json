@@ -1516,15 +1516,37 @@
   "criterionRetiredAt": "2026-11-12T19:26:52.991Z",
   "externalOrders": [
     {
-      "reconciledAt": "2026-11-12T19:28:15.037Z",
-      "flowOrder": "11657296",
-      "http": 200,
+      "at": "2026-11-12T19:00:00Z",
+      "kind": "diagnose-create (anterior a la persistencia previa al envío)",
       "commerceOrder": "fixo-sbx-6710d0c209d0493582b421f6ca675989",
-      "flowStatus": 1,
-      "amount": "26250",
-      "currency": "CLP",
-      "paidAtFixo": false,
-      "note": "Creada por diagnose-create.mjs fuera de Fixo (sin fila local); nunca se abrió su checkout; no hay pago."
+      "flowOrder": "11657296",
+      "payerDomain": "gmail.com",
+      "state": "created",
+      "note": "Creada por un diagnóstico fuera de Fixo con un pagador que NO era del propietario (prueba@gmail.com); nunca se abrió su checkout. Se identificó por getStatusByFlowOrder; sin fila local. Reconciliada abajo.",
+      "reconciliation": {
+        "at": "2026-11-12T19:40:58.419Z",
+        "via": "flowOrder",
+        "flowOrder": "11657296",
+        "flowStatusCode": 1,
+        "amount": "26250",
+        "currency": "CLP",
+        "flowState": "pending",
+        "open": true,
+        "problem": "still_payable"
+      },
+      "reconciliations": [
+        {
+          "at": "2026-11-12T19:40:58.419Z",
+          "via": "flowOrder",
+          "flowOrder": "11657296",
+          "flowStatusCode": 1,
+          "amount": "26250",
+          "currency": "CLP",
+          "flowState": "pending",
+          "open": true,
+          "problem": "still_payable"
+        }
+      ]
     }
   ],
   "events": [

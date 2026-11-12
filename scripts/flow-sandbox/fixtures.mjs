@@ -1,6 +1,7 @@
 // Synthetic accounts and jobs for the remote Flow Sandbox run. Every created id is written to the manifest the moment it exists.
 import assert from 'node:assert/strict';
 import { randomBytes, randomUUID } from 'node:crypto';
+import { buildRetireCriterionSql } from './logic.mjs';
 import { PROJECT_REF, SITE, actorClient, lit, readManifest, readSecrets, rpc, serviceClient, sql, stamp, writeManifest, writeSecrets } from './lib.mjs';
 
 const password = () => `Flow-${randomBytes(14).toString('hex')}9aZ`;
@@ -8,14 +9,14 @@ const password = () => `Flow-${randomBytes(14).toString('hex')}9aZ`;
 /** Digest of the SHARED configuration this run is allowed to touch (category requirements). It must be identical before the run and after `retireCriterion`. */
 export const sharedConfigDigest = async () => (await sql(`select count(*)::int n, md5(coalesce(string_agg(t::text,E'\n' order by t::text),'')) d from private.category_requirements t`))[0];
 
-/** Removes the run's synthetic requirement BY ITS UUID (after checking that nothing but the synthetic application references it) and proves the shared configuration is back to its pre-run state. */
+/** Removes the run's synthetic requirement BY ITS UUID in ONE transaction: the applications and the requirements are locked (a concurrent submission cannot pick the
+ *  requirement up between the check and the delete), references are verified, the row is deleted and the shared-configuration digest is validated; any
+ *  discrepancy RAISES and the delete is rolled back. The digest is also re-read afterwards for the manifest. */
 export async function retireCriterion() {
   const m = await readManifest(); assert.ok(m?.criterion && m.sharedConfigBefore, 'sin criterio ni digest previo en el manifiesto');
-  const refs = (await sql(`select a.technician_id from private.technician_applications a where ${lit(m.criterion)}::uuid = any(a.requirement_snapshot)`)).map(r => r.technician_id);
-  assert.ok(refs.every(id => id === m.accounts.technician.id), 'el criterio lo referencia algo ajeno al técnico sintético: ' + JSON.stringify(refs));
-  const gone = await sql(`delete from private.category_requirements where id=${lit(m.criterion)} and requirement_key=${lit(m.run)} returning id`);
-  const after = await sharedConfigDigest(); assert.deepEqual(after, m.sharedConfigBefore, 'la configuración compartida no quedó igual que antes de la prueba');
-  m.criterionRetiredAt = stamp(); m.notes.push(`${stamp()} criterio sintético retirado (${gone.length} fila) y configuración compartida idéntica a la previa`); await writeManifest(m); return { removed: gone.length, digest: after };
+  await sql(buildRetireCriterionSql({ criterion: m.criterion, run: m.run, technician: m.accounts.technician.id, before: m.sharedConfigBefore }));
+  const after = await sharedConfigDigest(); assert.deepEqual(after, m.sharedConfigBefore);
+  m.criterionRetiredAt = stamp(); m.notes.push(`${stamp()} criterio sintético retirado en una transacción con bloqueos y configuración compartida idéntica a la previa`); await writeManifest(m); return { removed: 1, digest: after };
 }
 
 /** Creates the three synthetic accounts, approves the technician with a synthetic criterion and authorizes ONLY the customer for Sandbox payments. */
