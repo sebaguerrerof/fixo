@@ -121,10 +121,16 @@ Contexto autorizado por el propietario: se usa el proyecto Fixo `rjzy…` y `www
    5. Pérdida de respuesta y caída del worker (apagar el cron un minuto y reanudar).
    6. Pago tardío y posible duplicado.
    7. Adicional aceptado: saldo pendiente visible antes del cierre y pago posterior.
+   8. **Cuarentena en el cierre:** provocar un token falso (sin obligación) y una discrepancia (`provider_mismatch`, con integración controlada si Sandbox no permite generarla); comprobar que ambos aparecen en el resumen administrativo, que el cierre no procede hasta revisarlos, que el token falso se clasifica «sin obligación» y que la discrepancia exige comprobar que ningún intento asociado sigue pagable.
    En cada caso verificar **una sola orden, un solo intento pagado y una sola ejecución del efecto** (sin cobros ni transacciones duplicadas). Los casos que Sandbox no permita provocar se prueban con integración controlada y se declaran como tales.
 4. **Cierre, en este orden (PLAN §11; con las notificaciones apagadas el worker sólo hace mantenimiento y **no verifica pagos**):**
    1. Apagar **sólo** `FIXO_PAYMENTS_CREATION_ENABLED` (no se crean cobros nuevos).
-   2. **Mantener** `FIXO_PAYMENTS_NOTIFICATIONS_ENABLED=true` y el cron activos hasta que no queden intentos `creating`/`pending`/`reconciliation_required`, filas de bandeja `pending`/`processing`, ni coste Flow pendiente (resumen administrativo y `payment_worker_health()` sin degradación).
+   2. **Mantener** `FIXO_PAYMENTS_NOTIFICATIONS_ENABLED=true` y el cron activos hasta cumplir **todas** estas condiciones (la salud del cron correcta **no** las acredita; una cuarentena puede conservar un cobro externo aún pagable):
+      - Ningún intento en `creating`/`pending`/`reconciliation_required`; ninguna fila de bandeja `pending`/`processing`; ningún coste Flow pendiente.
+      - **Cuarentenas revisadas una a una y por una persona** (evidencia sanitizada en el manifiesto):
+        - *Bandeja* (`select quarantine_reason,count(*) from private.payment_inbox where state='quarantined' group by 1`): `quarantined_unknown_identity` y `flow_http_error_*` son tokens que Flow no reconoce o rechaza (p. ej. un token falso): **sin obligación financiera**, se clasifican y no bloquean el cierre. cualquier otro motivo (`retry_exhausted`, `token_undecryptable`, `quarantined_mismatch`, `ignored_incomplete`, `ignored_unknown_status`…) **sí** puede corresponder a un pago real: hay que comprobar que el intento asociado quedó resuelto (por conciliación por referencia, no por el token) o consultar el estado en el panel Sandbox de Flow.
+        - *Intentos en `quarantined` y órdenes con `review_reason`* (resumen administrativo, «Discrepancias y revisiones»): para cada uno, acreditar que **ningún intento asociado sigue pagable** (estado final en Flow Sandbox y en `payment_attempts`) y registrar la decisión humana; un `provider_mismatch`, `duplicate_payment` o `late_payment` no se resuelve solo.
+      - Resultado: lista de cuarentenas con su clasificación («sin obligación» / «revisada: sin pago pendiente» / «pago verificado»). Si alguna no se puede clasificar, **el cierre no procede** y los interruptores de recepción y el cron siguen activos.
    3. Sólo entonces apagar `FIXO_PAYMENTS_NOTIFICATIONS_ENABLED`, desactivar el cron (`payments-worker-cron-rollback.sql`), revocar las autorizaciones Sandbox y limpiar (§10).
 
 ## 10. Limpieza de fixtures por manifiesto

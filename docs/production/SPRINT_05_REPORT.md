@@ -19,7 +19,7 @@ Leyenda: **PASS local** = ejecutado hoy en base/servicios locales aislados; **PA
 | Área | Resultado | Evidencia |
 | --- | --- | --- |
 | pgTAP (`npm run db:test`, CLI 3.1.0) | **PASS local** 7 archivos / 294 tests (134 en `06_flow_payments`, incl. cancelación, retención y allowlist de cuentas Sandbox) | 2026-11-12 |
-| Suite PostgreSQL embebida `scripts/test-payments-postgres.mjs` | **PASS local** 75 checks (concurrencia, leases, cancelación por RPC reales, carreras con dos conexiones, allowlist, retención, restauración financiera) | 2026-11-12 |
+| Suite PostgreSQL embebida `scripts/test-payments-postgres.mjs` | **PASS local** 76 checks (concurrencia, leases, cancelación por RPC reales, carreras con dos conexiones, allowlist y su carrera, retención, restauración financiera) | 2026-11-12 |
 | Ejecutor Supabase Cron `scripts/test-payments-worker-cron.mjs` | **PASS local** 7 checks con pg_cron/pg_net reales (incl. 200 con fallos internos y cron detenido) y servidor HTTP local; **no activado en remoto** | 2026-11-12 |
 | Vitest | **PASS local** 52 archivos / 355 PASS con la integración PostgREST local activa | 2026-11-12 |
 | Integración PostgREST/JWT local (Supabase local) | **PASS local** (callback→bandeja→worker→`paid`, mismatch, desconocida, RPC admin) | `supabase-payment-repository.local.test.ts` |

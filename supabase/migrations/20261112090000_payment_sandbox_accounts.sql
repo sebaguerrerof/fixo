@@ -43,6 +43,9 @@ begin
  actor:=private.require_superadmin();
  clean:=trim(coalesce(change_reason,''));
  if target_user is null or enabled is null or length(clean) not between 10 and 1000 then raise exception 'Solicitud inválida' using errcode='22023'; end if;
+ -- Serialize per target account BEFORE reading its state: for a first authorization there is no row to lock, so two concurrent calls would both see
+ -- "no row" and both record 'authorized'. The lock makes the second one a 'reauthorized' (or a no-op revocation) and keeps the history truthful.
+ perform pg_advisory_xact_lock(71301431,hashtext(target_user::text));
  select lower(email) into mail from auth.users where id=target_user;
  if mail is null or not exists(select 1 from public.profiles where id=target_user) then raise exception 'Cuenta inexistente' using errcode='22023'; end if;
  if enabled then

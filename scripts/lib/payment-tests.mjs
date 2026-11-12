@@ -323,6 +323,32 @@ export async function runPaymentTests({admin,actors,server,clients,check,call,cu
   assert.equal((await observe(w,p.attempt_id,{flow,commerce:p.commerce_order,key:'race2-replay'})).result,'stale');
   assert.equal((await noticesPerEvent(j)).length,1);assert.equal(await eventCount(p.order_id,'job_cancelled'),0);
  });
+ await check('S05 Sandbox allowlist race: two concurrent FIRST authorizations of the same account are serialized (authorized, then reauthorized); the current row stays single',async()=>{
+  const target=actors.technicianB.id;
+  assert.equal((await admin.query('select count(*)::int n from private.payment_sandbox_accounts where user_id=$1',[target])).rows[0].n,0);   // really a first authorization
+  const adminClaims=(await actors.admin.client.query("select current_setting('request.jwt.claims') c")).rows[0].c;
+  const second=server.getPgClient('postgres','127.0.0.1');await second.connect();clients.push(second);
+  await second.query('set role authenticated');await second.query("select set_config('request.jwt.claims',$1,false)",[adminClaims]);
+  const set=(c,reason)=>c.query('select public.payment_sandbox_account_set($1,true,$2) value',[target,reason]);
+  await actors.admin.client.query('begin');
+  await set(actors.admin.client,'Primera autorización concurrente de la cuenta');                                  // holds the per-account lock, uncommitted
+  const pending=set(second,'Segunda autorización concurrente de la cuenta');                                        // must WAIT, not read "no row"
+  await waitBlocked('%payment_sandbox_account_set%');
+  assert.equal((await admin.query('select count(*)::int n from private.payment_sandbox_account_events where user_id=$1',[target])).rows[0].n,0);   // nothing visible before commit
+  await actors.admin.client.query('commit');await pending;
+  const ev=(await admin.query('select action,reason from private.payment_sandbox_account_events where user_id=$1 order by created_at,id',[target])).rows;
+  assert.deepEqual(ev,[{action:'authorized',reason:'Primera autorización concurrente de la cuenta'},{action:'reauthorized',reason:'Segunda autorización concurrente de la cuenta'}]);
+  const row=(await admin.query('select reason,revoked_at from private.payment_sandbox_accounts where user_id=$1',[target])).rows;
+  assert.equal(row.length,1);assert.equal(row[0].reason,'Segunda autorización concurrente de la cuenta');assert.equal(row[0].revoked_at,null);
+  // Concurrent revocations: exactly one effective revocation event.
+  await actors.admin.client.query('begin');
+  await actors.admin.client.query('select public.payment_sandbox_account_set($1,false,$2) value',[target,'Primera revocación concurrente de la cuenta']);
+  const p2=second.query('select public.payment_sandbox_account_set($1,false,$2) value',[target,'Segunda revocación concurrente de la cuenta']);
+  await waitBlocked('%payment_sandbox_account_set%');await actors.admin.client.query('commit');await p2;
+  assert.equal((await admin.query("select count(*)::int n from private.payment_sandbox_account_events where user_id=$1 and action='revoked'",[target])).rows[0].n,1);
+  await call('admin','select public.payment_sandbox_account_set($1,false,$2) value',[target,'Sin efecto: ya estaba revocada la cuenta']);   // idempotent no-op
+  assert.equal((await admin.query("select count(*)::int n from private.payment_sandbox_account_events where user_id=$1",[target])).rows[0].n,3);
+ });
  await check('S05 reconciliation vs checkout persistence: a pending observation never makes an attempt reopenable without its checkout (both orders, one charge)',async()=>{
   const attemptRow=async id=>(await admin.query('select state,flow_order::text fo,error_code,checkout_ciphertext is not null has_checkout from private.payment_attempts where id=$1',[id])).rows[0];
   const cust=actors.customerA.id,ambiguous=id=>wcall(w,'select public.payment_attempt_mark_ambiguous($1,$2) value',[id,'checkout_persist_failed']);
