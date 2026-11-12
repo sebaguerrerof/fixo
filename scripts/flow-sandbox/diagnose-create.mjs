@@ -9,7 +9,7 @@ const text = await readFile(resolve('.env.local'), 'utf8'); const env = {};
 for (const line of text.split(/\r?\n/)) { const m = /^([A-Z0-9_]+)=(.*)$/.exec(line); if (m) env[m[1]] = m[2].trim().replace(/^"|"$/g, ''); }
 assert.ok(env.FLOW_API_KEY && env.FLOW_SECRET_KEY && env.FIXO_FLOW_CALLBACK_ORIGIN);
 const email = process.argv[2] ?? 'sintetico@sandbox.fixo.invalid', origin = process.argv[3] ?? env.FIXO_FLOW_CALLBACK_ORIGIN;
-const params = { amount: '26250', apiKey: env.FLOW_API_KEY, commerceOrder: `fixo-sandbox-${randomUUID()}`, currency: 'CLP', email, subject: 'Prueba Fixo Sandbox', urlConfirmation: `${origin}/api/payments/flow/confirmation`, urlReturn: `${origin}/api/payments/flow/return` };
+const params = { amount: '26250', apiKey: env.FLOW_API_KEY, commerceOrder: `fixo-sbx-${randomUUID().replaceAll("-", "")}`, currency: 'CLP', email, subject: 'Prueba Fixo Sandbox', urlConfirmation: `${origin}/api/payments/flow/confirmation`, urlReturn: `${origin}/api/payments/flow/return` };
 const s = createHmac('sha256', env.FLOW_SECRET_KEY).update(Object.keys(params).sort().map(k => k + params[k]).join(''), 'utf8').digest('hex');
 const res = await fetch('https://sandbox.flow.cl/api/payment/create', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ ...params, s }).toString(), redirect: 'error' });
 const body = await res.text();

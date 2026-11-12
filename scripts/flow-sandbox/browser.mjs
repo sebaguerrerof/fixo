@@ -27,7 +27,12 @@ export async function startPayment(page, jobId, shotDir) {
   const form = page.locator('form', { hasText: 'Total a pagar' }); await form.waitFor({ state: 'visible', timeout: 30000 });
   await form.getByRole('checkbox').check();
   await page.screenshot({ path: `${shotDir}/01-job-before-pay.png`, fullPage: true });
-  await Promise.all([page.waitForURL(u => u.hostname !== new URL(SITE).hostname, { timeout: 60000 }).catch(() => null), form.getByRole('button', { name: /Pagar/ }).click()]);
+  const off = u => u.hostname !== new URL(SITE).hostname;
+  for (let click = 1; click <= 2; click++) {                       // a previous attempt that ended definitively asks for a second click (new idempotency key)
+    await Promise.all([page.waitForURL(off, { timeout: click === 1 ? 25000 : 60000 }).catch(() => null), form.getByRole('button', { name: /Pagar/ }).click()]);
+    if (off(new URL(page.url()))) break;
+    await page.waitForTimeout(1500);
+  }
   await page.waitForLoadState('domcontentloaded').catch(() => {});
   return page;
 }

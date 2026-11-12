@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-import { FlowProvider, PaymentsUnavailableError } from "./flow-provider";
-import { FlowClient, type FlowFetch } from "./flow-client";
+import { FlowProvider, PaymentsUnavailableError, resolveSyntheticPayerEmail } from "./flow-provider";
+import { FlowClient, FlowPreSendError, type FlowFetch } from "./flow-client";
 import { loadFlowConfig } from "./flow-config";
 import { preparePaymentOrder } from "./prepare-payment-order";
 import type { Job } from "@/domain/entities/job";
@@ -38,6 +38,16 @@ describe("FlowProvider", () => {
     const res = await provider.createOrder(input);
     const p = new URLSearchParams(body);
     expect(res.flowOrder).toBe(5); expect(p.get("amount")).toBe("105000"); expect(p.get("commerceOrder")).toBe(input.commerceOrder); expect(p.get("commerceOrder")).not.toContain(id);
+  });
+  it("synthetic .invalid payers are sent with the owner-configured deliverable address (Flow error 1620); real customers are never replaced; no configuration => nothing is sent", async () => {
+    const sentEmail = async (env: Record<string, string | undefined>, payerEmail: string) => {
+      if (sandbox.mode !== "sandbox") throw new Error("x"); let body = "";
+      const client = new FlowClient(sandbox, async (_u, init) => { body = init.body ?? ""; return { status: 200, text: async () => JSON.stringify({ url: "https://sandbox.flow.cl/app/web/pay.php", token: "T", flowOrder: 5 }) }; });
+      await new FlowProvider(client, resolveSyntheticPayerEmail(env)).createOrder({ ...input, payerEmail }); return new URLSearchParams(body).get("email");
+    };
+    expect(await sentEmail({ FIXO_FLOW_SANDBOX_PAYER_EMAIL: "Owner.Test@Gmail.com" }, "s05f-customer@sandbox.fixo.invalid")).toBe("owner.test@gmail.com");
+    expect(await sentEmail({ FIXO_FLOW_SANDBOX_PAYER_EMAIL: "owner.test@gmail.com" }, "real.customer@gmail.com")).toBe("real.customer@gmail.com");
+    for (const env of [{}, { FIXO_FLOW_SANDBOX_PAYER_EMAIL: "" }, { FIXO_FLOW_SANDBOX_PAYER_EMAIL: "x@sandbox.invalid" }, { FIXO_FLOW_SANDBOX_PAYER_EMAIL: "not-an-email" }]) await expect(sentEmail(env, "s05f-customer@sandbox.fixo.invalid")).rejects.toBeInstanceOf(FlowPreSendError);
   });
   it("refuses inconsistent totals before any network call and still never refunds", async () => {
     const provider = flow(async () => { throw new Error("no network expected"); });
