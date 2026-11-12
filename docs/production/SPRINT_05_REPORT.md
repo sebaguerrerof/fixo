@@ -1,17 +1,17 @@
 # Sprint 05 — Flow Chile Sandbox: reporte de entrega
 
-**Fecha de corte: 2026-11-12.** **Estado global: implementación y pruebas locales completas; Flow Sandbox real NO PROBADO.** Según PLAN §9, el sprint **no puede declararse completo** sin evidencia Sandbox. Ningún resultado de este reporte proviene de Flow real. Las únicas operaciones remotas realizadas están listadas en «Estado operativo» y ninguna toca Flow ni habilita cobros.
+**Fecha de corte: 2026-11-12 (actualizado tras las fases A y B).** **Estado global: implementación y pruebas locales completas; Flow Sandbox real NO PROBADO.** Según PLAN §9, el sprint **no puede declararse completo** sin evidencia Sandbox. Ningún resultado de este reporte proviene de Flow real. Las únicas operaciones remotas realizadas están listadas en «Estado operativo» y ninguna toca Flow ni habilita cobros.
 
 ## 0. Estado operativo (corte 2026-11-12)
 
 | Elemento | Estado | Detalle |
 | --- | --- | --- |
 | Migraciones `20261110140000`, `20261111120000`, `20261111130000` | **APLICADAS en producción** (proyecto Fixo `rjzy…`) | Por decisión expresa del propietario; preflight de sólo lectura previo (2 usuarios originales, sin datos comerciales), `db push` y verificación posterior. Pagos habilitables sólo con interruptores. |
-| Migración `20261112090000_payment_sandbox_accounts.sql` (allowlist de cuentas Sandbox + historial) | **PENDIENTE, sólo local** | No aplicada en ningún destino remoto; sigue editándose in situ. Requiere aprobación (fase A). |
-| Push | **Hecho** hasta el commit `882c132` de la rama `codex/sprint-04-job-management`; los commits posteriores (cron, allowlist, correcciones) son **locales** | Sin force; `main` intacto. |
-| Deploy a `www.soyfixo.cl` | **Hecho** con el código de ese corte (sin allowlist ni endpoint endurecido) | Variables de Flow y de pagos cargadas en Vercel con ambos interruptores en `false`. Smoke de sólo lectura PASS. El código posterior **no está desplegado**. |
+| Migración `20261112090000_payment_sandbox_accounts.sql` (allowlist de cuentas Sandbox + historial) | **APLICADA en producción** (fase A, aprobada por el propietario) | Verificada: RPC con execute sólo para `authenticated`, tablas con RLS, trigger de historial, **0 cuentas autorizadas** (nadie puede pagar), 2 usuarios intactos. Las cuatro migraciones de pagos están aplicadas. |
+| Push | **Hecho** hasta el commit del reporte de esta fase en la rama `codex/sprint-04-job-management` | Sin force; `main` intacto. |
+| Deploy a `www.soyfixo.cl` | **Hecho** (fase A) con el código completo (allowlist, endpoint con logs, cron preparado) | Variables de Flow y de pagos en Vercel con ambos interruptores en `false`. Smoke de sólo lectura PASS: `/`, `/login`, rutas protegidas 307, worker sin credencial 401, con credencial 200 `housekeepingFailures:0`, callback 503 (recepción apagada). |
 | Interruptores de pagos | **Apagados** (`FIXO_PAYMENTS_CREATION_ENABLED=false`, `FIXO_PAYMENTS_NOTIFICATIONS_ENABLED=false`) | Cobros reales: inexistentes (API fijada a Sandbox). |
-| Ejecutor del worker | **Decidido: Supabase Cron** (no Vercel Cron). **Preparado, NO activado** | `supabase/ops/payments-worker-cron.sql` no se ha aplicado; no hay secretos en Vault ni extensiones `pg_cron`/`pg_net` instaladas en remoto. Probado sólo en local. Mientras no se active, un pago aprobado en Flow no se reflejaría en Fixo. |
+| Ejecutor del worker | **Supabase Cron ACTIVO** (fase B, aprobada) | `pg_cron` y `pg_net` instalados; secretos `fixo_payments_worker_url/secret` en Vault; job `fixo-payments-worker` (`* * * * *`). Primeros ticks reales: `scheduled=true`, 3 de 3 saludables, `degraded=false`, resumen con todos los contadores en 0. Con las notificaciones apagadas sólo hace mantenimiento (limpieza y retención): **no verifica pagos hasta encender `FIXO_PAYMENTS_NOTIFICATIONS_ENABLED`**. |
 | Pruebas Flow Sandbox | **No ejecutadas** | Requieren aprobaciones A–D (runbook §9). |
 
 Leyenda: **PASS local** = ejecutado hoy en base/servicios locales aislados; **PASS integración/Sandbox** = contra Flow real (ninguno); **FAIL**; **NOT TESTED**. Las cifras del Sprint 04 no se reutilizan.
@@ -67,7 +67,7 @@ Los casos adversos (callback falso, mismatch, tardío, duplicado, replay, concur
 ## 4. Limitaciones y riesgos pendientes
 
 1. **Sandbox real sin ejecutar.** Todo el comportamiento frente a Flow (formato real de respuestas, `fee`, tiempos, callbacks reales) está validado sólo contra especificación y dobles.
-2. **Ejecutor del worker decidido (Supabase Cron) pero NO activado**: hasta aplicar `payments-worker-cron.sql` (aprobación B) no hay worker en producción y un pago aprobado en Flow no se reflejaría. No existe `vercel.json` ni se usará Vercel Cron.
+2. **Ejecutor del worker: Supabase Cron activo** desde la fase B (no hay `vercel.json` ni Vercel Cron). Con las notificaciones apagadas no concilia pagos; no hay alertas automáticas (la salud se consulta por SQL con rol propietario).
 3. **Rotación de clave de tokens**: la implementación lee una sola clave; rotar con tokens en vuelo los vuelve indescifrables.
 4. **Trigger `payment_policy_append_only`**: cambio de esquema dentro del alcance del PLAN (§5 "historial inmutable"), **ya aplicado en producción** junto a la primera migración, sin revisión específica de Codex.
 5. **Limitador**: sin `FIXO_TRUSTED_IP_HEADER` todos los callbacks comparten un cubo de 120/min; `payment_rate_limit_cleanup` se ejecuta en cada pasada del worker; umbrales no configurables.
@@ -85,11 +85,10 @@ Los casos adversos (callback falso, mismatch, tardío, duplicado, replay, concur
 
 ## 5. Qué falta (aprobaciones e insumos)
 
-- **A.** Aplicar la cuarta migración en producción y desplegar el código posterior (allowlist, endpoint con logs).
-- **B.** Cron: crear `fixo_payments_worker_url`/`fixo_payments_worker_secret` en Vault y aplicar `payments-worker-cron.sql`; comprobar `private.payment_worker_health()`.
+- ~~A. Cuarta migración y deploy~~ **hecho**. ~~B. Cron~~ **hecho y sano**.
 - **C.** Cuentas sintéticas `.invalid`, manifiesto y la matriz del runbook §9 con los interruptores encendidos sólo durante la ventana de prueba (más el script remoto que conduce el checkout de Flow Sandbox, aún por escribir).
 - **D.** Elección de limpieza (retención etiquetada o purga transaccional por manifiesto; los registros financieros son append-only).
-- Decisión sobre la cabecera de IP confiable (`FIXO_TRUSTED_IP_HEADER`).
+- Decisión sobre la cabecera de IP confiable (`FIXO_TRUSTED_IP_HEADER`) y sobre alertas operativas del cron.
 - Después: evidencia sanitizada, consulta del resultado de GitHub Actions y actualización de este reporte.
 
 ## 6. Archivos y evidencia
