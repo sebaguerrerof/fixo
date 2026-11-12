@@ -8,9 +8,25 @@ create table private.payment_sandbox_accounts(
  authorized_by uuid not null references public.profiles(id),
  reason text not null check(length(trim(reason)) between 10 and 1000),
  authorized_at timestamptz not null default now(),
- revoked_at timestamptz, revoked_by uuid references public.profiles(id),
- check((revoked_at is null)=(revoked_by is null))
+ revoked_at timestamptz, revoked_by uuid references public.profiles(id), revoke_reason text check(revoke_reason is null or length(trim(revoke_reason)) between 10 and 1000),
+ check((revoked_at is null)=(revoked_by is null) and (revoked_at is null)=(revoke_reason is null))
 );
+-- The row above is only the CURRENT state. Every authorization, re-authorization and revocation is also recorded here, append-only (actor, date, reason).
+create table private.payment_sandbox_account_events(
+ id uuid primary key default gen_random_uuid(),
+ user_id uuid not null references public.profiles(id),
+ action text not null check(action in('authorized','reauthorized','revoked')),
+ actor_id uuid not null references public.profiles(id),
+ reason text not null check(length(trim(reason)) between 10 and 1000),
+ created_at timestamptz not null default clock_timestamp()   -- real wall-clock order even inside one transaction
+);
+create index payment_sandbox_account_events_user_idx on private.payment_sandbox_account_events(user_id,created_at);
+create function private.payment_sandbox_account_events_append_only()
+returns trigger language plpgsql set search_path=pg_catalog as $$
+begin raise exception 'El historial de autorizaciones Sandbox es inmutable' using errcode='PT409'; end; $$;
+create trigger payment_sandbox_account_events_append_only before update or delete on private.payment_sandbox_account_events for each row execute function private.payment_sandbox_account_events_append_only();
+alter table private.payment_sandbox_account_events enable row level security;
+revoke all on private.payment_sandbox_account_events from public,anon,authenticated,service_role;
 alter table private.payment_sandbox_accounts enable row level security;
 revoke all on private.payment_sandbox_accounts from public,anon,authenticated,service_role;
 
@@ -22,18 +38,22 @@ $$;
 
 create function public.payment_sandbox_account_set(target_user uuid,enabled boolean,change_reason text)
 returns jsonb language plpgsql security definer set search_path=pg_catalog as $$
-declare actor uuid; mail text;
+declare actor uuid; mail text; had_row boolean; was_active boolean; clean text;
 begin
  actor:=private.require_superadmin();
- if target_user is null or enabled is null or length(trim(coalesce(change_reason,''))) not between 10 and 1000 then raise exception 'Solicitud inválida' using errcode='22023'; end if;
+ clean:=trim(coalesce(change_reason,''));
+ if target_user is null or enabled is null or length(clean) not between 10 and 1000 then raise exception 'Solicitud inválida' using errcode='22023'; end if;
  select lower(email) into mail from auth.users where id=target_user;
  if mail is null or not exists(select 1 from public.profiles where id=target_user) then raise exception 'Cuenta inexistente' using errcode='22023'; end if;
  if enabled then
   if mail not like '%.invalid' then raise exception 'Sólo cuentas sintéticas (correo .invalid) pueden usar pagos Sandbox' using errcode='PT409'; end if;
-  insert into private.payment_sandbox_accounts(user_id,authorized_by,reason)values(target_user,actor,trim(change_reason))
-  on conflict(user_id)do update set authorized_by=excluded.authorized_by,reason=excluded.reason,authorized_at=now(),revoked_at=null,revoked_by=null;
+  select true,(revoked_at is null) into had_row,was_active from private.payment_sandbox_accounts where user_id=target_user for update;
+  insert into private.payment_sandbox_accounts(user_id,authorized_by,reason)values(target_user,actor,clean)
+  on conflict(user_id)do update set authorized_by=excluded.authorized_by,reason=excluded.reason,authorized_at=now(),revoked_at=null,revoked_by=null,revoke_reason=null;
+  insert into private.payment_sandbox_account_events(user_id,action,actor_id,reason)values(target_user,case when coalesce(had_row,false) then 'reauthorized' else 'authorized' end,actor,clean);
  else
-  update private.payment_sandbox_accounts set revoked_at=now(),revoked_by=actor where user_id=target_user and revoked_at is null;
+  update private.payment_sandbox_accounts set revoked_at=now(),revoked_by=actor,revoke_reason=clean where user_id=target_user and revoked_at is null returning true into was_active;
+  if coalesce(was_active,false) then insert into private.payment_sandbox_account_events(user_id,action,actor_id,reason)values(target_user,'revoked',actor,clean); end if;
  end if;
  return jsonb_build_object('user_id',target_user,'enabled',private.payment_sandbox_account_allowed(target_user));
 end; $$;
@@ -80,6 +100,7 @@ do $$ declare src text; begin
  execute src;
 end $$;
 
+revoke all on function private.payment_sandbox_account_events_append_only()from public,anon,authenticated,service_role;
 revoke all on function private.payment_sandbox_account_allowed(uuid)from public,anon,authenticated,service_role;
 revoke all on function public.payment_sandbox_account_set(uuid,boolean,text)from public,anon,authenticated,service_role;
 grant execute on function public.payment_sandbox_account_set(uuid,boolean,text)to authenticated;

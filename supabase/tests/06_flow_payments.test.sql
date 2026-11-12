@@ -4,14 +4,14 @@
 begin;
 set local search_path=public,extensions;
 create extension if not exists pgtap with schema extensions;
-select plan(122);
+select plan(134);
 
 -- ------------------------------------------------------------------ 1. structure and privileges
 select is((select count(*)::int from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='private' and c.relkind='r'
- and c.relname=any(array['payment_pricing_policies','job_extra_charges','payment_orders','payment_attempts','payment_events','payment_inbox','payment_rate_limits','payment_sandbox_accounts'])),8,'financial tables exist in the private schema');
+ and c.relname=any(array['payment_pricing_policies','job_extra_charges','payment_orders','payment_attempts','payment_events','payment_inbox','payment_rate_limits','payment_sandbox_accounts','payment_sandbox_account_events'])),9,'financial tables exist in the private schema');
 select is((select count(*)::int from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='private' and c.relrowsecurity
- and c.relname=any(array['payment_pricing_policies','job_extra_charges','payment_orders','payment_attempts','payment_events','payment_inbox','payment_rate_limits','payment_sandbox_accounts'])),8,'RLS is enabled on every financial table');
-select is((select count(*)::int from unnest(array['payment_pricing_policies','job_extra_charges','payment_orders','payment_attempts','payment_events','payment_inbox','payment_rate_limits','payment_sandbox_accounts']) t
+ and c.relname=any(array['payment_pricing_policies','job_extra_charges','payment_orders','payment_attempts','payment_events','payment_inbox','payment_rate_limits','payment_sandbox_accounts','payment_sandbox_account_events'])),9,'RLS is enabled on every financial table');
+select is((select count(*)::int from unnest(array['payment_pricing_policies','job_extra_charges','payment_orders','payment_attempts','payment_events','payment_inbox','payment_rate_limits','payment_sandbox_accounts','payment_sandbox_account_events']) t
  cross join unnest(array['anon','authenticated','service_role']) r cross join unnest(array['SELECT','INSERT','UPDATE','DELETE']) p
  where has_table_privilege(r,'private.'||t,p)),0,'no role has direct DML or SELECT on any financial table');
 select is((select count(*)::int from unnest(array['payment_policy_current()','payment_policy_set(integer,integer,text)','payment_prepare(uuid,uuid,integer,boolean,uuid)','job_extra_propose(uuid,uuid,text,bigint)',
@@ -95,6 +95,25 @@ select pg_temp.as_user(5);
 set local role authenticated;
 select lives_ok($$select public.payment_sandbox_account_set('95000000-0000-4000-8000-000000000001',true,'Reautorización de prueba pgTAP S05')$$,'re-authorization restores access');
 reset role;
+-- history: every authorization, revocation and re-authorization is recorded (append-only) with actor, date and reason
+select is((select string_agg(action,',' order by created_at,id) from private.payment_sandbox_account_events where user_id='95000000-0000-4000-8000-000000000001'),'authorized,revoked,reauthorized','authorize, revoke and re-authorize are each recorded in order');
+select is((select count(*)::int from private.payment_sandbox_account_events where user_id='95000000-0000-4000-8000-000000000001' and actor_id='95000000-0000-4000-8000-000000000005' and length(reason)>=10),3,'each event keeps its actor and mandatory reason');
+select is((select reason from private.payment_sandbox_account_events where user_id='95000000-0000-4000-8000-000000000001' and action='revoked'),'Revocación de prueba pgTAP S05','the revocation reason is stored');
+select is((select reason from private.payment_sandbox_account_events where user_id='95000000-0000-4000-8000-000000000001' and action='reauthorized'),'Reautorización de prueba pgTAP S05','the re-authorization keeps its own reason (the current row is only the current state)');
+select throws_ok($$update private.payment_sandbox_account_events set reason='x padding padding'$$,'PT409',null,'the authorization history is immutable (update)');
+select throws_ok($$delete from private.payment_sandbox_account_events$$,'PT409',null,'the authorization history is immutable (delete)');
+select pg_temp.as_user(5);
+set local role authenticated;
+select lives_ok($$select public.payment_sandbox_account_set('95000000-0000-4000-8000-000000000001',false,'Primera revocación con motivo válido')$$,'revoking an active account');
+select lives_ok($$select public.payment_sandbox_account_set('95000000-0000-4000-8000-000000000001',false,'Segunda revocación sin efecto real')$$,'revoking an already revoked account is a harmless no-op');
+reset role;
+select is((select count(*)::int from private.payment_sandbox_account_events where user_id='95000000-0000-4000-8000-000000000001' and action='revoked'),2,'a no-op revocation adds no event');
+select is((select revoke_reason from private.payment_sandbox_accounts where user_id='95000000-0000-4000-8000-000000000001'),'Primera revocación con motivo válido','the current row keeps the revocation reason');
+select pg_temp.as_user(5);
+set local role authenticated;
+select lives_ok($$select public.payment_sandbox_account_set('95000000-0000-4000-8000-000000000001',true,'Reautorización final para continuar la prueba')$$,'re-authorized again so the rest of the suite can pay');
+reset role;
+select is((select revoke_reason from private.payment_sandbox_accounts where user_id='95000000-0000-4000-8000-000000000001'),null,'re-authorization clears the CURRENT revocation fields while the history keeps them');
 select pg_temp.as_user(4);
 set local role authenticated;
 select is((select jsonb_array_length((public.payment_admin_overview())->'sandbox_accounts')),1,'the moderator can read who is authorized (read-only)');

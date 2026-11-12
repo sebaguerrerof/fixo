@@ -53,12 +53,7 @@ Cualquier otro valor equivale a apagado. Con la creación apagada la acción res
 **Disponibilidad:** en el proyecto Fixo (`rjzy…`) `pg_cron 1.6.4` y `pg_net 0.20.4` figuran como extensiones disponibles (aún **no instaladas**) y `supabase_vault 0.3.1` ya está instalada (consulta de catálogo, sólo lectura). Los límites exactos del plan Free no se pueden consultar por CLI; el intervalo de un minuto es el mínimo de la sintaxis estándar y la carga es de una petición HTTP por minuto.
 
 **Piezas (todo fuera de `supabase/migrations`, porque habilita extensiones y un calendario por entorno):**
-- `supabase/ops/payments-worker-cron.sql` (idempotente): extensiones, tabla `private.payment_worker_ticks`, `private.payment_worker_tick()`, `private.payment_worker_health()` y `cron.schedule('fixo-payments-worker','* * * * *',…)`.
-- `supabase/ops/payments-worker-cron-rollback.sql`: `cron.unschedule`; no borra datos, funciones ni secretos.
-- **Secretos sólo en Supabase Vault:** `fixo_payments_worker_url` (`https://www.soyfixo.cl/api/payments/worker`) y `fixo_payments_worker_secret` (el mismo valor que `FIXO_PAYMENTS_WORKER_SECRET` de Vercel). El texto del cron y el registro de ticks no contienen el secreto; una configuración ausente, un secreto < 32 caracteres o una URL fuera del patrón estricto (https, ruta exacta; http sólo a loopback para pruebas) **no envía nada** (falla cerrado).
-- **Autenticación:** Bearer con comparación en tiempo constante; sin credencial 401.
-- **Idempotencia y reintentos:** viven en la BD/worker (leases, fencing, `SKIP LOCKED`, backoff exponencial por elemento). Un tick perdido, repetido o solapado es inocuo; el siguiente minuto es el reintento. `maxDuration=30 s` en la ruta y `timeout_milliseconds=25000` en `pg_net`.
-- **Logs:** el endpoint emite una línea JSON por ejecución (`payments_worker_run|error|rejected`, estado, ms y contadores; sólo la *clase* del error; nunca secretos, tokens, URLs ni datos de usuario). `private.payment_worker_health()` (consulta SQL por un administrador de la base) resume los últimos 15 min: `ok_15m`, `failed_15m`, `unanswered_15m`, `last_status`, `last_summary` (contadores) y `degraded` (alguna de las 5 últimas peticiones no fue 200).
+- `supabase/ops/payments-worker-cron.sql` (idempotente): extensiones, tabla `private.payment_worker_ticks`, `private.payment_worker_tick()`, `private.payment_worker_health()` (consulta SQL por un administrador de la base) resume los últimos 15 min. Una respuesta es *saludable* sólo si es HTTP 200 **y** sus contadores no informan fallos internos (`failures=0` y `housekeepingFailures=0`; contadores ausentes o ilegibles ⇒ no saludable). Campos: `ok_15m`, `failed_15m` (no-200), `internal_failures_15m` (200 con fallos), `unanswered_15m`, `last_status`, `last_summary`, `last_request_age_seconds`, `last_healthy_age_seconds`, `stale` y `degraded`. `degraded` es verdadero si no hay peticiones en los últimos 3 minutos (cron detenido o nunca ejecutado), si no hubo una ejecución saludable en los últimos 5 minutos, o si alguna de las 5 últimas peticiones fue no saludable (no-200, 200 con fallos internos, timeout o sin respuesta tras 2 minutos).
 - **Prueba local:** `node scripts/test-payments-worker-cron.mjs` (pg_cron/pg_net reales del Supabase local contra un servidor HTTP local; 5 checks).
 
 **Activación (requiere aprobación explícita del propietario, no se hace sola):** (1) desplegar el código con el endpoint endurecido; (2) crear los dos secretos en Vault; (3) aplicar `payments-worker-cron.sql`; (4) comprobar `private.payment_worker_health()` (`ok_15m ≥ 1`, `degraded=false`). Con las notificaciones apagadas el tick sólo hace mantenimiento (limpieza de límites y retención). Un pago aprobado en Flow **no se refleja** en Fixo sin el worker: la verificación autenticada es la única que acredita el pago.
@@ -106,7 +101,7 @@ Un superadmin puede pedir "Reconsultar coste Flow" (`payment_request_reconciliat
 
 ### Cuentas autorizadas para pagos Sandbox (migración `20261112090000_payment_sandbox_accounts.sql`)
 Los pagos Sandbox sólo existen para **cuentas sintéticas autorizadas**, además de los interruptores globales y de la ventana por trabajo:
-- Autoriza/revoca únicamente un **superadmin** con `payment_sandbox_account_set(usuario, habilitar, motivo)`. Sólo se acepta una cuenta cuyo correo de Auth termina en `.invalid` (TLD reservado, sin buzón real); un correo enrutable se rechaza (PT409) y una cuenta autorizada cuyo correo deja de ser `.invalid` pierde el acceso.
+- Autoriza/revoca únicamente un **superadmin** con `payment_sandbox_account_set(usuario, habilitar, motivo)`. La fila de `payment_sandbox_accounts` es sólo el **estado vigente** (incluye el motivo de la revocación vigente); cada autorización, reautorización y revocación (que cambie el estado) queda además en `payment_sandbox_account_events`, **inmutable** (PT409 a update/delete), con actor, fecha y motivo. Sólo se acepta una cuenta cuyo correo de Auth termina en `.invalid` (TLD reservado, sin buzón real); un correo enrutable se rechaza (PT409) y una cuenta autorizada cuyo correo deja de ser `.invalid` pierde el acceso.
 - **Backend (fuente de verdad):** `payment_prepare` (antes de crear orden), `payment_attempt_begin_create` (antes de cualquier llamada a Flow) y `payment_attempt_checkout` (reapertura) exigen la cuenta autorizada y vigente (42501/PT409). Un cliente real no puede preparar, reservar ni reabrir un pago aunque forje la petición y aunque los interruptores estén encendidos.
 - **Frontend (espejo):** `job_payments` devuelve `sandbox_enabled`; quien no está autorizado y no tiene órdenes **no ve el panel de pagos ni el botón** (si ya existe una orden conserva su historial sin botón). Falla cerrado (`!== true` ⇒ no autorizado). `/admin/configuracion` lista las cuentas autorizadas (sólo lectura).
 - Sin cuentas autorizadas, los pagos Sandbox no están disponibles para nadie. Los cobros reales no existen: la API de Flow está fijada a Sandbox.
@@ -127,7 +122,10 @@ Contexto autorizado por el propietario: se usa el proyecto Fixo `rjzy…` y `www
    6. Pago tardío y posible duplicado.
    7. Adicional aceptado: saldo pendiente visible antes del cierre y pago posterior.
    En cada caso verificar **una sola orden, un solo intento pagado y una sola ejecución del efecto** (sin cobros ni transacciones duplicadas). Los casos que Sandbox no permita provocar se prueban con integración controlada y se declaran como tales.
-4. **Cierre:** apagar los interruptores, dejar el cron hasta resolver pendientes, revocar la autorización y limpiar (§10).
+4. **Cierre, en este orden (PLAN §11; con las notificaciones apagadas el worker sólo hace mantenimiento y **no verifica pagos**):**
+   1. Apagar **sólo** `FIXO_PAYMENTS_CREATION_ENABLED` (no se crean cobros nuevos).
+   2. **Mantener** `FIXO_PAYMENTS_NOTIFICATIONS_ENABLED=true` y el cron activos hasta que no queden intentos `creating`/`pending`/`reconciliation_required`, filas de bandeja `pending`/`processing`, ni coste Flow pendiente (resumen administrativo y `payment_worker_health()` sin degradación).
+   3. Sólo entonces apagar `FIXO_PAYMENTS_NOTIFICATIONS_ENABLED`, desactivar el cron (`payments-worker-cron-rollback.sql`), revocar las autorizaciones Sandbox y limpiar (§10).
 
 ## 10. Limpieza de fixtures por manifiesto
 
@@ -140,8 +138,8 @@ Los usuarios originales no se modifican en ningún caso.
 
 | Comando | Qué cubre |
 | --- | --- |
-| `npm run db:test` | pgTAP (incluye `06_flow_payments`, 122 aserciones; 282 en total). |
+| `npm run db:test` | pgTAP (incluye `06_flow_payments`, 134 aserciones; 294 en total). |
 | `node scripts/test-payments-postgres.mjs` | 75 checks en PostgreSQL embebido (concurrencia, leases, allowlist, retención, restauración). |
-| `node scripts/test-payments-worker-cron.mjs` | Ejecutor Supabase Cron contra pg_cron/pg_net locales (5 checks; exige `FIXO_PAYMENTS_LOCAL_SUPABASE=isolated-local` y `FIXO_TEST_DB_URL`). |
+| `node scripts/test-payments-worker-cron.mjs` | Ejecutor Supabase Cron contra pg_cron/pg_net locales (7 checks, incl. HTTP 200 con fallos internos y ausencia prolongada de ticks; exige `FIXO_PAYMENTS_LOCAL_SUPABASE=isolated-local` y `FIXO_TEST_DB_URL`). |
 | `npm run test` | Vitest (integración PostgREST local con variables `FIXO_PAYMENTS_LOCAL_SUPABASE=isolated-local`, `FIXO_TEST_*`). |
 | `node scripts/test-payments-browser.mjs` | Navegador por rol, sólo local; deja una versión nueva de política → ejecutar `supabase db reset` después. |

@@ -2,7 +2,7 @@
 // source data into a second, new database built from the canonical migrations. Everything here is local/synthetic; no remote or Flow involvement.
 import assert from 'node:assert/strict';
 
-const PAYMENT_TABLES = ['payment_pricing_policies', 'job_extra_charges', 'payment_orders', 'payment_attempts', 'payment_events', 'payment_inbox', 'payment_rate_limits', 'payment_sandbox_accounts'];
+const PAYMENT_TABLES = ['payment_pricing_policies', 'job_extra_charges', 'payment_orders', 'payment_attempts', 'payment_events', 'payment_inbox', 'payment_rate_limits', 'payment_sandbox_accounts', 'payment_sandbox_account_events'];
 
 // Projections compared column-by-column between the source and the restored database (amounts, references, states, digests, ciphertext fingerprints).
 const PROJECTIONS = {
@@ -12,7 +12,8 @@ const PROJECTIONS = {
   attempts: "select id,order_id,idempotency_key,commerce_order,flow_order,state,error_code,md5(coalesce(encode(checkout_ciphertext,'hex'),'-')) ct,checkout_key_id from private.payment_attempts",
   events: "select id,order_id,attempt_id,provider_event_key,flow_order,commerce_order,observed_status,amount_clp,currency,flow_fee_clp,validation from private.payment_events",
   inbox: "select id,token_sha256,generation,processed_generation,state,md5(coalesce(encode(token_ciphertext,'hex'),'-')) ct,key_id from private.payment_inbox",
-  sandboxAccounts: "select user_id,authorized_by,reason,revoked_at,revoked_by from private.payment_sandbox_accounts",
+  sandboxAccounts: "select user_id,authorized_by,reason,revoked_at,revoked_by,revoke_reason from private.payment_sandbox_accounts",
+  sandboxEvents: "select id,user_id,action,actor_id,reason from private.payment_sandbox_account_events",
   jobs: "select id,payment_state from public.jobs",
 };
 const digest = async (db, sql) => (await db.query(`select count(*)::int n,md5(coalesce(string_agg(t::text,E'\\n' order by t::text),'')) d from (${sql}) t`)).rows[0];
@@ -43,8 +44,9 @@ export async function verifyRestoredPayments({ admin, restored, actors }) {
    (select count(distinct validation)::int from private.payment_events) event_kinds,
    (select count(*)::int from private.payment_pricing_policies) policy_versions,
    (select count(*)::int from private.payment_inbox) inbox,
-   (select count(*)::int from private.payment_sandbox_accounts where revoked_at is null) sandbox_accounts`)).rows[0];
-  assert.ok(rep.paid_initial >= 1 && rep.extra_orders >= 1 && rep.reviews >= 1 && rep.with_cost >= 1 && rep.accepted_extras >= 1 && rep.attempts >= 5 && rep.event_kinds >= 4 && rep.policy_versions >= 2 && rep.inbox >= 1 && rep.sandbox_accounts >= 1, 'the source lacks representative financial data: ' + JSON.stringify(rep));
+   (select count(*)::int from private.payment_sandbox_accounts where revoked_at is null) sandbox_accounts,
+   (select count(*)::int from private.payment_sandbox_account_events) sandbox_events`)).rows[0];
+  assert.ok(rep.paid_initial >= 1 && rep.extra_orders >= 1 && rep.reviews >= 1 && rep.with_cost >= 1 && rep.accepted_extras >= 1 && rep.attempts >= 5 && rep.event_kinds >= 4 && rep.policy_versions >= 2 && rep.inbox >= 1 && rep.sandbox_accounts >= 1 && rep.sandbox_events >= 3, 'the source lacks representative financial data: ' + JSON.stringify(rep));
 
   // 2. Amounts, references, states and ciphertext fingerprints are identical after restore.
   for (const [name, sql] of Object.entries(PROJECTIONS)) {
@@ -72,6 +74,7 @@ export async function verifyRestoredPayments({ admin, restored, actors }) {
   // 5. Immutability still bites after restore (the data load ran with triggers disabled only inside its own transaction).
   await assert.rejects(() => restored.query("update private.payment_events set validation='applied'"), { code: 'PT409' });
   await assert.rejects(() => restored.query('update private.payment_pricing_policies set fee_basis_points=0'), { code: 'PT409' });
+  await assert.rejects(() => restored.query("update private.payment_sandbox_account_events set reason='x padding padding'"), { code: 'PT409' });
   await assert.rejects(() => restored.query('update private.payment_orders set total_clp=total_clp+1,professional_amount_clp=professional_amount_clp+1'), { code: 'PT409' });
 
   // 6. Role-aware reads and API-role isolation on the restored database.

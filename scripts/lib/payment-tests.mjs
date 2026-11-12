@@ -46,6 +46,18 @@ export async function runPaymentTests({admin,actors,server,clients,check,call,cu
   await assert.rejects(()=>call('customerA','select public.payment_prepare($1,null,$2,true,$3) value',[j0,v0,randomUUID()]),{code:'42501'});
   await admin.query("update auth.users set email='customerA@local.invalid' where id=$1",[actors.customerA.id]);
   assert.ok((await call('customerA','select public.payment_prepare($1,null,$2,true,$3) value',[j0,v0,randomUUID()])).order_id);
+  // History: the current row is only the current state; every change is an immutable event with actor and reason.
+  const ev=(await admin.query("select action,reason,actor_id from private.payment_sandbox_account_events where user_id=$1 order by created_at,id",[actors.customerA.id])).rows;
+  assert.deepEqual(ev.map(e=>e.action),['authorized','revoked','reauthorized']);
+  assert.ok(ev.every(e=>e.actor_id===actors.admin.id&&e.reason.length>=10));assert.equal(ev[1].reason,'Revocación de prueba de la suite S05');
+  await call('admin','select public.payment_sandbox_account_set($1,false,$2) value',[actors.customerA.id,'Revocación para comprobar el motivo vigente']);
+  await call('admin','select public.payment_sandbox_account_set($1,false,$2) value',[actors.customerA.id,'Segunda revocación que no debe registrarse']);
+  assert.equal((await admin.query("select count(*)::int n from private.payment_sandbox_account_events where user_id=$1 and action='revoked'",[actors.customerA.id])).rows[0].n,2);
+  assert.equal((await admin.query('select revoke_reason r from private.payment_sandbox_accounts where user_id=$1',[actors.customerA.id])).rows[0].r,'Revocación para comprobar el motivo vigente');
+  await call('admin','select public.payment_sandbox_account_set($1,true,$2) value',[actors.customerA.id,'Reautorización para continuar la suite S05']);
+  assert.equal((await admin.query('select revoke_reason r from private.payment_sandbox_accounts where user_id=$1',[actors.customerA.id])).rows[0].r,null);
+  await assert.rejects(()=>admin.query("update private.payment_sandbox_account_events set reason='x padding padding'"),{code:'PT409'});
+  await assert.rejects(()=>admin.query('delete from private.payment_sandbox_account_events'),{code:'PT409'});
  });
  await check('S05 Sandbox allowlist is re-checked before reserving (worker) and before reopening a checkout: a revoked customer cannot reach Flow',async()=>{
   const j=await newJob();await schedule(j);const p=await prepare('customerA',j);

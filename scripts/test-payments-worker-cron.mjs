@@ -12,13 +12,14 @@ assert.equal(process.env.FIXO_PAYMENTS_LOCAL_SUPABASE, 'isolated-local', 'refusi
 assert.ok(dbUrl && ['127.0.0.1', 'localhost', '[::1]'].includes(new URL(dbUrl).hostname), 'FIXO_TEST_DB_URL must be loopback');
 const SECRET = randomBytes(32).toString('hex'), PORT = 38000 + Math.floor(Math.random() * 1000);
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const requests = []; let mode = 200;
+const HEALTHY = { inbox: 0, attempts: 0, quarantined: 0, retried: 0, failures: 0, cleaned: 0, purged: 0, housekeepingFailures: 0 };
+const requests = []; let mode = 200, body200 = HEALTHY;
 const server = createServer((req, res) => {
   let body = ''; req.on('data', c => { body += c; });
   req.on('end', () => {
     requests.push({ method: req.method, url: req.url, auth: req.headers.authorization, type: req.headers['content-type'], body });
     res.writeHead(mode, { 'content-type': 'application/json' });
-    res.end(mode === 200 ? JSON.stringify({ inbox: 0, attempts: 0, quarantined: 0, retried: 0, failures: 0, cleaned: 0, purged: 0, housekeepingFailures: 0 }) : JSON.stringify({ error: 'unavailable' }));
+    res.end(mode === 200 ? JSON.stringify(body200) : JSON.stringify({ error: 'unavailable' }));
   });
 });
 await new Promise(r => server.listen(PORT, '0.0.0.0', r));
@@ -54,7 +55,7 @@ try {
     await waitFor(() => requests.length >= 1, 20000, 'the request to reach the endpoint');
     const r = requests[0]; assert.deepEqual({ m: r.method, u: r.url, a: r.auth, t: r.type, b: r.body }, { m: 'POST', u: '/api/payments/worker', a: 'Bearer ' + SECRET, t: 'application/json', b: '{}' });
     const h = await waitFor(async () => { const v = await health(); return v.last_status === 200 ? v : null; }, 20000, 'the response to be recorded');
-    assert.equal(h.degraded, false); assert.ok(h.ok_15m >= 1); assert.equal(h.last_summary.housekeepingFailures, 0); assert.deepEqual(Object.keys(h.last_summary).sort(), ['attempts', 'cleaned', 'failures', 'housekeepingFailures', 'inbox', 'purged', 'quarantined', 'retried']);
+    assert.equal(h.degraded, false); assert.ok(h.ok_15m >= 1); assert.equal(h.last_summary.housekeepingFailures, 0); assert.equal(h.stale, false); assert.deepEqual(Object.keys(h.last_summary).sort(), ['attempts', 'cleaned', 'failures', 'housekeepingFailures', 'inbox', 'purged', 'quarantined', 'retried']);
   });
 
   await check('endpoint errors are visible (degraded) and recover on their own; a repeated tick is just another harmless idempotent request', async () => {
@@ -62,7 +63,7 @@ try {
     const bad = await waitFor(async () => { const v = await health(); return v.degraded === true && v.failed_15m >= 2 ? v : null; }, 25000, 'failures to be reported');
     assert.equal(bad.last_status, 500); assert.equal(bad.last_summary, null);
     mode = 200; for (let i = 0; i < 5; i++) { await tick(); await sleep(300); }
-    const ok = await waitFor(async () => { const v = await health(); return v.degraded === false ? v : null; }, 30000, 'recovery');
+    const ok = await waitFor(async () => { const v = await health(); return v.degraded === false && v.last_status === 200 ? v : null; }, 30000, 'recovery');
     assert.equal(ok.last_status, 200);
     // An unreachable endpoint is also reported (timed out / no answer), never silently ignored.
     await setSecrets(`http://host.docker.internal:${PORT + 1}/api/payments/worker`, SECRET); await tick();
@@ -71,12 +72,38 @@ try {
     await setSecrets(goodUrl, SECRET);
   });
 
+  await check('HTTP 200 is NOT enough: internal worker failures or failed housekeeping make the executor degraded; recovery needs healthy runs', async () => {
+    await q('delete from private.payment_worker_ticks'); await tick();
+    await waitFor(async () => (await health()).ok_15m >= 1, 20000, 'a healthy run'); assert.equal((await health()).degraded, false);
+    for (const bad of [{ ...HEALTHY, failures: 2 }, { ...HEALTHY, housekeepingFailures: 1 }, { inbox: 1 }]) {   // last one: counters missing/garbled => fail closed
+      body200 = bad; await q('delete from private.payment_worker_ticks'); await tick();
+      const h = await waitFor(async () => { const v = await health(); return v.last_status === 200 ? v : null; }, 20000, 'the response to be recorded');
+      assert.equal(h.degraded, true, JSON.stringify(bad)); assert.equal(h.ok_15m, 0); assert.ok(h.internal_failures_15m >= 1); assert.equal(h.failed_15m, 0);   // status alone says 200
+    }
+    body200 = HEALTHY; await q('delete from private.payment_worker_ticks'); for (let i = 0; i < 5; i++) { await tick(); await sleep(300); }
+    const ok = await waitFor(async () => { const v = await health(); return v.degraded === false && v.ok_15m >= 5 ? v : null; }, 30000, 'recovery with healthy runs');
+    assert.equal(ok.internal_failures_15m, 0);
+  });
+
+  await check('a stopped executor is degraded: no ticks at all, or only old ticks, never reports healthy', async () => {
+    await q('delete from private.payment_worker_ticks');
+    let h = await health(); assert.equal(h.degraded, true); assert.equal(h.stale, true); assert.equal(h.last_request_at, null); assert.equal(h.ok_15m, 0);
+    await tick(); await waitFor(async () => (await health()).degraded === false, 20000, 'a fresh healthy tick');
+    await q("update private.payment_worker_ticks set requested_at=now()-interval '10 minutes'");               // the cron stopped 10 minutes ago
+    h = await health(); assert.equal(h.degraded, true); assert.equal(h.stale, true); assert.ok(h.last_request_age_seconds >= 600);
+    await q("update private.payment_worker_ticks set requested_at=now()-interval '4 minutes'");
+    h = await health(); assert.equal(h.stale, true); assert.equal(h.degraded, true);
+    await q("update private.payment_worker_ticks set requested_at=now()-interval '90 seconds'");
+    h = await health(); assert.equal(h.stale, false); assert.equal(h.degraded, false);                           // within the tolerated window
+    await q('delete from private.payment_worker_ticks'); await tick(); await waitFor(async () => (await health()).degraded === false, 20000, 'recovery');
+  });
+
   await check('the secret exists only in Vault: not in the cron command, the tick log, or any API-role privilege', async () => {
     const cmd = (await q("select command from cron.job where jobname='fixo-payments-worker'"))[0]?.command ?? ''; assert.ok(!cmd.includes(SECRET));
     assert.equal((await q('select count(*)::int n from private.payment_worker_ticks where request_id::text like $1', ['%' + SECRET.slice(0, 8) + '%']))[0].n, 0);
     const fn = (await q("select pg_get_functiondef('private.payment_worker_tick()'::regprocedure) d"))[0].d; assert.ok(!fn.includes(SECRET));
     for (const role of ['anon', 'authenticated', 'service_role']) {
-      for (const f of ['private.payment_worker_tick()', 'private.payment_worker_health()']) assert.equal((await q('select has_function_privilege($1,$2,$3) v', [role, f, 'EXECUTE']))[0].v, false, role + ' ' + f);
+      for (const f of ['private.payment_worker_tick()', 'private.payment_worker_health()', 'private.payment_worker_response_healthy(integer,text,text)']) assert.equal((await q('select has_function_privilege($1,$2,$3) v', [role, f, 'EXECUTE']))[0].v, false, role + ' ' + f);
       assert.equal((await q('select has_table_privilege($1,$2,$3) v', [role, 'private.payment_worker_ticks', 'SELECT']))[0].v, false);
     }
     assert.equal((await q("select relrowsecurity v from pg_class where oid='private.payment_worker_ticks'::regclass"))[0].v, true);
