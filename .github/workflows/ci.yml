@@ -45,9 +45,20 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version-file: .node-version
+          cache: npm
+      - run: npm ci --no-fund
       # No project link, access token, production password or --remote flag.
-      - run: npx --yes supabase@3.0.0 start --exclude studio,realtime,edge-runtime,imgproxy,logflare,vector,supavisor
-      - run: npx --yes supabase@3.0.0 db reset --no-seed
-      - run: npx --yes supabase@3.0.0 test db
+      - run: npx --yes supabase@3.1.0 start --exclude studio,realtime,edge-runtime,imgproxy,logflare,vector,supavisor
+      - run: npx --yes supabase@3.1.0 db reset --no-seed
+      - run: npx --yes supabase@3.1.0 test db
+      # Financial/permission invariants (Sprint 05): same pinned tooling as docs/production/sprint-03-evidence/README.md. Auth/Storage are SQL contract fixtures; Flow is never contacted.
+      - run: npm install --prefix .audit-backups/tooling/sprint03-postgres --save-exact --no-audit --no-fund embedded-postgres@17.11.0-beta.19
+      - run: node scripts/test-payments-postgres.mjs
+      # Real PostgREST/Auth/Kong contract against the isolated local stack started above (loopback only; Flow provider is a test double).
+      - name: Payments integration against the isolated local Supabase
+        run: |
+          eval "$(npx --yes supabase@3.1.0 status -o env | grep -E '^(API_URL|ANON_KEY|SERVICE_ROLE_KEY|DB_URL)=')"
+          export FIXO_PAYMENTS_LOCAL_SUPABASE=isolated-local FIXO_TEST_SUPABASE_URL="$API_URL" FIXO_TEST_ANON_KEY="$ANON_KEY" FIXO_TEST_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" FIXO_TEST_DB_URL="$DB_URL"
+          npx vitest run src/repositories/supabase/supabase-payment-repository.local.test.ts
       - if: always()
-        run: npx --yes supabase@3.0.0 stop
+        run: npx --yes supabase@3.1.0 stop

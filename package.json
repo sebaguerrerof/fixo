@@ -11,7 +11,7 @@
     "test": "vitest run",
     "secrets:check": "node scripts/check-secrets.mjs",
     "test:smoke": "node scripts/smoke-production.mjs",
-    "db:test": "npx --yes supabase@3.0.0 test db",
+    "db:test": "npx --yes supabase@3.1.0 test db",
     "test:integration": "node scripts/test-supabase-integration.mjs"
   },
   "dependencies": {

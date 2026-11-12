@@ -16,6 +16,21 @@ describe("notification capture boundary", () => {
       await expect(captureJobNotification({ ...item, recipient_id: "other" }, options)).rejects.toThrow();
     } finally { await unlink(join(directory, id + ".json")); await rmdir(directory); }
   });
+  it("accepts Sprint 05 payment/extra-charge templates and rejects unknown ones", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "fixo-notification-"));
+    const templates = ["extra_charge_proposed", "extra_charge_accepted", "extra_charge_rejected", "payment_confirmed", "payment_rejected", "payment_cancelled", "payment_review_required"];
+    const options = { directory, allowedRecipients: new Set([id]) };
+    try {
+      for (const template of templates) {
+        const text = await captureJobNotification({ ...item, template }, options);
+        expect(text).toMatch(/^capture:[0-9a-f]{64}$/);
+        const body = await readFile(join(directory, id + ".json"), "utf8");
+        expect(body).not.toContain("private"); expect(body).not.toMatch(/\d{3}\.\d{3}|\$/);
+        await unlink(join(directory, id + ".json"));
+      }
+      await expect(captureJobNotification({ ...item, template: "payment_paid_out" }, options)).rejects.toThrow("capture_not_authorized");
+    } finally { await rmdir(directory); }
+  });
   it("records retry when capture/provider is unavailable", async () => {
     const calls: unknown[] = [], client = { rpc: async (name: string, args: unknown) => { calls.push({ name, args }); return name === "claim_job_notification" ? { data: item, error: null } : { error: null }; } };
     await processJobNotification(client, { allowedRecipients: new Set() }); expect(calls[1]).toMatchObject({ args: { outcome: "retry", provider_reference: null } });

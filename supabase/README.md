@@ -9,6 +9,10 @@ Estado: **migraciones locales preparadas; aceptación aislada BLOCKED**. No apli
 | 202608170001_initial_marketplace.sql | Modelo original de nueve tablas; archivo intacto. | No reejecutado. |
 | 20261108223021_harden_marketplace_access.sql | Helpers privados, ACL, RLS comercial y Storage 10 MiB/MIME. | NOT TESTED en DB; no aplicado remoto. |
 | 20261108234902_identity_and_account_administration.sql | Estado global, contactos/consentimiento privados, sesiones vigentes, auditoría, invitaciones, RPC y autorización. | Parser SQL/PLpgSQL PASS sintáctico; ejecución DB NOT TESTED. |
+| 20261110140000_flow_sandbox_payments.sql | Modelo de pagos Flow Sandbox (Sprint 05): tablas privadas, RPC, triggers de inmutabilidad, compuerta de ejecución. | PASS local (pgTAP `06_flow_payments`, 254 tests en total); **no aplicada en remoto**. |
+| 20261111120000_payment_rate_limits.sql | Límite de frecuencia persistente para pagos. | PASS local; no aplicada en remoto. |
+
+Nota: la lista anterior es histórica (Sprint 01) y no enumera las migraciones de los Sprints 02–04. Detalle de pagos en [SPRINT_05_REPORT.md](../docs/production/SPRINT_05_REPORT.md).
 
 La base Fixo existente ya tiene el esquema inicial y carece de historial. **No repetir baseline ni editar roles manualmente como operación normal.** Seguir el [runbook de baseline](../docs/production/SUPABASE_BASELINE_RUNBOOK.md), con drift, backup/restore y aprobaciones independientes.
 

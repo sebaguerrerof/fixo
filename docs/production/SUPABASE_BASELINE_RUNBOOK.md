@@ -29,10 +29,10 @@ Ejemplos PowerShell; sustituir el ref por el proyecto verificado y no incluir co
 
 ```powershell
 $fixoProjectRef = '<ref-verificado-de-Fixo>'
-npx --yes supabase@3.0.0 migration list --remote=$fixoProjectRef
-npx --yes supabase@3.0.0 migration repair 202608170001 --status applied --remote=$fixoProjectRef --yes
-npx --yes supabase@3.0.0 migration list --remote=$fixoProjectRef
-npx --yes supabase@3.0.0 db push --dry-run --skip-vault --remote=$fixoProjectRef
+npx --yes supabase@3.1.0 migration list --remote=$fixoProjectRef
+npx --yes supabase@3.1.0 migration repair 202608170001 --status applied --remote=$fixoProjectRef --yes
+npx --yes supabase@3.1.0 migration list --remote=$fixoProjectRef
+npx --yes supabase@3.1.0 db push --dry-run --skip-vault --remote=$fixoProjectRef
 ```
 
 `migration repair --status applied` modifica solo la tabla de historial: **no ejecuta el SQL inicial ni vuelve a insertar categorías/usuarios**. Su uso es correcto solo cuando ya se verificó que el esquema está aplicado. El dry-run debe coincidir exactamente con la lista de migraciones aprobadas; si muestra el baseline o un archivo inesperado, detenerse. En el HEAD de Sprint 01 aparecerían **dos** correcciones pendientes (00.5 y 01), no solo hardening. No ejecutar `db push` aprobando implícitamente ambas. Para aplicar únicamente 00.5 se requiere un snapshot revisado de `69fa1d5`, con su carpeta de migraciones e historial verificados; no borrar/mover archivos del checkout actual para alterar la lista. No ejecutar `db pull` como si fuera una lectura inocua: puede ofrecer actualizar historial y necesita revisión separada.

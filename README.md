@@ -20,6 +20,10 @@ Auth real requiere las tres migraciones revisadas, `FIXO_APP_URL` exacto y `SUPA
 
 No ejecutar el SQL inicial contra la base Fixo existente: ya tiene esquema y carece de historial. Seguir el [runbook de baseline](docs/production/SUPABASE_BASELINE_RUNBOOK.md). Reparación y migraciones remotas requieren aprobación; las pruebas usan exclusivamente local/staging.
 
+## Pagos (Sprint 05, Flow Sandbox)
+
+Implementado y probado sólo en local; **deshabilitado por defecto** y sin evidencia de Sandbox real. Ver [reporte](docs/production/SPRINT_05_REPORT.md) y [runbook](docs/production/SPRINT_05_FLOW_SANDBOX_RUNBOOK.md). Variables en `.env.example`. No hay cobros reales.
+
 ## Arquitectura
 
 ```text

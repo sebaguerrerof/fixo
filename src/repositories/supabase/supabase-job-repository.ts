@@ -1,4 +1,5 @@
 import type { Job } from "@/domain/entities/job";
+import { parseJobPaymentState } from "@/domain/entities/job-payment";
 import type { AcceptedQuoteSnapshot } from "@/domain/entities/quote";
 import type { JobStatus } from "@/domain/enums/job-status";
 import { getSupabaseServerClient } from "@/integrations/supabase/server-client";
@@ -10,7 +11,7 @@ import { jobRpcPayload, type JobCommandInput } from "@/domain/validation/job-com
 export function mapJob(value: unknown): Job {
   const r = asRecord(value);
   return { id: asString(r.id), serviceRequestId: asString(r.service_request_id), quoteId: asString(r.quote_id), emergencyId: null,
-    customerId: asString(r.customer_id), technicianId: asString(r.technician_id), status: asString(r.status, "awarded") as JobStatus, paymentState: "not_enabled",
+    customerId: asString(r.customer_id), technicianId: asString(r.technician_id), status: asString(r.status, "awarded") as JobStatus, paymentState: parseJobPaymentState(r.payment_state),
     revision: asNumber(r.revision, 1), confirmedScheduleId: typeof r.confirmed_schedule_id === "string" ? r.confirmed_schedule_id : null,
     startedAt: typeof r.started_at === "string" ? r.started_at : null, completionReportedAt: typeof r.completion_reported_at === "string" ? r.completion_reported_at : null, customerConfirmedAt: typeof r.customer_confirmed_at === "string" ? r.customer_confirmed_at : null,
     snapshot: asRecord(r.snapshot) as unknown as AcceptedQuoteSnapshot, createdAt: asString(r.created_at), updatedAt: asString(r.updated_at) };

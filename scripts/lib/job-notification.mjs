@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const events=new Set(['quote_accepted','job_awarded','propose_schedule','accept_schedule','reject_schedule','prepare','start','progress','report_completion','confirm_completion','request_cancellation','resolve_cancellation','open_incident','reply_incident','request_information','add_observation','resolve_incident','incident_evidence_added','execution_policy_changed']);
+const events=new Set(['quote_accepted','job_awarded','propose_schedule','accept_schedule','reject_schedule','prepare','start','progress','report_completion','confirm_completion','request_cancellation','resolve_cancellation','open_incident','reply_incident','request_information','add_observation','resolve_incident','incident_evidence_added','execution_policy_changed','extra_charge_proposed','extra_charge_accepted','extra_charge_rejected','payment_confirmed','payment_rejected','payment_cancelled','payment_review_required']);
 /** Captures a redacted transactional notice. Never sends mail or records destination/notes/address. */
 export async function captureJobNotification(item,{directory,allowedRecipients}){
  if(!directory||!allowedRecipients?.has(item.recipient_id)||!uuid.test(item.id)||!uuid.test(item.job_id)||!uuid.test(item.recipient_id)||!events.has(item.template))throw new Error('capture_not_authorized');
