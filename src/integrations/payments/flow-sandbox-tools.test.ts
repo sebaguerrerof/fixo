@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-import { assertAllowedPayer, buildRetireCriterionSql, classifyCreate, classifyReconciliation, flowCost, openExternalIssues } from "../../../scripts/flow-sandbox/logic.mjs";
+import { assertAllowedPayer, buildRetireCriterionSql, classifyCreate, classifyReconciliation, closureState, flowCost, openExternalIssues, strictInt } from "../../../scripts/flow-sandbox/logic.mjs";
+import { runCostCorrection } from "../../../scripts/flow-sandbox/recost-core.mjs";
 
 const OWNER = "owner.test@gmail.com";
 
@@ -94,5 +95,82 @@ describe("remote Sandbox tooling: Flow cost rule parity with the application", (
       const client = new FlowClient(cfg, async () => ({ status: 200, text: async () => JSON.stringify({ flowOrder: 9, commerceOrder: "c", status: 2, currency: "CLP", amount: "26250", paymentData: pd }) }));
       expect(flowCost("26250", pd), JSON.stringify(pd)).toBe((await client.getStatusByToken("t")).feeClp);
     }
+  });
+});
+
+describe("remote Sandbox tooling: malformed Flow states can never close a reconciliation", () => {
+  const entry = { commerceOrder: "fixo-sbx-6710d0c209d0493582b421f6ca675989", flowOrder: "11657296" };
+  const withStatus = (status: unknown, flowOrder: unknown = 11657296) => classifyReconciliation(entry, { http: 200, json: { flowOrder, commerceOrder: entry.commerceOrder, status, amount: "26250", currency: "CLP" } });
+  it("only canonical integers or plain decimal strings are states: arrays, booleans, exponent, hex, signs, spaces and leading zeros stay unknown and OPEN", () => {
+    for (const bad of [[3], [4], "3e0", "0x4", "4e0", true, false, "3.0", " 3", "3 ", "03", "+3", "-3", "", {}, null, undefined, 3.5, -1, Number.NaN, "٣", "3\n"]) {
+      expect(withStatus(bad), JSON.stringify(bad)).toMatchObject({ flowState: "unknown", open: true, problem: "invalid_structure" });
+    }
+    for (const bad of [[11657296], "1e7", "0x10", true, "011657296", "0", 0, " 11657296", 1.5]) expect(withStatus(3, bad), JSON.stringify(bad)).toMatchObject({ flowState: "unknown", open: true, problem: "invalid_structure" });
+  });
+  it("canonical values are still understood (number or decimal string)", () => {
+    expect(withStatus(3)).toMatchObject({ flowState: "rejected", open: false }); expect(withStatus("3")).toMatchObject({ flowState: "rejected", open: false });
+    expect(withStatus("4")).toMatchObject({ flowState: "cancelled", open: false }); expect(withStatus("2")).toMatchObject({ flowState: "paid", open: true });
+    expect(withStatus(1, "11657296")).toMatchObject({ flowState: "pending", open: true });
+    expect([strictInt(0), strictInt("0"), strictInt("12"), strictInt([1]), strictInt("1e1")]).toEqual([0, 0, 12, null, null]);
+  });
+});
+
+describe("remote Sandbox tooling: retention is not the financial closure", () => {
+  const retained = { retainedAt: "2026-11-12T20:00:00Z" };
+  it("stays closure-pending while any external order is open and closes only when none is", () => {
+    expect(closureState(null)).toBe("open"); expect(closureState({ externalOrders: [] })).toBe("open");                      // not retained yet
+    const pending = { ...retained, externalOrders: [{ commerceOrder: "a", state: "created", reconciliation: { open: true, problem: "still_payable" } }] };
+    expect(closureState(pending)).toBe("retained-closure-pending");
+    for (const reconciliation of [{ open: true, problem: "paid_outside_fixo" }, { open: true, problem: "query_failed" }, undefined]) expect(closureState({ ...retained, externalOrders: [{ commerceOrder: "a", state: "created", reconciliation }] })).toBe("retained-closure-pending");
+    expect(closureState({ ...retained, externalOrders: [{ commerceOrder: "a", state: "ambiguous" }] })).toBe("retained-closure-pending");
+    expect(closureState({ ...retained, externalOrders: [{ commerceOrder: "a", state: "created", reconciliation: { open: false, flowState: "rejected" } }, { commerceOrder: "b", state: "refused" }] })).toBe("closed-retained");
+    expect(closureState({ ...retained })).toBe("closed-retained");
+  });
+});
+
+describe("remote Sandbox tooling: durable, idempotent Flow-cost correction", () => {
+  const mk = (costs: Record<string, number | null>, targets: Record<string, number | null>) => {
+    const db = new Map(Object.entries(costs)); let manifest: any = { notes: [] }; let updates = 0;
+    const deps = (over: Record<string, unknown> = {}) => ({
+      rows: Object.keys(costs).map((id) => ({ id, cost: db.get(id) ?? null })),
+      getCost: async ({ id }: { id: string }) => targets[id] ?? null, readCost: async (id: string) => db.get(id) ?? null,
+      applyUpdate: async (id: string, from: number | null, to: number) => { updates++; if ((db.get(id) ?? null) !== from) return []; db.set(id, to); return [{ flow_cost_clp: to }]; },
+      load: async () => structuredClone(manifest), save: async (m: unknown) => { manifest = structuredClone(m); }, now: () => "T", ...over,
+    });
+    return { db, deps, manifest: () => manifest, updates: () => updates };
+  };
+  it("writes the intent (old and new value) BEFORE each update and confirms it with RETURNING", async () => {
+    const t = mk({ a: 837, b: 335 }, { a: 996, b: 399 }); const seen: unknown[] = [];
+    const sum = await runCostCorrection(t.deps({ applyUpdate: async (id: string, _from: number, to: number) => { seen.push(structuredClone(t.manifest().costCorrectionLog.find((e: any) => e.order === id))); t.db.set(id, to); return [{ flow_cost_clp: to }]; } }) as never);
+    expect(sum).toEqual({ applied: 2, recovered: 0, skipped: 0, conflicts: 0 });
+    expect(seen).toEqual([{ order: "a", from: 837, to: 996, state: "intent", at: "T" }, { order: "b", from: 335, to: 399, state: "intent", at: "T" }]);   // durable before the update
+    expect(t.manifest().costCorrectionLog.map((e: any) => [e.order, e.from, e.to, e.state])).toEqual([["a", 837, 996, "applied"], ["b", 335, 399, "applied"]]);
+  });
+  it("an interruption AFTER the first update loses nothing: the rerun finishes the rest and keeps every previous value", async () => {
+    const t = mk({ a: 837, b: 335 }, { a: 996, b: 399 }); let calls = 0;
+    await expect(runCostCorrection(t.deps({ applyUpdate: async (id: string, _from: number, to: number) => { if (++calls === 2) throw new Error("killed"); t.db.set(id, to); return [{ flow_cost_clp: to }]; } }) as never)).rejects.toThrow("killed");
+    expect(t.db.get("a")).toBe(996); expect(t.db.get("b")).toBe(335);
+    expect(t.manifest().costCorrectionLog.map((e: any) => [e.order, e.from, e.state])).toEqual([["a", 837, "applied"], ["b", 335, "intent"]]);                // the intent survived the crash
+    const sum = await runCostCorrection(t.deps() as never);
+    expect(sum).toMatchObject({ applied: 1, skipped: 1, conflicts: 0 }); expect(t.db.get("b")).toBe(399);
+    expect(t.manifest().costCorrectionLog.map((e: any) => [e.order, e.from, e.to, e.state])).toEqual([["a", 837, 996, "applied"], ["b", 335, 399, "applied"]]);
+  });
+  it("a crash AFTER the database commit but BEFORE the outcome was recorded is recovered from the intent (the old value is preserved)", async () => {
+    const t = mk({ a: 837 }, { a: 996 });
+    await expect(runCostCorrection(t.deps({ applyUpdate: async (id: string, _f: number, to: number) => { t.db.set(id, to); throw new Error("killed after commit"); } }) as never)).rejects.toThrow("killed");
+    expect(t.db.get("a")).toBe(996); expect(t.manifest().costCorrectionLog[0]).toMatchObject({ from: 837, to: 996, state: "intent" });
+    const sum = await runCostCorrection(t.deps() as never);
+    expect(sum).toEqual({ applied: 0, recovered: 1, skipped: 0, conflicts: 0 });
+    expect(t.manifest().costCorrectionLog[0]).toMatchObject({ from: 837, to: 996, state: "applied", recovered: true });
+  });
+  it("a concurrent change is a recorded conflict, never overwritten; a finished correction is a no-op on rerun", async () => {
+    const t = mk({ a: 837 }, { a: 996 });
+    const sum = await runCostCorrection(t.deps({ applyUpdate: async () => [] }) as never);                      // the WHERE no longer matched
+    expect(sum).toMatchObject({ applied: 0, conflicts: 1 }); expect(t.manifest().costCorrectionLog[0]).toMatchObject({ state: "conflict", from: 837, to: 996 });
+    const u = mk({ a: 837 }, { a: 996 }); await runCostCorrection(u.deps() as never); const before = u.updates();
+    expect(await runCostCorrection(u.deps() as never)).toMatchObject({ applied: 0, skipped: 1 }); expect(u.updates()).toBe(before);
+    const x = mk({ a: 837 }, { a: 996 }); await expect(runCostCorrection(x.deps({ applyUpdate: async () => { throw new Error("killed"); } }) as never)).rejects.toThrow();
+    x.db.set("a", 5000);                                                                                         // someone changed it meanwhile
+    expect(await runCostCorrection(x.deps() as never)).toMatchObject({ conflicts: 1 }); expect(x.db.get("a")).toBe(5000);
   });
 });

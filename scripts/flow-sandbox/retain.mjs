@@ -3,6 +3,7 @@
 // banned and their sessions removed. Only the manifest's account ids are touched; nothing is deleted. Requires FIXO_FLOW_SANDBOX_REMOTE.
 import assert from 'node:assert/strict';
 import { PROJECT_REF, loadEnv, lit, readManifest, serviceClient, sql, stamp, writeManifest } from './lib.mjs';
+import { closureState, openExternalIssues } from './logic.mjs';
 
 assert.equal(process.env.FIXO_FLOW_SANDBOX_REMOTE, PROJECT_REF);
 const env = await loadEnv(), m = await readManifest(); assert.ok(m && m.accounts && m.state !== 'cleaned');
@@ -21,5 +22,7 @@ const [after] = await sql(`select (select count(*)::int from public.technician_p
  (select count(*)::int from auth.sessions where user_id in (${list})) sessions,
  (select count(*)::int from private.payment_sandbox_accounts where revoked_at is null) active_authorizations`);
 assert.deepEqual(after, { public_technicians: 0, active_synthetic_profiles: 0, banned: 3, sessions: 0, active_authorizations: 0 });
-m.state = 'closed-retained'; m.retainedAt = stamp(); m.notes.push(`${stamp()} fase D (retención etiquetada): cuentas sintéticas suspendidas y vetadas, técnico fuera del directorio público, sesiones eliminadas, autorizaciones Sandbox 0; las filas financieras se conservan (append-only) identificadas por este manifiesto`);
-await writeManifest(m); console.log(JSON.stringify(after));
+// Retention is NOT the financial closure: the run is only `closed-retained` when no external order is left open (pending, paid outside Fixo, unknown, ambiguous, unreconciled).
+m.retainedAt = stamp(); m.state = closureState(m); const issues = openExternalIssues(m);
+m.notes.push(`${stamp()} fase D (retención etiquetada): cuentas sintéticas suspendidas y vetadas, técnico fuera del directorio público, sesiones eliminadas, autorizaciones Sandbox 0; las filas financieras se conservan (append-only) identificadas por este manifiesto. Estado: ${m.state}${issues.length ? ` (${issues.length} asunto(s) externo(s) abierto(s))` : ''}`);
+await writeManifest(m); console.log(JSON.stringify({ ...after, state: m.state, openExternalIssues: issues.length }));

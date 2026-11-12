@@ -3,7 +3,7 @@
   "project": "rjzyqdhotcshvbdcrgon",
   "site": "https://www.soyfixo.cl",
   "createdAt": "2026-11-12T17:35:00.320Z",
-  "state": "closed-retained",
+  "state": "retained-closure-pending",
   "preflight": {
     "allowed": 0,
     "jobs": 0,
@@ -347,7 +347,8 @@
     "sharedConfigBefore reconstruido del preflight (category_requirements vacía ⇒ n=0, md5 de la cadena vacía); el setup original no lo registró",
     "2026-11-12T19:26:52.993Z criterio sintético retirado (1 fila) y configuración compartida idéntica a la previa",
     "2026-11-12T19:51:18.108Z fase D (retención etiquetada): cuentas sintéticas suspendidas y vetadas, técnico fuera del directorio público, sesiones eliminadas, autorizaciones Sandbox 0; las filas financieras se conservan (append-only) identificadas por este manifiesto",
-    "2026-11-12T19:53:33.714Z corrección de datos sintéticos: coste Flow = fee + impuestos (decisión del propietario); 8 órdenes actualizadas ([[837,996],[837,996],[837,996],[837,996],[837,996],[837,996],[837,996],[335,399]])"
+    "2026-11-12T19:53:33.714Z corrección de datos sintéticos: coste Flow = fee + impuestos (decisión del propietario); 8 órdenes actualizadas ([[837,996],[837,996],[837,996],[837,996],[837,996],[837,996],[837,996],[335,399]])",
+    "2026-11-12 estado corregido: la retención terminó pero el cierre financiero sigue pendiente (orden externa 11657296 aún pagable)"
   ],
   "evidence": [
     {

@@ -6,3 +6,5 @@ export function classifyReconciliation(entry: { commerceOrder: string; flowOrder
 export function openExternalIssues(manifest: { externalOrders?: Array<{ commerceOrder: string; flowOrder?: string | null; state: string; reconciliation?: { open: boolean; problem?: string; flowState?: string } }> } | null): Array<{ commerceOrder: string; flowOrder: string | null; state: string; reconciliation: string }>;
 export function buildRetireCriterionSql(input: { criterion: string; run: string; technician: string; before: { n: number; d: string } }): string;
 export function flowCost(amount: unknown, paymentData: unknown): number | null;
+export function strictInt(v: unknown): number | null;
+export function closureState(manifest: { retainedAt?: string; externalOrders?: unknown[] } | null): "open" | "retained-closure-pending" | "closed-retained";

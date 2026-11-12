@@ -9,7 +9,7 @@ import { createHmac } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { PROJECT_REF, readManifest, sql, stamp, writeManifest } from './lib.mjs';
-import { classifyReconciliation, openExternalIssues } from './logic.mjs';
+import { classifyReconciliation, closureState, openExternalIssues } from './logic.mjs';
 
 assert.equal(process.env.FIXO_FLOW_SANDBOX_REMOTE, PROJECT_REF);
 const mode = process.argv[2], m = await readManifest(); assert.ok(m);
@@ -39,4 +39,8 @@ if (mode === 'financial') {
   await writeManifest(m); console.log(JSON.stringify({ commerceOrder, ...result }));
 } else if (mode === 'issues') {
   console.log(JSON.stringify(openExternalIssues(m)));
+} else if (mode === 'close') {
+  // Definitive financial closure: allowed only after retention and with NO open external issue.
+  const state = closureState(m); m.state = state; if (state === 'closed-retained') m.closedAt = stamp(); await writeManifest(m);
+  console.log(JSON.stringify({ state, openExternalIssues: openExternalIssues(m) })); process.exitCode = state === 'closed-retained' ? 0 : 3;
 }

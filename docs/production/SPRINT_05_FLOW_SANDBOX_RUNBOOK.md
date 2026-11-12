@@ -153,6 +153,12 @@ Los usuarios originales no se modifican en ningún caso.
 | `npm run test` | Vitest (integración PostgREST local con variables `FIXO_PAYMENTS_LOCAL_SUPABASE=isolated-local`, `FIXO_TEST_*`). |
 | `node scripts/test-payments-browser.mjs` | Navegador por rol, sólo local; deja una versión nueva de política → ejecutar `supabase db reset` después. |
 
+## 11b. Retención ≠ cierre financiero
+
+`retain.mjs` deja las cuentas sintéticas inertes y registra `retainedAt`, pero **no cierra**: el estado del manifiesto es `retained-closure-pending` mientras exista algún asunto externo abierto (orden externa pendiente, pagada fuera de Fixo, desconocida, ambigua o sin conciliar). Sólo `reconcile-external.mjs close` puede dejarlo en `closed-retained`, y únicamente si no queda ninguno. Los estados de Flow se interpretan de forma estricta: sólo enteros canónicos o cadenas decimales planas (`3`, `"3"`); arrays, booleanos, notación exponencial, hexadecimales, signos y ceros a la izquierda dejan la conciliación en `unknown` y **abierta**.
+
+La corrección única del coste (`recost.mjs`) es durable e idempotente: escribe en el manifiesto (`costCorrectionLog`) una intención con el valor anterior y el nuevo **antes** de cada `UPDATE`, confirma con `RETURNING`, recupera una interrupción (si la base ya tiene el valor nuevo cierra la intención como `applied/recovered`, conservando el valor anterior) y registra como `conflict` cualquier cambio ajeno sin sobrescribirlo.
+
 ## 12. Coste Flow G (decisión del propietario, 2026-11-12)
 
 G = `fee` + `taxes` que informa Flow (equivale a monto − `balance`). Se acepta sólo si ambos son enteros (Flow envía `fee` como cadena decimal, p. ej. `"837.00"`) y, si viene `balance`, monto − `balance` = fee + impuestos; en otro caso el coste queda desconocido («pendiente de conciliación»). Ejemplo real de Sandbox: monto 26.250, fee 837, impuestos 159, saldo 25.254 ⇒ G = 996.

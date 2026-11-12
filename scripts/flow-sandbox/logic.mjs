@@ -29,6 +29,13 @@ export function classifyCreate({ http = null, bodyText = '', networkError = null
   return { state: 'ambiguous', http, reason: http >= 500 ? 'server_error' : 'unexpected_response' };
 }
 
+/** Canonical non-negative integer: a JS integer or a plain decimal string without sign, exponent, hex, spaces or leading zeros. Anything else (arrays, booleans, "3e0", "0x4", "03") is null. */
+export function strictInt(v) {
+  if (typeof v === 'number') return Number.isSafeInteger(v) && v >= 0 ? v : null;
+  if (typeof v === 'string' && /^(0|[1-9][0-9]{0,14})$/.test(v)) return Number(v);
+  return null;
+}
+
 const FLOW_STATES = { 1: 'pending', 2: 'paid', 3: 'rejected', 4: 'cancelled' };
 
 /**
@@ -39,11 +46,12 @@ export function classifyReconciliation(entry, { http = null, json = null, networ
   const base = { flowState: 'unknown', open: true };
   if (networkError || http === null) return { ...base, problem: 'query_failed' };
   if (http !== 200) return { ...base, problem: 'query_http_' + http };
-  if (!json || typeof json !== 'object' || typeof json.commerceOrder !== 'string' || !/^[0-9]{1,15}$/.test(String(json.flowOrder ?? '')) || !Number.isInteger(Number(json.status))) return { ...base, problem: 'invalid_structure' };
+  const flowOrder = strictInt(json?.flowOrder), statusCode = strictInt(json?.status);
+  if (!json || typeof json !== 'object' || Array.isArray(json) || typeof json.commerceOrder !== 'string' || flowOrder === null || flowOrder === 0 || statusCode === null) return { ...base, problem: 'invalid_structure' };
   if (json.commerceOrder !== entry.commerceOrder) return { ...base, problem: 'identity_mismatch_commerce_order' };
-  if (entry.flowOrder && String(json.flowOrder) !== String(entry.flowOrder)) return { ...base, problem: 'identity_mismatch_flow_order' };
-  const flowState = FLOW_STATES[Number(json.status)] ?? 'unknown';
-  const identity = { flowOrder: String(json.flowOrder), flowStatusCode: Number(json.status), amount: json.amount ?? null, currency: json.currency ?? null };
+  if (entry.flowOrder && String(flowOrder) !== String(entry.flowOrder)) return { ...base, problem: 'identity_mismatch_flow_order' };
+  const flowState = FLOW_STATES[statusCode] ?? 'unknown';
+  const identity = { flowOrder: String(flowOrder), flowStatusCode: statusCode, amount: json.amount ?? null, currency: json.currency ?? null };
   if (flowState === 'rejected' || flowState === 'cancelled') return { ...identity, flowState, open: false };
   return { ...identity, flowState, open: true, problem: flowState === 'paid' ? 'paid_outside_fixo' : flowState === 'pending' ? 'still_payable' : 'unknown_state' };
 }
@@ -51,6 +59,15 @@ export function classifyReconciliation(entry, { http = null, json = null, networ
 /** Items that block considering the run closed: every external order whose latest reconciliation is not a final non-payable state, and any never reconciled. */
 export function openExternalIssues(manifest) {
   return (manifest?.externalOrders ?? []).filter(e => !(e.reconciliation && e.reconciliation.open === false) && !(e.state === 'refused')).map(e => ({ commerceOrder: e.commerceOrder, flowOrder: e.flowOrder ?? null, state: e.state, reconciliation: e.reconciliation?.problem ?? (e.reconciliation ? e.reconciliation.flowState : 'never_reconciled') }));
+}
+
+/**
+ * Financial closure is separate from retention: a run is `closed-retained` ONLY when its synthetic accounts were retained AND no external order is left open
+ * (pending, paid outside Fixo, unknown, ambiguous, never reconciled). Otherwise it stays `retained-closure-pending` (or `open` before retention).
+ */
+export function closureState(manifest) {
+  if (!manifest?.retainedAt) return 'open';
+  return openExternalIssues(manifest).length === 0 ? 'closed-retained' : 'retained-closure-pending';
 }
 
 /** Single-transaction SQL that retires the run's synthetic requirement. Locks the applications (blocks concurrent submissions until the end) and the requirements,
