@@ -99,7 +99,7 @@ describe("FlowClient", () => {
 
   it("parses signed status queries and maps states, fee and exact amount", async () => {
     let url = "";
-    const fetcher: FlowFetch = async (u) => { url = u; return { status: 200, text: async () => JSON.stringify({ flowOrder: 9, commerceOrder: "fixo-sandbox-1", status: 2, currency: "CLP", amount: "105000", paymentData: { fee: 4200 } }) }; };
+    const fetcher: FlowFetch = async (u) => { url = u; return { status: 200, text: async () => JSON.stringify({ flowOrder: 9, commerceOrder: "fixo-sandbox-1", status: 2, currency: "CLP", amount: "105000", paymentData: { fee: 4000, taxes: 200 } }) }; };
     const obs = await new FlowClient(config(), fetcher).getStatusByCommerceId("fixo-sandbox-1");
     expect(obs).toEqual({ flowOrder: 9, commerceOrder: "fixo-sandbox-1", statusCode: 2, status: "paid", currency: "CLP", amountClp: 105000, feeClp: 4200 });
     const q = new URL(url).searchParams; const s = q.get("s")!; q.delete("s");
@@ -114,15 +114,25 @@ describe("FlowClient", () => {
 
   it("an invalid or non-numeric fee never becomes a confirmed zero", async () => {
     const base = { flowOrder: 9, commerceOrder: "c", status: 2, currency: "CLP", amount: 100 };
-    const fee = async (value: unknown) => (await new FlowClient(config(), reply(200, { ...base, paymentData: { fee: value } })).getStatusByToken("t")).feeClp;
+    const fee = async (value: unknown) => (await new FlowClient(config(), reply(200, { ...base, paymentData: { fee: value, taxes: 0 } })).getStatusByToken("t")).feeClp;
     for (const bad of ["", " ", false, true, null, "abc", "1e3", "-5", -5, 4.5, "4.5", [], {}, "0x10"]) expect(await fee(bad)).toBeNull();
     expect(await new FlowClient(config(), reply(200, base)).getStatusByToken("t")).toMatchObject({ feeClp: null });
     expect(await new FlowClient(config(), reply(200, { ...base, paymentData: null })).getStatusByToken("t")).toMatchObject({ feeClp: null });
     expect(await fee(0)).toBe(0); expect(await fee("0")).toBe(0); expect(await fee(551)).toBe(551); expect(await fee("551")).toBe(551);
   });
+  it("the Flow cost is fee + taxes (owner decision), cross-checked with balance; anything inconsistent or missing stays unknown", async () => {
+    const base = { flowOrder: 9, commerceOrder: "c", status: 2, currency: "CLP", amount: "26250" };
+    const cost = async (paymentData: unknown, amount: unknown = "26250") => (await new FlowClient(config(), reply(200, { ...base, amount, paymentData })).getStatusByToken("t")).feeClp;
+    expect(await cost({ fee: "837.00", taxes: 159, balance: 25254, media: "Webpay" })).toBe(996);          // the real Sandbox payload
+    expect(await cost({ fee: "837.00", taxes: "159.00", balance: "25254.00" })).toBe(996);
+    expect(await cost({ fee: "837.00", taxes: 159 })).toBe(996);                                             // balance is optional
+    expect(await cost({ fee: 837, taxes: 0 })).toBe(837);                                                   // an explicit zero tax is a real value
+    for (const bad of [{ fee: "837.00" }, { taxes: 159 }, { fee: "837.00", taxes: null }, { fee: "837.00", taxes: "abc" }, { fee: "837.50", taxes: 159 }, { fee: "837.00", taxes: -1 },
+      { fee: "837.00", taxes: 159, balance: 25000 }, { fee: "837.00", taxes: 159, balance: "x" }, { fee: "", taxes: "" }, null, {}]) expect(await cost(bad), JSON.stringify(bad)).toBeNull();
+  });
   it("accepts the REAL Sandbox format: the fee is a decimal string with two decimals (\"837.00\"); only integer-valued amounts count, fractions stay unknown", async () => {
     const base = { flowOrder: 9, commerceOrder: "c", status: 2, currency: "CLP", amount: "26250" };
-    const fee = async (value: unknown) => (await new FlowClient(config(), reply(200, { ...base, paymentData: { fee: value, taxes: 159, balance: 25254, media: "Webpay" } })).getStatusByToken("t")).feeClp;
+    const fee = async (value: unknown) => (await new FlowClient(config(), reply(200, { ...base, paymentData: { fee: value, taxes: 0, media: "Webpay" } })).getStatusByToken("t")).feeClp;
     expect(await fee("837.00")).toBe(837); expect(await fee("837.0")).toBe(837); expect(await fee("0.00")).toBe(0);
     for (const bad of ["837.50", "837.005", "837.", ".50", "-837.00", "837,00", "8 37.00"]) expect(await fee(bad)).toBeNull();
   });

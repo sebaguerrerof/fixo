@@ -72,3 +72,15 @@ begin
 end
 $retire$;`;
 }
+
+const FEE_AMOUNT = /^[0-9]{1,15}(\.0{1,2})?$/;
+const asAmount = v => (typeof v === 'number' ? (Number.isSafeInteger(v) && v >= 0 ? v : null) : typeof v === 'string' && FEE_AMOUNT.test(v) ? Number(v) : null);
+/** Mirror of the application's Flow cost rule (src/integrations/payments/flow-client.ts `flowCost`): fee + taxes, cross-checked with balance; otherwise null. */
+export function flowCost(amount, paymentData) {
+  const fee = asAmount(paymentData?.fee), taxes = asAmount(paymentData?.taxes);
+  if (fee === null || taxes === null) return null;
+  const cost = fee + taxes; if (!Number.isSafeInteger(cost)) return null;
+  const reported = paymentData?.balance;
+  if (reported !== undefined && reported !== null) { const balance = asAmount(reported); if (balance === null || Number(amount) - balance !== cost) return null; }
+  return cost;
+}

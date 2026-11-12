@@ -19,6 +19,20 @@ export class FlowProviderError extends Error {
   get ambiguous(): boolean { return !(this.code === "http_error" && this.httpStatus !== null && FLOW_DEFINITIVE_REJECTION_STATUSES.has(this.httpStatus)); }
 }
 
+/**
+ * Flow cost G borne by Fixo = the commission Flow reports (`fee`, a decimal string such as "837.00") PLUS the taxes Flow reports on it (`taxes`), i.e. everything Flow
+ * deducts from the payment (owner decision 2026-11-12; real Sandbox: amount 26250, fee 837.00, taxes 159, balance 25254). Both must be integer-valued; when Flow also
+ * reports `balance`, amount - balance must equal fee + taxes, otherwise the cost stays UNKNOWN (never guessed, never a confirmed zero).
+ */
+function flowCost(amount: number, paymentData: { fee?: unknown; taxes?: unknown; balance?: unknown } | null | undefined): number | null {
+  const fee = feeAmount.safeParse(paymentData?.fee), taxes = feeAmount.safeParse(paymentData?.taxes);
+  if (!fee.success || !taxes.success) return null;
+  const cost = fee.data + taxes.data; if (!Number.isSafeInteger(cost)) return null;
+  const reported = paymentData?.balance;
+  if (reported !== undefined && reported !== null) { const balance = feeAmount.safeParse(reported); if (!balance.success || amount - balance.data !== cost) return null; }
+  return cost;
+}
+
 /** Strict numbers only: JSON numbers or plain decimal digit strings. "", " ", false, null and "1e3" are NOT numbers (never coerced to 0). */
 const strictInt = z.union([z.number(), z.string().regex(/^[0-9]{1,15}$/).transform(Number)]).pipe(z.number().int().safe());
 /** Flow reports the cost as a decimal STRING with two decimals ("837.00" in the real Sandbox). Only an integer-valued amount is accepted; "837.50", "", "1e3" or negatives stay unknown (never rounded or coerced). */
@@ -37,7 +51,9 @@ export interface FlowCreateInput { readonly commerceOrder: string; readonly subj
 export interface FlowCreated { readonly flowOrder: number; readonly token: string; readonly checkoutUrl: string }
 export interface FlowObservation {
   readonly flowOrder: number; readonly commerceOrder: string; readonly statusCode: number; readonly status: ReturnType<typeof mapFlowStatus>;
-  readonly currency: string; readonly amountClp: number; readonly feeClp: number | null;
+  readonly currency: string; readonly amountClp: number;
+  /** Total Flow cost (fee + taxes), or null while unknown. Historical name kept for the persisted contract. */
+  readonly feeClp: number | null;
 }
 
 /** Only the exact sandbox HTTPS host is accepted for redirecting the browser. Returns origin + path without query. */
@@ -90,7 +106,7 @@ export class FlowClient {
     const parsed = statusResponse.safeParse(await this.call(`${path}?${query}`, "GET"));
     if (!parsed.success) throw new FlowProviderError("invalid_response");
     // Cost stays unknown (null) unless Flow reports a strict non-negative integer; never defaults to 0.
-    const feeParsed = feeAmount.safeParse(parsed.data.paymentData?.fee); const fee = feeParsed.success ? feeParsed.data : null;
+    const fee = flowCost(parsed.data.amount, parsed.data.paymentData);
     return {
       flowOrder: parsed.data.flowOrder, commerceOrder: parsed.data.commerceOrder, statusCode: parsed.data.status, status: mapFlowStatus(parsed.data.status),
       currency: parsed.data.currency, amountClp: parsed.data.amount, feeClp: fee,

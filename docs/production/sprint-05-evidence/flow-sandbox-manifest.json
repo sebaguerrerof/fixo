@@ -3,7 +3,7 @@
   "project": "rjzyqdhotcshvbdcrgon",
   "site": "https://www.soyfixo.cl",
   "createdAt": "2026-11-12T17:35:00.320Z",
-  "state": "closed-pending-cleanup",
+  "state": "closed-retained",
   "preflight": {
     "allowed": 0,
     "jobs": 0,
@@ -345,7 +345,9 @@
     "Cuarentena restante: 1 fila de bandeja flow_http_error_400 = token fabricado por la prueba (escenario duplicates); clasificada «sin obligación, con evidencia».",
     "Orden en revisión: 1 (late/pago tardío tras cancelación, job_cancelled): pago verificado, trabajo cancelado, sin reembolso automático.",
     "sharedConfigBefore reconstruido del preflight (category_requirements vacía ⇒ n=0, md5 de la cadena vacía); el setup original no lo registró",
-    "2026-11-12T19:26:52.993Z criterio sintético retirado (1 fila) y configuración compartida idéntica a la previa"
+    "2026-11-12T19:26:52.993Z criterio sintético retirado (1 fila) y configuración compartida idéntica a la previa",
+    "2026-11-12T19:51:18.108Z fase D (retención etiquetada): cuentas sintéticas suspendidas y vetadas, técnico fuera del directorio público, sesiones eliminadas, autorizaciones Sandbox 0; las filas financieras se conservan (append-only) identificadas por este manifiesto",
+    "2026-11-12T19:53:33.714Z corrección de datos sintéticos: coste Flow = fee + impuestos (decisión del propietario); 8 órdenes actualizadas ([[837,996],[837,996],[837,996],[837,996],[837,996],[837,996],[837,996],[335,399]])"
   ],
   "evidence": [
     {
@@ -1700,5 +1702,86 @@
       "state": "done"
     }
   ],
-  "financialRecordedAt": "2026-11-12T19:28:35.574Z"
+  "financialRecordedAt": "2026-11-12T19:52:58.647Z",
+  "retainedAt": "2026-11-12T19:51:18.107Z",
+  "costCorrections": [
+    {
+      "at": "2026-11-12T19:53:33.717Z",
+      "rule": "fee + taxes, cross-checked with balance",
+      "changes": [
+        {
+          "order": "e301a1c6-522b-4719-a947-3e58f14e6498",
+          "flowOrderTail": "7326",
+          "from": 837,
+          "to": 996,
+          "fee": "837.00",
+          "taxes": 159,
+          "balance": 25254
+        },
+        {
+          "order": "1143bffc-7192-497a-9038-7ce5dc18a445",
+          "flowOrderTail": "7336",
+          "from": 837,
+          "to": 996,
+          "fee": "837.00",
+          "taxes": 159,
+          "balance": 25254
+        },
+        {
+          "order": "ea9c05d0-7ad0-4ac8-8471-70994bb995f3",
+          "flowOrderTail": "7339",
+          "from": 837,
+          "to": 996,
+          "fee": "837.00",
+          "taxes": 159,
+          "balance": 25254
+        },
+        {
+          "order": "c40b6263-c229-4e5a-a843-2bed38960cb4",
+          "flowOrderTail": "7345",
+          "from": 837,
+          "to": 996,
+          "fee": "837.00",
+          "taxes": 159,
+          "balance": 25254
+        },
+        {
+          "order": "052b8d12-bcc9-4eac-aa59-f13d53ff3bde",
+          "flowOrderTail": "7347",
+          "from": 837,
+          "to": 996,
+          "fee": "837.00",
+          "taxes": 159,
+          "balance": 25254
+        },
+        {
+          "order": "5e6ef392-cb12-4bb1-99c1-a8549a2c6823",
+          "flowOrderTail": "7348",
+          "from": 837,
+          "to": 996,
+          "fee": "837.00",
+          "taxes": 159,
+          "balance": 25254
+        },
+        {
+          "order": "466d9d39-f8ba-4973-b621-45e9589a7919",
+          "flowOrderTail": "7350",
+          "from": 837,
+          "to": 996,
+          "fee": "837.00",
+          "taxes": 159,
+          "balance": 25254
+        },
+        {
+          "order": "1cf20190-d67b-413a-9771-bf9b7a1fedb1",
+          "flowOrderTail": "7356",
+          "from": 335,
+          "to": 399,
+          "fee": "335.00",
+          "taxes": 64,
+          "balance": 10101
+        }
+      ]
+    }
+  ]
 }

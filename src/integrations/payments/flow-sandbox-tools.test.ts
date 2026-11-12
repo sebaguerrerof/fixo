@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { assertAllowedPayer, buildRetireCriterionSql, classifyCreate, classifyReconciliation, openExternalIssues } from "../../../scripts/flow-sandbox/logic.mjs";
+import { describe, it, expect, vi } from "vitest";
+vi.mock("server-only", () => ({}));
+import { assertAllowedPayer, buildRetireCriterionSql, classifyCreate, classifyReconciliation, flowCost, openExternalIssues } from "../../../scripts/flow-sandbox/logic.mjs";
 
 const OWNER = "owner.test@gmail.com";
 
@@ -81,5 +82,17 @@ describe("remote Sandbox tooling: criterion retirement SQL", () => {
   });
   it("escapes quotes in every literal", () => {
     expect(buildRetireCriterionSql({ criterion: "x'y", run: "r'1", technician: "t'2", before: { n: 1, d: "d'3" } })).toContain("'x''y'");
+  });
+});
+
+describe("remote Sandbox tooling: Flow cost rule parity with the application", () => {
+  it("the script mirror and FlowClient agree on every sample (so the one-off data correction uses the shipped rule)", async () => {
+    const { FlowClient } = await import("./flow-client");
+    const cfg = { mode: "sandbox", apiKey: "K", secretKey: "S", apiBase: "https://sandbox.flow.cl/api", callbackOrigin: "https://x.example" } as const;
+    const samples: unknown[] = [{ fee: "837.00", taxes: 159, balance: 25254 }, { fee: "837.00", taxes: "159.00" }, { fee: 837, taxes: 0 }, { fee: "837.00" }, { taxes: 159 }, { fee: "837.50", taxes: 159 }, { fee: "837.00", taxes: 159, balance: 1 }, null, {}];
+    for (const pd of samples) {
+      const client = new FlowClient(cfg, async () => ({ status: 200, text: async () => JSON.stringify({ flowOrder: 9, commerceOrder: "c", status: 2, currency: "CLP", amount: "26250", paymentData: pd }) }));
+      expect(flowCost("26250", pd), JSON.stringify(pd)).toBe((await client.getStatusByToken("t")).feeClp);
+    }
   });
 });
