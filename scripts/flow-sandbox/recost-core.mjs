@@ -2,7 +2,8 @@
 // For every order: (1) decide the new cost, (2) PERSIST an intent {order, from, to, state:'intent'} in the manifest log BEFORE touching the database,
 // (3) apply `UPDATE ... WHERE cost IS NOT DISTINCT FROM from ... RETURNING`, (4) persist the outcome ('applied' | 'conflict').
 // A rerun after an interruption recovers: an intent whose database value already equals `to` is closed as applied (recovered, the old value is kept in the
-// intent); one still at `from` is applied; anything else is a conflict that is recorded and never overwritten.
+// intent); one still at `from` is applied; anything else is a conflict that is recorded and never overwritten. An unresolved conflict blocks every later run for that order
+// until someone sets `resolvedAt` on the entry (explicit resolution; the entry is kept as history).
 
 /**
  * @param {{ rows: Array<{ id: string, cost: number|null }>, getCost: (row: any) => Promise<number|null>, readCost: (id: string) => Promise<number|null>,
@@ -14,6 +15,9 @@ export async function runCostCorrection({ rows, getCost, readCost, applyUpdate, 
   for (const row of rows) {
     const m = await load(); const log = (m.costCorrectionLog ??= []);
     const current = await readCost(row.id);
+    // An unresolved conflict BLOCKS the order: a foreign change is never overwritten on a rerun. A person must resolve it explicitly (set `resolvedAt` on that log entry); the history is kept.
+    const last = [...log].reverse().find(e => e.order === row.id);
+    if (last && last.state === 'conflict' && !last.resolvedAt) { summary.conflicts++; continue; }
     let entry = [...log].reverse().find(e => e.order === row.id && e.state === 'intent');
     if (entry) {
       if (current === entry.to) { entry.state = 'applied'; entry.recovered = true; entry.completedAt = now(); await save(m); summary.recovered++; continue; }

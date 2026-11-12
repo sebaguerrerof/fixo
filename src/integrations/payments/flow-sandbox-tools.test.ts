@@ -128,7 +128,7 @@ describe("remote Sandbox tooling: retention is not the financial closure", () =>
   });
 });
 
-interface Entry { order: string; from: number | null; to: number; state: string; recovered?: boolean }
+interface Entry { order: string; from: number | null; to: number; state: string; recovered?: boolean; resolvedAt?: string }
 describe("remote Sandbox tooling: durable, idempotent Flow-cost correction", () => {
   const mk = (costs: Record<string, number | null>, targets: Record<string, number | null>) => {
     const db = new Map(Object.entries(costs)); let manifest: { notes: string[]; costCorrectionLog?: Entry[] } = { notes: [] }; let updates = 0;
@@ -173,5 +173,15 @@ describe("remote Sandbox tooling: durable, idempotent Flow-cost correction", () 
     const x = mk({ a: 837 }, { a: 996 }); await expect(runCostCorrection(x.deps({ applyUpdate: async () => { throw new Error("killed"); } }) as never)).rejects.toThrow();
     x.db.set("a", 5000);                                                                                         // someone changed it meanwhile
     expect(await runCostCorrection(x.deps() as never)).toMatchObject({ conflicts: 1 }); expect(x.db.get("a")).toBe(5000);
+  });
+  it("an unresolved conflict blocks the order on every rerun (the foreign value is kept) until a person resolves it explicitly", async () => {
+    const t = mk({ a: 837 }, { a: 996 });
+    await expect(runCostCorrection(t.deps({ applyUpdate: async () => { throw new Error("killed"); } }) as never)).rejects.toThrow();
+    t.db.set("a", 5000);
+    for (let i = 0; i < 3; i++) { expect(await runCostCorrection(t.deps() as never)).toMatchObject({ applied: 0, conflicts: 1 }); expect(t.db.get("a")).toBe(5000); }
+    expect(t.manifest().costCorrectionLog!).toHaveLength(1); expect(t.manifest().costCorrectionLog![0]).toMatchObject({ state: "conflict", from: 837, to: 996, found: 5000 });
+    const m = t.manifest(); m.costCorrectionLog![0].resolvedAt = "T2"; await t.deps().save(m);                    // explicit resolution
+    expect(await runCostCorrection(t.deps() as never)).toMatchObject({ applied: 1 }); expect(t.db.get("a")).toBe(996);
+    expect(t.manifest().costCorrectionLog!.map((e: Entry) => [e.from, e.to, e.state])).toEqual([[837, 996, "conflict"], [5000, 996, "applied"]]);
   });
 });
