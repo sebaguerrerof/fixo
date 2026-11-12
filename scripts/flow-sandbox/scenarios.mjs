@@ -47,6 +47,21 @@ async function payThroughFlow(job, outcome, { screenshots = false } = {}) {
     return out;
   } finally { await browser.close(); }
 }
+/** Completes the Flow checkout that is ALREADY open (the customer still has the Flow page): no Fixo login or button is involved. */
+async function payOnFlowDirect(job, outcome) {
+  const token = (await readSecrets()).tokens?.[job]; assert.ok(token, 'sin token capturado para el trabajo');
+  const browser = await openBrowser();
+  try {
+    const page = await (await browser.newContext({ viewport: { width: 1280, height: 900 }, locale: 'es-CL' })).newPage();
+    await page.goto(`https://sandbox.flow.cl/app/web/pay.php?token=${encodeURIComponent(token)}`, { waitUntil: 'domcontentloaded' });
+    await Promise.all([page.waitForLoadState('domcontentloaded').catch(() => {}), page.getByText('Pagar ahora', { exact: true }).first().click()]); await page.waitForTimeout(2500);
+    const options = (await page.locator('select option').allInnerTexts()).map(t => t.trim());
+    const pick = options.find(o => ({ approve: /pagar/i, reject: /rechaz/i })[outcome].test(o)); assert.ok(pick, 'sin opción ' + outcome);
+    await page.locator('select').selectOption({ label: pick });
+    await Promise.all([page.waitForLoadState('domcontentloaded').catch(() => {}), page.getByRole('button', { name: /Confirmar/i }).click()]); await page.waitForTimeout(4000);
+    const back = new URL(page.url()); return { reachedFlow: true, chose: outcome, returnedTo: back.hostname + back.pathname, tokenInReturnUrl: back.searchParams.has('token') };
+  } finally { await browser.close(); }
+}
 const until = async (fn, ms, label) => { const end = Date.now() + ms; while (Date.now() < end) { const v = await fn(); if (v) return v; await wait(5000); } throw new Error('timeout: ' + label); };
 const sum = s => ({ job_state: s.job_state, orders: s.orders, attempts: s.attempts, events: s.events, inbox: s.inbox_all, provider_job_events: s.provider_job_events });
 const postToken = (path, token) => fetch(SITE + path, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ token }).toString(), redirect: 'manual' });
@@ -94,6 +109,81 @@ const scenarios = {
     await record('duplicates/state-change-and-replay-after-paid', job, { flow: pay, callbackStatuses: r2, ...sum(end) });
     assert.equal(end.orders.length, 1); assert.equal(end.attempts.filter(a => a.state === 'paid').length, 1);
     assert.equal(end.events.filter(e => e.status === 2).length, 1, 'un solo evento de pago'); assert.equal(end.provider_job_events, paid.provider_job_events, 'sin avisos adicionales tras los duplicados');
+  },
+  /** S6: cancellation approved while the checkout is open, then Flow approves: late payment => stays paid, in review, the job is NOT reactivated. */
+  async late() {
+    const job = givenJob ? await ownJob(givenJob) : await newJobFor('pago tardio');
+    const open = await payThroughFlow(job, 'abandon'); const s0 = await snapshot(job); await record('late/checkout-open', job, { flow: open, ...sum(s0) });
+    const secrets = await readSecrets(), customer = await actorClient(env, secrets, 'customer'), sup = await actorClient(env, secrets, 'superadmin');
+    const rev = async () => (await rpc(customer, 'job_detail', { job_id: job })).job.revision;
+    const req = await rpc(customer, 'job_command', { job_id: job, operation_id: crypto.randomUUID(), expected_revision: await rev(), action: 'request_cancellation', payload: { reason: 'Cancelación sintética de la prueba de pago tardío' } });
+    await rpc(sup, 'job_command', { job_id: job, operation_id: crypto.randomUUID(), expected_revision: (await rpc(sup, 'job_detail', { job_id: job })).job.revision, action: 'resolve_cancellation', payload: { cancellationId: req.resource_id, decision: 'approved', reason: 'Cancelación sintética aprobada en la prueba' } });
+    const s1 = await snapshot(job); await record('late/after-cancellation', job, sum(s1)); assert.equal(s1.orders[0].review, 'job_cancelled'); assert.equal(s1.orders[0].status, 'awaiting_payment');
+    await scenarios.latefinish(job, customer);
+  },
+  async lateresume() { const job = await ownJob(givenJob); const customer = await actorClient(env, await readSecrets(), 'customer'); await scenarios.latefinish(job, customer); },
+  async latefinish(job, customer) {
+    const pay = await payOnFlowDirect(job, 'approve');
+    const done = await until(async () => { const x = await snapshot(job); return x.orders?.[0]?.status === 'paid' ? x : null; }, 240000, 'late payment recorded');
+    const detail = await rpc(customer, 'job_detail', { job_id: job }); await record('late/payment-after-cancellation', job, { flow: pay, jobStatus: detail.job.status, ...sum(done) });
+    assert.equal(detail.job.status, 'cancelled'); assert.equal(done.orders[0].review, 'job_cancelled'); assert.equal(done.attempts.filter(a => a.state === 'paid').length, 1);
+    assert.ok(done.events.some(e => e.status === 2 && e.validation === 'late_payment'), 'pago tardío registrado');
+  },
+  /** S7: the Flow notification is LOST. The worker is paused (cron unscheduled) so it cannot claim the row; the received notification is deleted by exact token hash;
+   *  after the schedule is restored the worker must credit the payment by reconciling the attempt on its own (no notification exists). */
+  async nocallback() {
+    const { createHash } = await import('node:crypto');
+    const job = givenJob ? await ownJob(givenJob) : await newJobFor('sin callback');
+    await sql(`select cron.unschedule(jobid) from cron.job where jobname='fixo-payments-worker'`);
+    let pay, deleted, pre, lost;
+    try {
+      pay = await payThroughFlow(job, 'approve'); const token = (await readSecrets()).tokens[job], hash = createHash('sha256').update(token, 'utf8').digest('hex');
+      [pre] = await sql(`select state from private.payment_inbox where token_sha256=${lit(hash)}`);
+      deleted = (await sql(`delete from private.payment_inbox where token_sha256=${lit(hash)} and state='pending' returning 1 as n`)).length;
+      lost = await snapshot(job); await record('nocallback/notification-lost-worker-paused', job, { flow: pay, inboxBeforeDelete: pre?.state ?? null, deleted, ...sum(lost) });
+      assert.equal(deleted, 1, 'la notificación debía estar pendiente (el worker está detenido)'); assert.equal(lost.orders[0].status, 'awaiting_payment', 'sin worker ni notificación el pago aún no consta');
+      this.hash = hash;
+    } finally { await sql(`select cron.schedule('fixo-payments-worker','* * * * *','select private.payment_worker_tick()')`); }
+    const done = await until(async () => { const x = await snapshot(job); return x.orders?.[0]?.status === 'paid' ? x : null; }, 420000, 'reconciliation without any notification');
+    await record('nocallback/reconciled-by-worker', job, sum(done)); assert.equal(done.attempts.filter(a => a.state === 'paid').length, 1); assert.equal(done.events.filter(e => e.status === 2).length, 1);
+    assert.equal((await sql(`select 1 from private.payment_inbox where token_sha256=${lit(this.hash)}`)).length, 0, 'no existe ninguna notificación: la conciliación fue independiente');
+  },
+  /** S8: the worker is DOWN (cron unscheduled) while the customer pays; after it is rescheduled the backlog is processed once. */
+  async workerdown() {
+    const job = givenJob ? await ownJob(givenJob) : await newJobFor('worker caido');
+    await sql(`select cron.unschedule(jobid) from cron.job where jobname='fixo-payments-worker'`);
+    try {
+      const pay = await payThroughFlow(job, 'approve'); console.log('worker stopped; waiting 150 s'); await wait(150000);
+      const down = await snapshot(job); await record('workerdown/while-stopped', job, { flow: pay, ...sum(down) });
+      assert.equal(down.orders[0].status, 'awaiting_payment', 'sin worker nada debe acreditar el pago'); assert.ok(down.inbox_all.some(i => i.state === 'pending'), 'la notificación quedó en la bandeja');
+    } finally { await sql(`select cron.schedule('fixo-payments-worker','* * * * *','select private.payment_worker_tick()')`); }
+    const done = await until(async () => { const x = await snapshot(job); return x.orders?.[0]?.status === 'paid' ? x : null; }, 240000, 'backlog processed after restart');
+    await record('workerdown/after-restart', job, sum(done)); assert.equal(done.attempts.filter(a => a.state === 'paid').length, 1); assert.equal(done.events.filter(e => e.status === 2).length, 1);
+  },
+  /** S9: initial payment done -> job scheduled -> technician proposes an extra -> customer accepts (consent) -> pending balance visible -> extra paid through Flow. */
+  async extra() {
+    const job = await ownJob(givenJob); const secrets = await readSecrets();
+    const customer = await actorClient(env, secrets, 'customer'), tech = await actorClient(env, secrets, 'technician');
+    const detail = async a => rpc(a, 'job_detail', { job_id: job });
+    const cmd = async (a, action, payload = {}) => rpc(a, 'job_command', { job_id: job, operation_id: crypto.randomUUID(), expected_revision: (await detail(a)).job.revision, action, payload });
+    const start = new Date(Date.now() + 172800000); start.setUTCHours(15, 0, 0, 0); const end = new Date(start.getTime() + 2 * 3600000);
+    const part = d => Object.fromEntries(new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Santiago', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(d).map(x => [x.type, x.value]));
+    const a = part(start), b = part(end);
+    if ((await detail(customer)).job.status !== 'scheduled') {
+      await cmd(tech, 'propose_schedule', { startsAt: start.toISOString(), endsAt: end.toISOString(), localDate: `${a.year}-${a.month}-${a.day}`, startTime: `${a.hour}:${a.minute}`, endTime: `${b.hour}:${b.minute}`, reason: 'Propuesta sintética de la prueba Flow Sandbox' });
+      const d = await detail(customer); await cmd(customer, 'accept_schedule', { proposalId: d.schedules.find(x => x.state === 'proposed').id });
+    }
+    const x = await rpc(tech, 'job_extra_propose', { target_job: job, operation_id: crypto.randomUUID(), concept_text: 'Adicional sintético de la prueba Flow Sandbox', amount: 10000 });
+    const policy = await rpc(customer, 'payment_policy_current', {}); const pre = await rpc(customer, 'job_payments', { target_job: job });
+    await record('extra/proposed', job, { unpaidExtras: pre.unpaid_extras, extrasStates: pre.extras.map(e => e.state) });
+    await rpc(customer, 'job_extra_respond', { target_extra: x.id, decision: 'accepted', expected_policy_version: policy.version, reason_text: null });
+    const accepted = await rpc(customer, 'job_payments', { target_job: job }); await record('extra/accepted-balance-visible', job, { unpaidExtras: accepted.unpaid_extras, orders: accepted.orders.map(o => ({ origin: o.origin, status: o.status })) });
+    assert.equal(accepted.unpaid_extras, true, 'el saldo del adicional aceptado debe verse antes del cierre');
+    const pay = await payThroughFlow(job, 'approve');
+    const done = await until(async () => { const z = await snapshot(job); return z.orders?.filter(o => o.status === 'paid').length === 2 ? z : null; }, 300000, 'extra paid');
+    const after = await rpc(customer, 'job_payments', { target_job: job });
+    await record('extra/paid', job, { flow: pay, unpaidExtras: after.unpaid_extras, ...sum(done) });
+    assert.equal(after.unpaid_extras, false); assert.equal(done.attempts.filter(a2 => a2.state === 'paid').length, 2); assert.equal(done.orders.filter(o => o.origin === 'extra').length, 1);
   },
 };
 if (!scenarios[scenario]) { console.error('escenarios: ' + Object.keys(scenarios).join(', ')); process.exit(2); }

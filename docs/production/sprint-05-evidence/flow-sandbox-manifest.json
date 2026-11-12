@@ -3,7 +3,7 @@
   "project": "rjzyqdhotcshvbdcrgon",
   "site": "https://www.soyfixo.cl",
   "createdAt": "2026-11-12T17:35:00.320Z",
-  "state": "setup",
+  "state": "closed-pending-cleanup",
   "preflight": {
     "allowed": 0,
     "jobs": 0,
@@ -41,6 +41,22 @@
     {
       "id": "f780c067-cdfb-4181-b161-90e5e550466e",
       "createdAt": "2026-11-12T18:43:23.298Z"
+    },
+    {
+      "id": "21adad84-d17a-40c9-bd6d-14ff57257f01",
+      "createdAt": "2026-11-12T18:57:10.535Z"
+    },
+    {
+      "id": "98208233-e1d0-42aa-a1a5-33fd63835e11",
+      "createdAt": "2026-11-12T18:59:23.859Z"
+    },
+    {
+      "id": "e2726a56-fac7-4d80-95b3-ac22b24cf3ab",
+      "createdAt": "2026-11-12T19:01:23.163Z"
+    },
+    {
+      "id": "82a2bb90-dd5e-4ef1-92f1-1c9a75d2d9b9",
+      "createdAt": "2026-11-12T19:04:39.937Z"
     }
   ],
   "quotes": [
@@ -55,6 +71,22 @@
     {
       "id": "405feeb5-6e6f-41cc-bb6e-dcfb2bee4c43",
       "createdAt": "2026-11-12T18:43:23.546Z"
+    },
+    {
+      "id": "d798a452-f573-42c8-a03f-a77a46e2754d",
+      "createdAt": "2026-11-12T18:57:10.757Z"
+    },
+    {
+      "id": "552fb96b-31f1-4818-9b55-37a8796df99b",
+      "createdAt": "2026-11-12T18:59:24.055Z"
+    },
+    {
+      "id": "c917f40b-0081-43ce-82ab-e730412a9097",
+      "createdAt": "2026-11-12T19:01:23.402Z"
+    },
+    {
+      "id": "a410397d-df32-43c2-92f0-2d779feb9758",
+      "createdAt": "2026-11-12T19:04:40.213Z"
     }
   ],
   "jobs": [
@@ -72,12 +104,36 @@
       "id": "36e16355-fa0b-4fd0-8fc5-8099a92cda06",
       "label": "pendiente",
       "createdAt": "2026-11-12T18:43:23.961Z"
+    },
+    {
+      "id": "9fdee44e-97a6-4df1-948e-eddf8176ee9c",
+      "label": "pago tardio",
+      "createdAt": "2026-11-12T18:57:11.142Z"
+    },
+    {
+      "id": "d0215639-d1df-4f34-916e-5708be05cff3",
+      "label": "sin callback",
+      "createdAt": "2026-11-12T18:59:24.431Z"
+    },
+    {
+      "id": "0f637045-2106-418f-bf3e-00594c7a4f85",
+      "label": "sin callback",
+      "createdAt": "2026-11-12T19:01:23.830Z"
+    },
+    {
+      "id": "ecbcbd60-ba57-4a81-a566-529ce9b2c162",
+      "label": "worker caido",
+      "createdAt": "2026-11-12T19:04:40.673Z"
     }
   ],
   "orders": [],
   "attempts": [],
   "notes": [
-    "2026-11-12T17:35:14.189Z cuenta cliente autorizada para pagos Sandbox"
+    "2026-11-12T17:35:14.189Z cuenta cliente autorizada para pagos Sandbox",
+    "2026-11-12T19:15:28.851Z autorización Sandbox del cliente sintético revocada (enabled=false)",
+    "2026-11-12 matriz ejecutada contra Flow Sandbox real; interruptores de creación y recepción apagados; autorización revocada; limpieza (fase D) pendiente de decisión del propietario",
+    "Cuarentena restante: 1 fila de bandeja flow_http_error_400 = token fabricado por la prueba (escenario duplicates); clasificada «sin obligación, con evidencia».",
+    "Orden en revisión: 1 (late/pago tardío tras cancelación, job_cancelled): pago verificado, trabajo cancelado, sin reembolso automático."
   ],
   "evidence": [
     {
@@ -473,6 +529,772 @@
         }
       ],
       "provider_job_events": 1
+    },
+    {
+      "at": "2026-11-12T18:57:30.998Z",
+      "scenario": "late/checkout-open",
+      "job": "9fdee44e-97a6-4df1-948e-eddf8176ee9c",
+      "flow": {
+        "reachedFlow": true
+      },
+      "job_state": "payment_pending",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "awaiting_payment",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7345",
+          "ref_len": 41,
+          "state": "pending"
+        }
+      ],
+      "events": null,
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        }
+      ],
+      "provider_job_events": 0
+    },
+    {
+      "at": "2026-11-12T18:57:35.434Z",
+      "scenario": "late/after-cancellation",
+      "job": "9fdee44e-97a6-4df1-948e-eddf8176ee9c",
+      "job_state": "payment_review",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": "job_cancelled",
+          "status": "awaiting_payment",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7345",
+          "ref_len": 41,
+          "state": "pending"
+        }
+      ],
+      "events": [
+        {
+          "amount": null,
+          "fee": null,
+          "status": 0,
+          "validation": "job_cancelled"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        }
+      ],
+      "provider_job_events": 1
+    },
+    {
+      "at": "2026-11-12T18:59:06.080Z",
+      "scenario": "late/payment-after-cancellation",
+      "job": "9fdee44e-97a6-4df1-948e-eddf8176ee9c",
+      "flow": {
+        "reachedFlow": true,
+        "chose": "approve",
+        "returnedTo": "sandbox.flow.cl/app/dummy/result.php",
+        "tokenInReturnUrl": false
+      },
+      "jobStatus": "cancelled",
+      "job_state": "payment_review",
+      "orders": [
+        {
+          "cost": 837,
+          "origin": "initial",
+          "review": "job_cancelled",
+          "status": "paid",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7345",
+          "ref_len": 41,
+          "state": "paid"
+        }
+      ],
+      "events": [
+        {
+          "amount": null,
+          "fee": null,
+          "status": 0,
+          "validation": "job_cancelled"
+        },
+        {
+          "amount": 26250,
+          "fee": 837,
+          "status": 2,
+          "validation": "late_payment"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 2
+    },
+    {
+      "at": "2026-11-12T19:00:14.886Z",
+      "scenario": "nocallback/notification-lost",
+      "job": "d0215639-d1df-4f34-916e-5708be05cff3",
+      "flow": {
+        "reachedFlow": true,
+        "simulatorOptions": [
+          "Quiero pagar la orden",
+          "Quiero rechazar el pago de la orden"
+        ],
+        "chose": "approve",
+        "returnedTo": "www.soyfixo.cl/cliente/trabajos",
+        "tokenInReturnUrl": false
+      },
+      "inboxBeforeDelete": "pending",
+      "deleted": 1,
+      "job_state": "paid",
+      "orders": [
+        {
+          "cost": 837,
+          "origin": "initial",
+          "review": null,
+          "status": "paid",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7347",
+          "ref_len": 41,
+          "state": "paid"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": 837,
+          "status": 2,
+          "validation": "applied"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 1
+    },
+    {
+      "at": "2026-11-12T19:00:23.889Z",
+      "scenario": "nocallback/reconciled-by-worker",
+      "job": "d0215639-d1df-4f34-916e-5708be05cff3",
+      "job_state": "paid",
+      "orders": [
+        {
+          "cost": 837,
+          "origin": "initial",
+          "review": null,
+          "status": "paid",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7347",
+          "ref_len": 41,
+          "state": "paid"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": 837,
+          "status": 2,
+          "validation": "applied"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 1
+    },
+    {
+      "at": "2026-11-12T19:03:31.650Z",
+      "scenario": "nocallback/notification-lost-worker-paused",
+      "job": "0f637045-2106-418f-bf3e-00594c7a4f85",
+      "flow": {
+        "reachedFlow": true,
+        "simulatorOptions": [
+          "Quiero pagar la orden",
+          "Quiero rechazar el pago de la orden"
+        ],
+        "chose": "approve",
+        "returnedTo": "www.soyfixo.cl/cliente/trabajos",
+        "tokenInReturnUrl": false
+      },
+      "inboxBeforeDelete": "pending",
+      "deleted": 1,
+      "job_state": "payment_pending",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "awaiting_payment",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7348",
+          "ref_len": 41,
+          "state": "pending"
+        }
+      ],
+      "events": null,
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 0
+    },
+    {
+      "at": "2026-11-12T19:04:06.426Z",
+      "scenario": "nocallback/reconciled-by-worker",
+      "job": "0f637045-2106-418f-bf3e-00594c7a4f85",
+      "job_state": "paid",
+      "orders": [
+        {
+          "cost": 837,
+          "origin": "initial",
+          "review": null,
+          "status": "paid",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7348",
+          "ref_len": 41,
+          "state": "paid"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": 837,
+          "status": 2,
+          "validation": "applied"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 1
+    },
+    {
+      "at": "2026-11-12T19:10:23.177Z",
+      "scenario": "workerdown/while-stopped",
+      "job": "ecbcbd60-ba57-4a81-a566-529ce9b2c162",
+      "flow": {
+        "reachedFlow": true,
+        "simulatorOptions": [
+          "Quiero pagar la orden",
+          "Quiero rechazar el pago de la orden"
+        ],
+        "chose": "approve",
+        "returnedTo": "www.soyfixo.cl/cliente/trabajos",
+        "tokenInReturnUrl": false
+      },
+      "job_state": "payment_pending",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "awaiting_payment",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7350",
+          "ref_len": 41,
+          "state": "pending"
+        }
+      ],
+      "events": null,
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 0,
+          "reason": null,
+          "state": "pending"
+        }
+      ],
+      "provider_job_events": 0
+    },
+    {
+      "at": "2026-11-12T19:11:10.906Z",
+      "scenario": "workerdown/after-restart",
+      "job": "ecbcbd60-ba57-4a81-a566-529ce9b2c162",
+      "job_state": "paid",
+      "orders": [
+        {
+          "cost": 837,
+          "origin": "initial",
+          "review": null,
+          "status": "paid",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7350",
+          "ref_len": 41,
+          "state": "paid"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": 837,
+          "status": 2,
+          "validation": "applied"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 1
+    },
+    {
+      "at": "2026-11-12T19:11:38.758Z",
+      "scenario": "extra/proposed",
+      "job": "6056f113-11bc-40ce-85e0-dc911beef950",
+      "unpaidExtras": false,
+      "extrasStates": [
+        "proposed"
+      ]
+    },
+    {
+      "at": "2026-11-12T19:11:39.138Z",
+      "scenario": "extra/accepted-balance-visible",
+      "job": "6056f113-11bc-40ce-85e0-dc911beef950",
+      "unpaidExtras": true,
+      "orders": [
+        {
+          "origin": "initial",
+          "status": "paid"
+        },
+        {
+          "origin": "extra",
+          "status": "awaiting_payment"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-12T19:13:06.847Z",
+      "scenario": "extra/paid",
+      "job": "6056f113-11bc-40ce-85e0-dc911beef950",
+      "flow": {
+        "reachedFlow": true,
+        "simulatorOptions": [
+          "Quiero pagar la orden",
+          "Quiero rechazar el pago de la orden"
+        ],
+        "chose": "approve",
+        "returnedTo": "www.soyfixo.cl/cliente/trabajos",
+        "tokenInReturnUrl": false
+      },
+      "unpaidExtras": false,
+      "job_state": "paid",
+      "orders": [
+        {
+          "cost": 837,
+          "origin": "initial",
+          "review": null,
+          "status": "paid",
+          "total": 26250
+        },
+        {
+          "cost": 335,
+          "origin": "extra",
+          "review": null,
+          "status": "paid",
+          "total": 10500
+        }
+      ],
+      "attempts": [
+        {
+          "err": "http_error",
+          "flow": null,
+          "ref_len": 49,
+          "state": "failed"
+        },
+        {
+          "err": "http_error",
+          "flow": null,
+          "ref_len": 41,
+          "state": "failed"
+        },
+        {
+          "err": "http_error",
+          "flow": null,
+          "ref_len": 41,
+          "state": "failed"
+        },
+        {
+          "err": "http_error",
+          "flow": null,
+          "ref_len": 41,
+          "state": "failed"
+        },
+        {
+          "err": null,
+          "flow": "7326",
+          "ref_len": 41,
+          "state": "paid"
+        },
+        {
+          "err": null,
+          "flow": "7356",
+          "ref_len": 41,
+          "state": "paid"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": null,
+          "status": 2,
+          "validation": "applied"
+        },
+        {
+          "amount": 26250,
+          "fee": 837,
+          "status": 2,
+          "validation": "stale"
+        },
+        {
+          "amount": 10500,
+          "fee": 335,
+          "status": 2,
+          "validation": "applied"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 2
     }
   ]
 }
