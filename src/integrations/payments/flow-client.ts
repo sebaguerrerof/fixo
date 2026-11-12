@@ -21,6 +21,8 @@ export class FlowProviderError extends Error {
 
 /** Strict numbers only: JSON numbers or plain decimal digit strings. "", " ", false, null and "1e3" are NOT numbers (never coerced to 0). */
 const strictInt = z.union([z.number(), z.string().regex(/^[0-9]{1,15}$/).transform(Number)]).pipe(z.number().int().safe());
+/** Flow reports the cost as a decimal STRING with two decimals ("837.00" in the real Sandbox). Only an integer-valued amount is accepted; "837.50", "", "1e3" or negatives stay unknown (never rounded or coerced). */
+const feeAmount = z.union([z.number().int().nonnegative().safe(), z.string().regex(/^[0-9]{1,15}(\.0{1,2})?$/).transform(Number)]).pipe(z.number().int().nonnegative().safe());
 const createResponse = z.object({ url: z.string().min(1), token: z.string().min(1).max(256), flowOrder: strictInt.pipe(z.number().positive()) });
 const statusResponse = z.object({
   flowOrder: strictInt.pipe(z.number().positive()),
@@ -88,7 +90,7 @@ export class FlowClient {
     const parsed = statusResponse.safeParse(await this.call(`${path}?${query}`, "GET"));
     if (!parsed.success) throw new FlowProviderError("invalid_response");
     // Cost stays unknown (null) unless Flow reports a strict non-negative integer; never defaults to 0.
-    const feeParsed = strictInt.safeParse(parsed.data.paymentData?.fee); const fee = feeParsed.success && feeParsed.data >= 0 ? feeParsed.data : null;
+    const feeParsed = feeAmount.safeParse(parsed.data.paymentData?.fee); const fee = feeParsed.success ? feeParsed.data : null;
     return {
       flowOrder: parsed.data.flowOrder, commerceOrder: parsed.data.commerceOrder, statusCode: parsed.data.status, status: mapFlowStatus(parsed.data.status),
       currency: parsed.data.currency, amountClp: parsed.data.amount, feeClp: fee,

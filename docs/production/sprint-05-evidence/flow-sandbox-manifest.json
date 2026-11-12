@@ -33,12 +33,28 @@
     {
       "id": "b1fa990a-8ea6-4e73-b934-83167e795338",
       "createdAt": "2026-11-12T17:35:29.078Z"
+    },
+    {
+      "id": "57d7f8fc-3ef7-42a2-8337-687e6638e9be",
+      "createdAt": "2026-11-12T18:39:00.617Z"
+    },
+    {
+      "id": "f780c067-cdfb-4181-b161-90e5e550466e",
+      "createdAt": "2026-11-12T18:43:23.298Z"
     }
   ],
   "quotes": [
     {
       "id": "a2bd2681-8b41-408b-bd5f-d667b90bd9a0",
       "createdAt": "2026-11-12T17:35:29.293Z"
+    },
+    {
+      "id": "cc96f9f1-b3ba-4c78-9453-87c540c7f444",
+      "createdAt": "2026-11-12T18:39:01.107Z"
+    },
+    {
+      "id": "405feeb5-6e6f-41cc-bb6e-dcfb2bee4c43",
+      "createdAt": "2026-11-12T18:43:23.546Z"
     }
   ],
   "jobs": [
@@ -46,11 +62,417 @@
       "id": "6056f113-11bc-40ce-85e0-dc911beef950",
       "label": "aprobado",
       "createdAt": "2026-11-12T17:35:29.705Z"
+    },
+    {
+      "id": "f8753c1c-72e6-4ac5-9d58-ddd4f9247e60",
+      "label": "rechazado",
+      "createdAt": "2026-11-12T18:39:01.520Z"
+    },
+    {
+      "id": "36e16355-fa0b-4fd0-8fc5-8099a92cda06",
+      "label": "pendiente",
+      "createdAt": "2026-11-12T18:43:23.961Z"
     }
   ],
   "orders": [],
   "attempts": [],
   "notes": [
     "2026-11-12T17:35:14.189Z cuenta cliente autorizada para pagos Sandbox"
+  ],
+  "evidence": [
+    {
+      "at": "2026-11-12T18:42:05.550Z",
+      "scenario": "rejected/after-rejection",
+      "job": "f8753c1c-72e6-4ac5-9d58-ddd4f9247e60",
+      "flow": {
+        "reachedFlow": true,
+        "simulatorOptions": [
+          "Quiero pagar la orden",
+          "Quiero rechazar el pago de la orden"
+        ],
+        "chose": "reject",
+        "returnedTo": "www.soyfixo.cl/cliente/trabajos",
+        "tokenInReturnUrl": false
+      },
+      "job_state": "payment_pending",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "awaiting_payment",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7333",
+          "ref_len": 41,
+          "state": "failed"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": null,
+          "status": 3,
+          "validation": "applied"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 1
+    },
+    {
+      "at": "2026-11-12T18:43:08.332Z",
+      "scenario": "rejected/retry-approved",
+      "job": "f8753c1c-72e6-4ac5-9d58-ddd4f9247e60",
+      "flow": {
+        "reachedFlow": true,
+        "simulatorOptions": [
+          "Quiero pagar la orden",
+          "Quiero rechazar el pago de la orden"
+        ],
+        "chose": "approve",
+        "returnedTo": "www.soyfixo.cl/cliente/trabajos",
+        "tokenInReturnUrl": false
+      },
+      "job_state": "paid",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "paid",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7333",
+          "ref_len": 41,
+          "state": "failed"
+        },
+        {
+          "err": null,
+          "flow": "7336",
+          "ref_len": 41,
+          "state": "paid"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": null,
+          "status": 3,
+          "validation": "applied"
+        },
+        {
+          "amount": 26250,
+          "fee": null,
+          "status": 2,
+          "validation": "applied"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 2
+    },
+    {
+      "at": "2026-11-12T18:43:39.180Z",
+      "scenario": "pending/first-open",
+      "job": "36e16355-fa0b-4fd0-8fc5-8099a92cda06",
+      "flow": {
+        "reachedFlow": true
+      },
+      "job_state": "payment_pending",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "awaiting_payment",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7339",
+          "ref_len": 41,
+          "state": "pending"
+        }
+      ],
+      "events": null,
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 0
+    },
+    {
+      "at": "2026-11-12T18:43:52.309Z",
+      "scenario": "pending/reopen",
+      "job": "36e16355-fa0b-4fd0-8fc5-8099a92cda06",
+      "flow": {
+        "reachedFlow": true
+      },
+      "job_state": "payment_pending",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "awaiting_payment",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7339",
+          "ref_len": 41,
+          "state": "pending"
+        }
+      ],
+      "events": null,
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 0
+    },
+    {
+      "at": "2026-11-12T18:46:10.311Z",
+      "scenario": "pending/after-reconciliation",
+      "job": "36e16355-fa0b-4fd0-8fc5-8099a92cda06",
+      "job_state": "payment_pending",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "awaiting_payment",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7339",
+          "ref_len": 41,
+          "state": "pending"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": null,
+          "status": 1,
+          "validation": "pending"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 0
+    },
+    {
+      "at": "2026-11-12T18:49:18.736Z",
+      "scenario": "duplicates/replayed-while-pending",
+      "job": "36e16355-fa0b-4fd0-8fc5-8099a92cda06",
+      "callbackStatuses": [
+        200,
+        200,
+        200,
+        200,
+        200,
+        400,
+        405
+      ],
+      "job_state": "payment_pending",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "awaiting_payment",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7339",
+          "ref_len": 41,
+          "state": "pending"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": null,
+          "status": 1,
+          "validation": "pending"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 3,
+          "processed": 3,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        }
+      ],
+      "provider_job_events": 0
+    },
+    {
+      "at": "2026-11-12T18:52:47.597Z",
+      "scenario": "duplicates/state-change-and-replay-after-paid",
+      "job": "36e16355-fa0b-4fd0-8fc5-8099a92cda06",
+      "flow": {
+        "reachedFlow": true,
+        "simulatorOptions": [
+          "Quiero pagar la orden",
+          "Quiero rechazar el pago de la orden"
+        ],
+        "chose": "approve",
+        "returnedTo": "www.soyfixo.cl/cliente/trabajos",
+        "tokenInReturnUrl": false
+      },
+      "callbackStatuses": [
+        200,
+        200,
+        200
+      ],
+      "job_state": "paid",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "paid",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7339",
+          "ref_len": 41,
+          "state": "paid"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": null,
+          "status": 1,
+          "validation": "pending"
+        },
+        {
+          "amount": 26250,
+          "fee": null,
+          "status": 2,
+          "validation": "applied"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        }
+      ],
+      "provider_job_events": 1
+    }
   ]
 }

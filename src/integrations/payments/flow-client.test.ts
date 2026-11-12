@@ -120,6 +120,12 @@ describe("FlowClient", () => {
     expect(await new FlowClient(config(), reply(200, { ...base, paymentData: null })).getStatusByToken("t")).toMatchObject({ feeClp: null });
     expect(await fee(0)).toBe(0); expect(await fee("0")).toBe(0); expect(await fee(551)).toBe(551); expect(await fee("551")).toBe(551);
   });
+  it("accepts the REAL Sandbox format: the fee is a decimal string with two decimals (\"837.00\"); only integer-valued amounts count, fractions stay unknown", async () => {
+    const base = { flowOrder: 9, commerceOrder: "c", status: 2, currency: "CLP", amount: "26250" };
+    const fee = async (value: unknown) => (await new FlowClient(config(), reply(200, { ...base, paymentData: { fee: value, taxes: 159, balance: 25254, media: "Webpay" } })).getStatusByToken("t")).feeClp;
+    expect(await fee("837.00")).toBe(837); expect(await fee("837.0")).toBe(837); expect(await fee("0.00")).toBe(0);
+    for (const bad of ["837.50", "837.005", "837.", ".50", "-837.00", "837,00", "8 37.00"]) expect(await fee(bad)).toBeNull();
+  });
   it("amount, flowOrder and status are never coerced from empty or boolean values", async () => {
     const base = { flowOrder: 9, commerceOrder: "c", status: 2, currency: "CLP", amount: 100 };
     for (const patch of [{ amount: "" }, { amount: false }, { amount: null }, { amount: "1e2" }, { flowOrder: "" }, { flowOrder: false }, { flowOrder: 0 }, { status: "" }, { status: false }])
