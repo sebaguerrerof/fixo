@@ -12,20 +12,20 @@
 | Deploy a `www.soyfixo.cl` | **Hecho** (fase A) con el código completo (allowlist, endpoint con logs, cron preparado) | Variables de Flow y de pagos en Vercel con ambos interruptores en `false`. Smoke de sólo lectura PASS: `/`, `/login`, rutas protegidas 307, worker sin credencial 401, con credencial 200 `housekeepingFailures:0`, callback 503 (recepción apagada). |
 | Interruptores de pagos | **Apagados** (`FIXO_PAYMENTS_CREATION_ENABLED=false`, `FIXO_PAYMENTS_NOTIFICATIONS_ENABLED=false`) | Cobros reales: inexistentes (API fijada a Sandbox). |
 | Ejecutor del worker | **Supabase Cron ACTIVO** (fase B, aprobada) | `pg_cron` y `pg_net` instalados; secretos `fixo_payments_worker_url/secret` en Vault; job `fixo-payments-worker` (`* * * * *`). Primeros ticks reales: `scheduled=true`, 3 de 3 saludables, `degraded=false`, resumen con todos los contadores en 0. Con las notificaciones apagadas sólo hace mantenimiento (limpieza y retención): **no verifica pagos hasta encender `FIXO_PAYMENTS_NOTIFICATIONS_ENABLED`**. |
-| Pruebas Flow Sandbox | **No ejecutadas** | Requieren aprobaciones A–D (runbook §9). |
+| Pruebas Flow Sandbox | **No ejecutadas** | Las fases A y B ya están aprobadas y aplicadas; faltan las aprobaciones C (cuentas sintéticas y matriz) y D (limpieza) (runbook §9). |
 
 Leyenda: **PASS local** = ejecutado hoy en base/servicios locales aislados; **PASS integración/Sandbox** = contra Flow real (ninguno); **FAIL**; **NOT TESTED**. Las cifras del Sprint 04 no se reutilizan.
 
 ## 1. Qué se entregó
 
-- **Modelo financiero** (migraciones `20261110140000_flow_sandbox_payments.sql`, `20261111120000_payment_rate_limits.sql` y `20261111130000_payment_sensitive_retention.sql`, **aplicadas en producción**; la cuarta, `20261112090000`, pendiente y sólo local): siete tablas privadas (seis del PLAN §5 + `payment_rate_limits`, desviación aprobada por el propietario), RLS sin privilegios directos, RPC de usuario y de worker, triggers de inmutabilidad (términos de orden, eventos, historial de política), proyección `payment_state`, compuerta de ejecución.
+- **Modelo financiero** (migraciones `20261110140000_flow_sandbox_payments.sql`, `20261111120000_payment_rate_limits.sql` y `20261111130000_payment_sensitive_retention.sql`, **aplicadas en producción** el 2026-11-12 junto con la cuarta, `20261112090000_payment_sandbox_accounts.sql` (allowlist de cuentas Sandbox e historial inmutable; también **aplicada**; las cuatro son ya historial inmutable de producción): siete tablas privadas (seis del PLAN §5 + `payment_rate_limits`, desviación aprobada por el propietario), RLS sin privilegios directos, RPC de usuario y de worker, triggers de inmutabilidad (términos de orden, eventos, historial de política), proyección `payment_state`, compuerta de ejecución.
 - **Reglas**: F = round-half-up(Q·bp/10000), T = Q + F, Q intacto, coste Flow absorbido dentro de F; política 5 % inicial, versionada, congelada por orden; consentimiento atado al desglose y versión exactos; sólo la consulta autenticada al proveedor acredita pago.
 - **Proveedor y creación**: firma, configuración Sandbox con API fija, intento durable previo, creación ambigua resuelta por consulta (sin recreate), checkout cifrado.
 - **Confirmación y conciliación**: rutas `confirmation`/`return`, bandeja durable con leases y fencing, worker (`POST /api/payments/worker`), cuarentena, limitador persistente, plazo total de 10 s en el callback.
 - **UI por rol**: panel de pagos del cliente, adicionales (propuesta técnico / respuesta cliente), `/tecnico/pagos` con sólo Q, `/admin/configuracion` (moderador sólo lectura, superadmin edita porcentaje y reconsulta), insignias en lista.
 - **Operación**: [runbook](SPRINT_05_FLOW_SANDBOX_RUNBOOK.md), `.env.example`, allowlist de avisos de pago.
 - **Interruptores**: `FIXO_FLOW_MODE`, `FIXO_PAYMENTS_CREATION_ENABLED`, `FIXO_PAYMENTS_NOTIFICATIONS_ENABLED`; los dos de pagos apagados.
-- **Preparado, sin activar (local)**: ejecutor Supabase Cron (`supabase/ops/`), allowlist de cuentas Sandbox con historial inmutable (cuarta migración) y endpoint del worker con logs estructurados.
+- **Aplicado en producción (2026-11-12, fases A y B)**: ejecutor Supabase Cron (`supabase/ops/`, job activo), allowlist de cuentas Sandbox con historial inmutable (cuarta migración; sin cuentas autorizadas) y endpoint del worker con logs estructurados. Interruptores de pagos apagados.
 
 ## 2. Resultados de pruebas
 
@@ -33,7 +33,7 @@ Leyenda: **PASS local** = ejecutado hoy en base/servicios locales aislados; **PA
 | --- | --- | --- |
 | pgTAP (`npm run db:test`, CLI 3.1.0) | **PASS local** 7 archivos / 294 tests (134 en `06_flow_payments`, incl. cancelación, retención y allowlist de cuentas Sandbox) | 2026-11-12 |
 | Suite PostgreSQL embebida `scripts/test-payments-postgres.mjs` | **PASS local** 76 checks (concurrencia, leases, cancelación por RPC reales, carreras con dos conexiones, allowlist y su carrera, retención, restauración financiera) | 2026-11-12 |
-| Ejecutor Supabase Cron `scripts/test-payments-worker-cron.mjs` | **PASS local** 7 checks con pg_cron/pg_net reales (incl. 200 con fallos internos y cron detenido) y servidor HTTP local; **no activado en remoto** | 2026-11-12 |
+| Ejecutor Supabase Cron `scripts/test-payments-worker-cron.mjs` | **PASS local** 7 checks con pg_cron/pg_net reales (incl. 200 con fallos internos y cron detenido) y servidor HTTP local. **Activo en producción desde la fase B** (primeros ticks reales sanos, ver §0) | 2026-11-12 |
 | Vitest | **PASS local** 52 archivos; 351 PASS y 8 omitidos (la integración PostgREST local, que se ejecutó aparte con el Supabase local: 27/27 en `src/repositories`) | 2026-11-12 |
 | Integración PostgREST/JWT local (Supabase local) | **PASS local** (callback→bandeja→worker→`paid`, mismatch, desconocida, RPC admin) | `supabase-payment-repository.local.test.ts` |
 | Navegador por rol | **PASS local** 11/11 (incluye cuenta Sandbox no autorizada; corridas previas fallaron por defectos del script o poca memoria) | `docs/production/sprint-05-evidence/browser-local.json` (de la corrida de 10 checks; no regenerado) |
@@ -42,7 +42,7 @@ Leyenda: **PASS local** = ejecutado hoy en base/servicios locales aislados; **PA
 | `npm run build`, `npm run test:smoke`, `npm audit`, `npm audit --omit=dev` | **PASS local** (2026-11-12): build OK; smoke de producción PASS; 0 vulnerabilidades en ambos audits | |
 | GitHub Actions / CI remoto | **NOT TESTED** (la rama se publicó, pero no se consultó el resultado de ninguna ejecución) | |
 | Restauración del modelo financiero en una segunda base aislada (PLAN §10) | **PASS local**: exporta datos financieros representativos (pago inicial, adicional, revisión, coste Flow, varias versiones de política, bandeja), restaura en una base nueva desde las migraciones y compara importes, referencias, estados, huellas de ciphertext, invariantes (T=Q+F, tasa congelada, pago↔evento exacto), RLS, grants, `search_path`, disparadores, inmutabilidad y lecturas por rol | `scripts/lib/payment-restore-checks.mjs`. **Límite:** Auth/Storage administrados y Supabase real no se restauran |
-| Flow Sandbox real (aprobado, pendiente, rechazado, anulado, callback antes/después, token falso, caída de worker, tardío/duplicado, inicial + adicional) | **NOT TESTED** | Hay credenciales Sandbox y origen HTTPS (`www.soyfixo.cl`) cargados y el destino fue autorizado, pero no se ha ejecutado ninguna prueba: faltan las aprobaciones A–D (migración 4 + deploy, cron, cuentas sintéticas, limpieza) y el script remoto que conduce el checkout de Flow |
+| Flow Sandbox real (aprobado, pendiente, rechazado, anulado, callback antes/después, token falso, caída de worker, tardío/duplicado, inicial + adicional) | **NOT TESTED** | Hay credenciales Sandbox y origen HTTPS (`www.soyfixo.cl`) cargados y el destino fue autorizado, pero no se ha ejecutado ninguna prueba: las fases A y B (migración 4 + deploy; cron) ya están aplicadas, pero faltan las aprobaciones C (cuentas sintéticas y matriz) y D (limpieza) y el script remoto que conduce el checkout de Flow |
 
 Los casos adversos (callback falso, mismatch, tardío, duplicado, replay, concurrencia) están cubiertos **con dobles de proveedor/SQL controlado**: no acreditan comportamiento real de Flow.
 
@@ -62,7 +62,7 @@ Los casos adversos (callback falso, mismatch, tardío, duplicado, replay, concur
 | Liquidación sólo simulada, sin afirmar transferencia | PASS local (navegador: "no son transferencias efectuadas") |
 | Regresión y restauración aislada con límites | Parcial (ver §2) |
 | Sin cobros reales | **Cumplido** (API fijada a Sandbox, interruptores apagados) |
-| Sin migraciones productivas, push ni deploy sin autorización | **Cumplido con autorización expresa**: el propietario autorizó el 2026-11-12 tres migraciones, push y deploy (ver §0) |
+| Sin migraciones productivas, push ni deploy sin autorización | **Cumplido con autorización expresa**: el propietario autorizó el 2026-11-12 las cuatro migraciones, push, deploy y cron (ver §0) |
 
 ## 4. Limitaciones y riesgos pendientes
 
@@ -75,7 +75,7 @@ Los casos adversos (callback falso, mismatch, tardío, duplicado, replay, concur
 7. **Trabajo ajeno → HTTP 200** con pantalla de no encontrado (comportamiento del Sprint 04, sin fuga de datos). Decisión pendiente si se quiere 404 real.
 8. Sin alertas ni responsable operativo definidos; sin auditoría específica de cambios de comisión más allá del historial versionado.
 9. pgTAP cubre la cancelación tras pago y la retención, pero no cubre adicionales/cierre/cancelación/suspensión/pago tardío y duplicado (están en la suite embebida).
-10. Las tres primeras migraciones se editaron in situ **antes** de aplicarse y ya están en producción: desde ahora cualquier cambio debe ir en una migración nueva. La cuarta (`20261112090000`) aún no se aplicó, por lo que sigue siendo editable.
+10. **Las cuatro migraciones de pagos (`20261110140000`, `20261111120000`, `20261111130000`, `20261112090000`) están aplicadas en producción y no deben editarse.** Editar un archivo ya ejecutado no cambia la base de producción y haría divergir las instalaciones nuevas de ella: **cualquier cambio posterior exige una migración nueva** (parcheando con `pg_get_functiondef` o `create or replace`, como en las anteriores). Las ediciones in situ del sprint se hicieron antes de aplicar cada archivo.
 
 ## 4b. Revisión de Codex del 2026-11-12 (3 hallazgos)
 
