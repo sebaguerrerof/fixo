@@ -54,6 +54,9 @@ export function validateStoredCheckoutUrl(url: string): string {
   return `${base}?token=${encodeURIComponent(token)}`;
 }
 
+/** Documented Flow limit for `commerceOrder` (error 1622 above it). Our references are `fixo-sbx-` + 32 hex = 41 characters. */
+export const FLOW_MAX_COMMERCE_ORDER_LENGTH = 45;
+
 /** The request was provably never sent (local validation). Only this class allows closing an attempt as not sent. */
 export class FlowPreSendError extends Error { constructor(message: string) { super(message); this.name = "FlowPreSendError"; } }
 
@@ -62,6 +65,8 @@ export class FlowClient {
 
   async createPayment(input: FlowCreateInput): Promise<FlowCreated> {
     if (!Number.isSafeInteger(input.amountClp) || input.amountClp <= 0) throw new FlowPreSendError("Importe CLP inválido.");
+    // Flow (Sandbox, code 1622) rejects a commerceOrder longer than 45 characters: never send a request we know will be refused.
+    if (input.commerceOrder.length < 1 || input.commerceOrder.length > FLOW_MAX_COMMERCE_ORDER_LENGTH) throw new FlowPreSendError("Referencia de comercio inválida.");
     const params: Record<string, string> = {
       amount: String(input.amountClp), apiKey: this.config.apiKey, commerceOrder: input.commerceOrder, currency: "CLP", email: input.email,
       subject: input.subject, urlConfirmation: `${this.config.callbackOrigin}${input.confirmationPath}`, urlReturn: `${this.config.callbackOrigin}${input.returnPath}`,

@@ -4,7 +4,7 @@ vi.mock("server-only", () => ({}));
 import { flowSignature } from "./flow-signature";
 import { loadFlowConfig } from "./flow-config";
 import { mapFlowStatus } from "./flow-status";
-import { FlowClient, FlowProviderError, type FlowFetch } from "./flow-client";
+import { FLOW_MAX_COMMERCE_ORDER_LENGTH, FlowClient, FlowPreSendError, FlowProviderError, type FlowFetch } from "./flow-client";
 
 const env = { FIXO_FLOW_MODE: "sandbox", FLOW_API_KEY: "KEY", FLOW_SECRET_KEY: "SECRET", FIXO_FLOW_CALLBACK_ORIGIN: "https://fixo.example" };
 const config = () => { const c = loadFlowConfig(env); if (c.mode !== "sandbox") throw new Error("x"); return c; };
@@ -42,6 +42,20 @@ describe("mapFlowStatus", () => {
 
 describe("FlowClient", () => {
   const input = { commerceOrder: "fixo-sandbox-1", subject: "Visita", amountClp: 105000, email: "c@example.com", confirmationPath: "/api/payments/flow/confirmation", returnPath: "/api/payments/flow/return" };
+
+  it("never sends a commerceOrder longer than Flow's 45-character limit (real Sandbox error 1622); the Fixo reference format fits", async () => {
+    const fetcher = vi.fn();
+    const long = { ...input, commerceOrder: "fixo-sandbox-" + "a".repeat(36) };                       // the legacy 49-character format that Flow refused
+    await expect(new FlowClient(config(), fetcher as unknown as FlowFetch).createPayment(long)).rejects.toBeInstanceOf(FlowPreSendError);
+    await expect(new FlowClient(config(), fetcher as unknown as FlowFetch).createPayment({ ...input, commerceOrder: "" })).rejects.toBeInstanceOf(FlowPreSendError);
+    expect(fetcher).not.toHaveBeenCalled();
+    const ref = "fixo-sbx-" + "0123456789abcdef".repeat(2);                                         // what payment_prepare now generates
+    expect(ref).toMatch(/^fixo-sbx-[0-9a-f]{32}$/); expect(ref.length).toBeLessThanOrEqual(FLOW_MAX_COMMERCE_ORDER_LENGTH);
+    const ok: FlowFetch = async () => ({ status: 200, text: async () => JSON.stringify({ url: "https://sandbox.flow.cl/app/web/pay.php", token: "T", flowOrder: 1 }) });
+    await expect(new FlowClient(config(), ok).createPayment({ ...input, commerceOrder: ref })).resolves.toMatchObject({ flowOrder: 1 });
+    await expect(new FlowClient(config(), ok).createPayment({ ...input, commerceOrder: "x".repeat(45) })).resolves.toMatchObject({ flowOrder: 1 });
+    await expect(new FlowClient(config(), ok).createPayment({ ...input, commerceOrder: "x".repeat(46) })).rejects.toBeInstanceOf(FlowPreSendError);
+  });
 
   it("signs create and builds the checkout URL from the exact sandbox host", async () => {
     let sent = "";

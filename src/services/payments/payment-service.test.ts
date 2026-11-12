@@ -12,7 +12,7 @@ import type { PreparedPayment } from "@/repositories/contracts/payment-repositor
 
 const u = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const key = { id: "k1", key: randomBytes(32) };
-const prepared: PreparedPayment = { orderId: u(1), attemptId: u(2), commerceOrder: `fixo-sandbox-${u(2)}`, attemptState: "prepared", professionalAmountClp: 100000, platformFeeClp: 5000, totalClp: 105000, policyVersion: 1 };
+const prepared: PreparedPayment = { orderId: u(1), attemptId: u(2), commerceOrder: `fixo-sbx-${u(2).replaceAll("-", "")}`, attemptState: "prepared", professionalAmountClp: 100000, platformFeeClp: 5000, totalClp: 105000, policyVersion: 1 };
 const payer = { id: u(9), email: "c@example.com" };
 const input = { jobId: u(3), extraChargeId: null, expectedPolicyVersion: 1, consent: true as const, idempotencyKey: u(4) };
 

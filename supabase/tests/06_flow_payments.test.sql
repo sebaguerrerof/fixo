@@ -150,7 +150,7 @@ select throws_ok($$insert into private.payment_orders(job_id,origin,customer_id,
  values('95000000-0000-4000-8000-000000000022','initial','95000000-0000-4000-8000-000000000001',repeat('a',64),25000,500,1250,99999,1,'95000000-0000-4000-8000-000000000001')$$,'23514',null,'T must equal Q + F');
 select set_config('s05.attempt1',(select a.id::text from private.payment_attempts a join private.payment_orders o on o.id=a.order_id where o.job_id='95000000-0000-4000-8000-000000000012'),true);
 select set_config('s05.commerce1',(select commerce_order from private.payment_attempts where id=current_setting('s05.attempt1')::uuid),true);
-select ok(current_setting('s05.commerce1') like 'fixo-sandbox-%','each attempt has its own commerce reference, distinct from the order id');
+select ok(current_setting('s05.commerce1') ~ '^fixo-sbx-[0-9a-f]{32}$' and length(current_setting('s05.commerce1'))<=45,'each attempt has its own commerce reference (<= 45 characters, the Flow limit), distinct from the order id');
 
 -- ------------------------------------------------------------------ 4. verified payment only (worker)
 set local role service_role;

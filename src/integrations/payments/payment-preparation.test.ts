@@ -25,7 +25,7 @@ describe("Payment order preparation", () => {
   });
 });
 
-const input = { orderId: id, attemptId: tech, commerceOrder: `fixo-sandbox-${tech}`, amountClp: 105000, professionalAmountClp: 100000, platformFeeClp: 5000, payerEmail: "c@example.com", subject: "Servicio Fixo" };
+const input = { orderId: id, attemptId: tech, commerceOrder: `fixo-sbx-${tech.replaceAll("-", "")}`, amountClp: 105000, professionalAmountClp: 100000, platformFeeClp: 5000, payerEmail: "c@example.com", subject: "Servicio Fixo" };
 
 describe("FlowProvider", () => {
   it("disabled by default: no operation works and no network is touched", async () => {

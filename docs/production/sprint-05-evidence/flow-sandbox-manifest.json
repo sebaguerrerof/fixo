@@ -1,0 +1,56 @@
+{
+  "run": "s05f601d9e",
+  "project": "rjzyqdhotcshvbdcrgon",
+  "site": "https://www.soyfixo.cl",
+  "createdAt": "2026-11-12T17:35:00.320Z",
+  "state": "setup",
+  "preflight": {
+    "allowed": 0,
+    "jobs": 0,
+    "orders": 0,
+    "reqs": 0,
+    "users": 2
+  },
+  "accounts": {
+    "customer": {
+      "id": "9e74439f-731e-42ae-a4b2-bcd99c2bdba0",
+      "email": "s05f601d9e-customer@sandbox.fixo.invalid",
+      "createdAt": "2026-11-12T17:35:01.486Z"
+    },
+    "technician": {
+      "id": "1a19bf2f-6409-41d8-b821-97f8d5f3ef82",
+      "email": "s05f601d9e-technician@sandbox.fixo.invalid",
+      "createdAt": "2026-11-12T17:35:01.790Z"
+    },
+    "superadmin": {
+      "id": "da01b98b-8666-480a-9088-23b199e7e7de",
+      "email": "s05f601d9e-superadmin@sandbox.fixo.invalid",
+      "createdAt": "2026-11-12T17:35:02.369Z"
+    }
+  },
+  "criterion": "938e3f97-4860-4a27-a1c3-777f072e2bce",
+  "requests": [
+    {
+      "id": "b1fa990a-8ea6-4e73-b934-83167e795338",
+      "createdAt": "2026-11-12T17:35:29.078Z"
+    }
+  ],
+  "quotes": [
+    {
+      "id": "a2bd2681-8b41-408b-bd5f-d667b90bd9a0",
+      "createdAt": "2026-11-12T17:35:29.293Z"
+    }
+  ],
+  "jobs": [
+    {
+      "id": "6056f113-11bc-40ce-85e0-dc911beef950",
+      "label": "aprobado",
+      "createdAt": "2026-11-12T17:35:29.705Z"
+    }
+  ],
+  "orders": [],
+  "attempts": [],
+  "notes": [
+    "2026-11-12T17:35:14.189Z cuenta cliente autorizada para pagos Sandbox"
+  ]
+}
