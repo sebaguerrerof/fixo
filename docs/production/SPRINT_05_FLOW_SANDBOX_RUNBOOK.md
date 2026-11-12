@@ -136,10 +136,10 @@ Contexto autorizado por el propietario: se usa el proyecto Fixo `rjzy…` y `www
       - Resultado: lista de cuarentenas con su clasificación («sin obligación, con evidencia» / «revisada: sin pago pendiente» / «pago verificado»). Si alguna no se puede clasificar, **el cierre no procede** y los interruptores de recepción y el cron siguen activos.
    3. Sólo entonces apagar `FIXO_PAYMENTS_NOTIFICATIONS_ENABLED`, desactivar el cron (`payments-worker-cron-rollback.sql`), revocar las autorizaciones Sandbox y limpiar (§10).
 
-## 10. Limpieza de fixtures por manifiesto
+## 10. Limpieza de fixtures por manifiesto (ejecutada por la opción 1 el 2026-11-12)
 
 Sólo por manifiesto exacto de IDs (nada por prefijo ni por patrón de correo). Hay una tensión de diseño que debe decidir el propietario antes de la fase C: **los eventos, intentos y órdenes financieros son append-only a propósito** (triggers `PT409` de no-borrado), de modo que una limpieza total en la base de producción requiere deshabilitar esos triggers dentro de una transacción, acotada al manifiesto, con respaldo previo de las filas.
-- **Opción 1 (recomendada):** *retención etiquetada.* Se conservan órdenes, intentos y eventos sintéticos (marcados por el manifiesto), se revoca la autorización, se suspenden las cuentas sintéticas y se retiran blobs/sesiones. Cero riesgo para la integridad financiera; deja filas sintéticas identificables.
+- **Opción 1 (EJECUTADA):** *retención etiquetada.* `scripts/flow-sandbox/retain.mjs` suspende los perfiles sintéticos, veta sus usuarios de Auth, elimina sus sesiones y saca al técnico sintético del directorio público (un técnico `verified`/`active` es público: hay que apartarlo **siempre** al terminar). Verifica 0 técnicos públicos, 0 perfiles sintéticos activos, 3 vetados, 0 sesiones y 0 autorizaciones Sandbox. Se conservan órdenes, intentos y eventos sintéticos (marcados por el manifiesto), se revoca la autorización, se suspenden las cuentas sintéticas y se retiran blobs/sesiones. Cero riesgo para la integridad financiera; deja filas sintéticas identificables.
 - **Opción 2:** *purga transaccional por manifiesto* (`session_replication_role=replica` o `ALTER TABLE … DISABLE TRIGGER` dentro de una transacción, borrando sólo los UUID del manifiesto en orden inverso de dependencias, con exportación previa y verificación de cero residuos y del estado de los usuarios originales). Es una operación destructiva sobre producción: requiere aprobación separada y se ensaya primero en local contra la misma base de datos del harness.
 Los usuarios originales no se modifican en ningún caso.
 
@@ -152,3 +152,7 @@ Los usuarios originales no se modifican en ningún caso.
 | `node scripts/test-payments-worker-cron.mjs` | Ejecutor Supabase Cron contra pg_cron/pg_net locales (7 checks, incl. HTTP 200 con fallos internos y ausencia prolongada de ticks; exige `FIXO_PAYMENTS_LOCAL_SUPABASE=isolated-local` y `FIXO_TEST_DB_URL`). |
 | `npm run test` | Vitest (integración PostgREST local con variables `FIXO_PAYMENTS_LOCAL_SUPABASE=isolated-local`, `FIXO_TEST_*`). |
 | `node scripts/test-payments-browser.mjs` | Navegador por rol, sólo local; deja una versión nueva de política → ejecutar `supabase db reset` después. |
+
+## 12. Coste Flow G (decisión del propietario, 2026-11-12)
+
+G = `fee` + `taxes` que informa Flow (equivale a monto − `balance`). Se acepta sólo si ambos son enteros (Flow envía `fee` como cadena decimal, p. ej. `"837.00"`) y, si viene `balance`, monto − `balance` = fee + impuestos; en otro caso el coste queda desconocido («pendiente de conciliación»). Ejemplo real de Sandbox: monto 26.250, fee 837, impuestos 159, saldo 25.254 ⇒ G = 996.
