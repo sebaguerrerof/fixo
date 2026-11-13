@@ -12,7 +12,7 @@ Fecha: 2026-11-13. Estado: **borrador sin ejecutar**. Ningún paso se ha corrido
 | # | Condición | Evidencia requerida | Estado hoy |
 | --- | --- | --- | --- |
 | 1 | CI real **verde** del SHA candidato (`Fixo CI / application` y `Fixo CI / database`) | URL del run y SHA Mecanismo **operativo**: run `43458718551` verde para `cc2d56e` (2026-11-13). Cada SHA candidato necesita su propio run verde |
-| 2 | PR aprobado hacia la rama de liberación acordada, con checks requeridos | PR y protección de rama | NOT TESTED: rama de liberación sin decidir (la rama por defecto remota es hoy la de trabajo del Sprint 04) |
+| 2 | PR aprobado hacia la rama de liberación acordada, con checks requeridos | PR y protección de rama | **Cumplida en lo estructural (2026-11-13):** `main` es la rama de liberación y por defecto, protegida (PR obligatorio, checks `application` y `database`, sin force-push/borrado, incluye administradores); PR #1 mergeado con CI verde (`155ca18`). Pendiente: probar el flujo con un segundo PR y la decisión de visibilidad (la protección exige repositorio público o plan de pago) |
 | 3 | Despliegue de validación trazable del mismo SHA y pruebas de aislamiento | Matriz PASS/FAIL en el reporte | NOT TESTED: el entorno de validación no existe |
 | 4 | Migraciones nuevas revisadas: compatibles hacia atrás con la app actual, sin editar historia | Lista de archivos y revisión de Codex | n/a (sin migraciones nuevas en este sprint hasta hoy) |
 | 5 | Despliegue de producción anterior identificado para rollback | ID/alias de Vercel y SHA previo anotados **antes** de empezar | PENDIENTE (requiere inventario de lectura de Vercel) |
