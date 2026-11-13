@@ -16,7 +16,7 @@ describe("remote Sandbox tooling: payer address filter", () => {
     expect(assertAllowedPayer("a@b.invalid", undefined)).toBe("a@b.invalid");           // synthetic needs no configuration
   });
   it("refuses third parties of any domain, even when something else is configured", () => {
-    for (const third of ["outsider@example.org", "prueba@gmail.com", "someone@yahoo.com", "x@soyfixo.cl", "owner.test@gmail.com.evil.com", "a@b.invalid.evil.com", "x@.invalid", "@b.invalid", "a b@c.invalid", "real.customer@gmail.com"]) {
+    for (const third of ["outsider@example.org", "stranger@example.com", "someone@yahoo.com", "x@soyfixo.cl", "owner.test@gmail.com.evil.com", "a@b.invalid.evil.com", "x@.invalid", "@b.invalid", "a b@c.invalid", "real.customer@gmail.com"]) {
       expect(() => assertAllowedPayer(third, OWNER), third).toThrow(); expect(() => assertAllowedPayer(third, undefined), third).toThrow();
     }
   });

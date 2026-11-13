@@ -1525,7 +1525,7 @@
       "flowOrder": "11657296",
       "payerDomain": "gmail.com",
       "state": "created",
-      "note": "Creada por un diagnóstico fuera de Fixo con un pagador que NO era del propietario (prueba@gmail.com); nunca se abrió su checkout. Se identificó por getStatusByFlowOrder; sin fila local. Reconciliada abajo.",
+      "note": "Creada por un diagnóstico fuera de Fixo con un pagador que NO era del propietario (dirección de un tercero, redactada el 2026-11-13; sigue visible en el historial de git anterior); nunca se abrió su checkout. Se identificó por getStatusByFlowOrder; sin fila local. Reconciliada abajo.",
       "reconciliation": {
         "at": "2026-11-13T15:01:12.565Z",
         "via": "flowOrder",
