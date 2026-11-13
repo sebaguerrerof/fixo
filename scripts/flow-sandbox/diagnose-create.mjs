@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { createHmac, randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { PROJECT_REF, readManifest, stamp, writeManifest } from './lib.mjs';
+import { PROJECT_REF, stamp, updateManifest } from './lib.mjs';
 import { assertAllowedPayer, classifyCreate } from './logic.mjs';
 
 assert.equal(process.env.FIXO_FLOW_SANDBOX_REMOTE, PROJECT_REF);
@@ -14,10 +14,9 @@ const text = await readFile(resolve('.env.local'), 'utf8'); const env = {};
 for (const line of text.split(/\r?\n/)) { const m = /^([A-Z0-9_]+)=(.*)$/.exec(line); if (m) env[m[1]] = m[2].trim().replace(/^"|"$/g, ''); }
 assert.ok(env.FLOW_API_KEY && env.FLOW_SECRET_KEY && env.FIXO_FLOW_CALLBACK_ORIGIN);
 const email = assertAllowedPayer(process.argv[2], env.FIXO_FLOW_SANDBOX_PAYER_EMAIL), origin = process.argv[3] ?? env.FIXO_FLOW_CALLBACK_ORIGIN;
-const manifest = await readManifest(); assert.ok(manifest, 'sin manifiesto');
 const commerceOrder = `fixo-sbx-${randomUUID().replaceAll('-', '')}`;
 const entry = { at: stamp(), kind: 'diagnose-create', commerceOrder, payerDomain: email.split('@')[1], state: 'sending', note: 'Diagnóstico fuera de Fixo: si Flow la creó, existe una orden Sandbox sin fila local y nunca se paga.' };
-(manifest.externalOrders ??= []).push(entry); await writeManifest(manifest);                      // persisted BEFORE the request
+await updateManifest(m => { assert.ok(m, 'sin manifiesto'); (m.externalOrders ??= []).push(entry); });   // persisted BEFORE the request (lock: read → write)
 const params = { amount: '26250', apiKey: env.FLOW_API_KEY, commerceOrder, currency: 'CLP', email, subject: 'Prueba Fixo Sandbox', urlConfirmation: `${origin}/api/payments/flow/confirmation`, urlReturn: `${origin}/api/payments/flow/return` };
 const s = createHmac('sha256', env.FLOW_SECRET_KEY).update(Object.keys(params).sort().map(k => k + params[k]).join(''), 'utf8').digest('hex');
 let outcome;
@@ -25,5 +24,5 @@ try {
   const res = await fetch('https://sandbox.flow.cl/api/payment/create', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ ...params, s }).toString(), redirect: 'error' });
   outcome = classifyCreate({ http: res.status, bodyText: await res.text() });
 } catch (error) { outcome = classifyCreate({ networkError: error }); }
-const again = await readManifest(); Object.assign(again.externalOrders.find(e => e.commerceOrder === commerceOrder), outcome, { completedAt: stamp() }); await writeManifest(again);
+await updateManifest(again => { Object.assign(again.externalOrders.find(e => e.commerceOrder === commerceOrder), outcome, { completedAt: stamp() }); });
 console.log(JSON.stringify({ commerceOrder, ...outcome }));

@@ -2,10 +2,11 @@
 // accounts INERT and invisible: the synthetic technician leaves the public directory (status 'suspended'), the three profiles are suspended, their Auth users are
 // banned and their sessions removed. Only the manifest's account ids are touched; nothing is deleted. Requires FIXO_FLOW_SANDBOX_REMOTE.
 import assert from 'node:assert/strict';
-import { PROJECT_REF, loadEnv, lit, readManifest, serviceClient, sql, stamp, writeManifest } from './lib.mjs';
+import { PROJECT_REF, loadEnv, lit, readManifest, serviceClient, sql, stamp, withManifestLock, writeManifest } from './lib.mjs';
 import { closureState, openExternalIssues } from './logic.mjs';
 
 assert.equal(process.env.FIXO_FLOW_SANDBOX_REMOTE, PROJECT_REF);
+await withManifestLock(async () => {   // lock from the first read to the last write
 const env = await loadEnv(), m = await readManifest(); assert.ok(m && m.accounts && m.state !== 'cleaned');
 const ids = Object.values(m.accounts).map(a => a.id); assert.equal(ids.length, 3);
 const list = ids.map(lit).join(',');
@@ -26,3 +27,4 @@ assert.deepEqual(after, { public_technicians: 0, active_synthetic_profiles: 0, b
 m.retainedAt = stamp(); m.state = closureState(m); const issues = openExternalIssues(m);
 m.notes.push(`${stamp()} fase D (retención etiquetada): cuentas sintéticas suspendidas y vetadas, técnico fuera del directorio público, sesiones eliminadas, autorizaciones Sandbox 0; las filas financieras se conservan (append-only) identificadas por este manifiesto. Estado: ${m.state}${issues.length ? ` (${issues.length} asunto(s) externo(s) abierto(s))` : ''}`);
 await writeManifest(m); console.log(JSON.stringify({ ...after, state: m.state, openExternalIssues: issues.length }));
+});

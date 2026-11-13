@@ -1,6 +1,10 @@
-import { describe, it, expect, vi } from "vitest";
+import { afterAll, beforeEach, describe, it, expect, vi } from "vitest";
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 vi.mock("server-only", () => ({}));
 import { applyClosure, assertAllowedPayer, buildRetireCriterionSql, classifyCreate, classifyReconciliation, closureState, flowCost, openExternalIssues, strictInt } from "../../../scripts/flow-sandbox/logic.mjs";
+import { readManifest, updateManifest, withManifestLock, writeManifest } from "../../../scripts/flow-sandbox/lib.mjs";
 import { memoryLock, runCostCorrection } from "../../../scripts/flow-sandbox/recost-core.mjs";
 
 const OWNER = "owner.test@gmail.com";
@@ -233,5 +237,44 @@ describe("remote Sandbox tooling: drift, concurrency and stale closure (Codex ro
     expect(applyClosure(m, "T5", { closing: true })).toBe("closed-retained"); expect(m).toMatchObject({ state: "closed-retained", closedAt: "T5" });
     m.externalOrders[0] = open; expect(applyClosure(m, "T6", { closing: true })).toBe("retained-closure-pending");     // explicit close with issues: no closedAt
     expect(m.closedAt).toBeUndefined(); expect(m.closureHistory).toHaveLength(2);
+  });
+});
+
+describe("remote Sandbox tooling: the REAL manifest lock covers every writer (Codex round 6)", () => {
+  const dir = mkdtempSync(join(tmpdir(), "fixo-manifest-")); const file = join(dir, "manifest.json");
+  beforeEach(() => { process.env.FIXO_FLOW_SANDBOX_MANIFEST = file; writeFileSync(file, JSON.stringify({ notes: [] })); });
+  afterAll(() => { delete process.env.FIXO_FLOW_SANDBOX_MANIFEST; rmSync(dir, { recursive: true, force: true }); });
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  it("writing without holding the lock is refused (a stale copy can never be saved)", async () => {
+    const stale = await readManifest(); await expect(writeManifest(stale)).rejects.toThrow(/bloqueo/);
+    expect(existsSync(file + ".lock")).toBe(false);
+  });
+  const correction = (hold: number) => {
+    let db = 837; let entered!: () => void; const inside = new Promise<void>((r) => { entered = r; });
+    const run = () => withManifestLock(() => runCostCorrection({
+      rows: [{ id: "a", cost: db }], getCost: async () => 996, readCost: async () => db,
+      applyUpdate: async (_id: string, _f: number | null, to: number) => { entered(); await sleep(hold); db = to; return [{ flow_cost_clp: to }]; },
+      load: readManifest, save: writeManifest,
+    } as never));
+    return { run, inside, db: () => db };
+  };
+  it("a second writer (another async flow) cannot overwrite a correction in flight: with no wait it is refused, the intent and the outcome survive", async () => {
+    const c = correction(40); const running = c.run(); await c.inside;                                              // the correction holds the lock mid-update
+    const foreign = await updateManifest((m: { notes: string[] }) => { m.notes = ["escritor ajeno con copia anterior"]; }, { waitMs: 0 }).catch((e: Error) => e);
+    expect(String(foreign)).toMatch(/bloqueado/);                                                                  // refused by the real lock
+    expect(await running).toMatchObject({ applied: 1, conflicts: 0 }); expect(c.db()).toBe(996);
+    const m = await readManifest(); expect(m.costCorrectionLog).toHaveLength(1); expect(m.costCorrectionLog[0]).toMatchObject({ state: "applied", from: 837, to: 996 });
+    expect(m.notes).toEqual([]); expect(existsSync(file + ".lock")).toBe(false);                                   // the foreign write never happened
+  });
+  it("a waiting writer is serialized after the correction: both changes survive (no lost update)", async () => {
+    const c = correction(60); const running = c.run(); await c.inside;
+    const waiting = updateManifest((m: { notes: string[] }) => { m.notes.push("después"); });                      // waits for the lock
+    await running; await waiting;
+    const m = await readManifest(); expect(m.costCorrectionLog[0]).toMatchObject({ state: "applied", to: 996 }); expect(m.notes).toEqual(["después"]);
+  });
+  it("the lock is released after an error and a stale lock file is reported with its path", async () => {
+    await expect(updateManifest(() => { throw new Error("boom"); })).rejects.toThrow("boom"); expect(existsSync(file + ".lock")).toBe(false);
+    writeFileSync(file + ".lock", "{}"); await expect(updateManifest(() => undefined, { waitMs: 0 })).rejects.toThrow(/manifest\.json\.lock/);
+    rmSync(file + ".lock");
   });
 });

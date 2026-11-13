@@ -6,16 +6,14 @@
 //   issues                                 list the external orders that still block considering the run closed
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
-import { rmSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { MANIFEST_PATH, PROJECT_REF, lockManifest, readManifest, sql, stamp, writeManifest } from './lib.mjs';
+import { PROJECT_REF, readManifest, sql, stamp, withManifestLock, writeManifest } from './lib.mjs';
 import { applyClosure, classifyReconciliation, openExternalIssues } from './logic.mjs';
 
 assert.equal(process.env.FIXO_FLOW_SANDBOX_REMOTE, PROJECT_REF);
 const mode = process.argv[2];
-await lockManifest();                  // exclusive over the manifest: the read-modify-write below can never interleave with another run
-process.on('exit', () => { try { rmSync(MANIFEST_PATH + '.lock', { force: true }); } catch { /* best effort */ } });
+await withManifestLock(async () => {   // exclusive over the manifest from the first read to the last write
 const m = await readManifest(); assert.ok(m);
 if (mode === 'financial') {
   const jobs = m.jobs.map(j => `'${j.id}'`).join(',');
@@ -49,3 +47,4 @@ if (mode === 'financial') {
   const state = applyClosure(m, stamp(), { closing: true }); await writeManifest(m);
   console.log(JSON.stringify({ state, openExternalIssues: openExternalIssues(m) })); process.exitCode = state === 'closed-retained' ? 0 : 3;
 }
+});

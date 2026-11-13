@@ -6,11 +6,12 @@ import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { PROJECT_REF, lit, lockManifest, readManifest, sql, writeManifest } from './lib.mjs';
+import { PROJECT_REF, lit, readManifest, sql, withManifestLock, writeManifest } from './lib.mjs';
 import { flowCost } from './logic.mjs';
 import { runCostCorrection } from './recost-core.mjs';
 
 assert.equal(process.env.FIXO_FLOW_SANDBOX_REMOTE, PROJECT_REF);
+await withManifestLock(async () => {   // lock from the first read to the last write
 const m0 = await readManifest(); assert.ok(m0?.orders?.length, 'sin órdenes en el manifiesto (ejecute reconcile-external.mjs financial)');
 const env = {}; for (const line of (await readFile(resolve('.env.local'), 'utf8')).split(/\r?\n/)) { const x = /^([A-Z0-9_]+)=(.*)$/.exec(line); if (x) env[x[1]] = x[2].trim().replace(/^"|"$/g, ''); }
 const ids = m0.orders.map(o => lit(o.id)).join(',');
@@ -28,6 +29,7 @@ const summary = await runCostCorrection({
     return flowCost(j.amount, j.paymentData);
   },
   applyUpdate: (id, from, to) => sql(`update private.payment_orders set flow_cost_clp=${to} where id=${lit(id)} and status='paid' and flow_cost_clp is not distinct from ${from === null ? 'null' : from} returning flow_cost_clp::int`),
-  load: readManifest, save: writeManifest, lock: lockManifest,
+  load: readManifest, save: writeManifest,
 });
 console.log(JSON.stringify(summary));
+});

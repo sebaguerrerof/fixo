@@ -5,8 +5,9 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { existsSync } from 'node:fs';
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { AsyncLocalStorage } from 'node:async_hooks';
+import { existsSync, rmSync } from 'node:fs';
+import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
@@ -44,15 +45,44 @@ export function sql(statement) {
 }
 export const lit = v => v === null ? 'null' : `'${String(v).replaceAll("'", "''")}'`;
 
-export async function readManifest() { return existsSync(MANIFEST_PATH) ? JSON.parse(await readFile(MANIFEST_PATH, 'utf8')) : null; }
-export async function writeManifest(m) { await mkdir(dirname(MANIFEST_PATH), { recursive: true }); await writeFile(MANIFEST_PATH, JSON.stringify(m, null, 2) + '\n', 'utf8'); }
-/** Exclusive lock over the manifest (O_EXCL lock file, fails fast). A stale lock after a crash must be removed by hand (the message says which file). */
-export async function lockManifest() {
-  const path = MANIFEST_PATH + '.lock';
+/** Manifest location. FIXO_FLOW_SANDBOX_MANIFEST overrides it ONLY so the tests never touch the real evidence file. */
+export const manifestPath = () => process.env.FIXO_FLOW_SANDBOX_MANIFEST || MANIFEST_PATH;
+/** Reads are lock-free and always see a complete file (writes are atomic: temp file + rename). Anyone who then WRITES must have read inside `withManifestLock`/`updateManifest`. */
+export async function readManifest() { const p = manifestPath(); return existsSync(p) ? JSON.parse(await readFile(p, 'utf8')) : null; }
+
+const lockStore = new AsyncLocalStorage();
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+/** Exclusive lock over the manifest (O_EXCL lock file). Waits up to `waitMs` (0 = fail at once). A stale lock after a crash must be removed by hand (the message says which file). */
+export async function lockManifest({ waitMs = 10000 } = {}) {
+  const path = manifestPath() + '.lock', deadline = Date.now() + waitMs;
   await mkdir(dirname(path), { recursive: true });
-  try { await writeFile(path, JSON.stringify({ pid: process.pid, at: new Date().toISOString() }), { flag: 'wx' }); }
-  catch (error) { if (error?.code === 'EEXIST') throw new Error('el manifiesto está bloqueado por otra ejecución (si quedó tras una caída, revise y borre ' + path + ')'); throw error; }
+  for (;;) {
+    try { await writeFile(path, JSON.stringify({ pid: process.pid, at: new Date().toISOString() }), { flag: 'wx' }); break; }
+    catch (error) {
+      if (error?.code !== 'EEXIST') throw error;
+      if (Date.now() >= deadline) throw new Error('el manifiesto está bloqueado por otra ejecución (si quedó tras una caída, revise y borre ' + path + ')');
+      await sleep(40);
+    }
+  }
   return async () => { await rm(path, { force: true }); };
+}
+/** THE way to change the manifest: the lock covers from the initial read to the final write (re-entrant inside the same async flow). */
+export async function withManifestLock(fn, options) {
+  if (lockStore.getStore()) return fn();
+  const path = manifestPath() + '.lock', release = await lockManifest(options);
+  const onExit = () => { try { rmSync(path, { force: true }); } catch { /* best effort */ } };
+  process.on('exit', onExit);
+  try { return await lockStore.run({ held: true }, fn); } finally { process.off('exit', onExit); await release(); }
+}
+/** Lock → read → mutate(manifest) → write → unlock. */
+export async function updateManifest(mutate, options) {
+  return withManifestLock(async () => { const m = await readManifest(); const out = await mutate(m); await writeManifest(m); return out; }, options);
+}
+/** Refuses to write unless the caller holds the manifest lock (a stale copy can never overwrite another writer's change). Atomic. */
+export async function writeManifest(m) {
+  assert.ok(lockStore.getStore(), 'writeManifest exige tener el bloqueo del manifiesto (use updateManifest o withManifestLock)');
+  const p = manifestPath(); await mkdir(dirname(p), { recursive: true });
+  const tmp = p + '.tmp-' + process.pid; await writeFile(tmp, JSON.stringify(m, null, 2) + '\n', 'utf8'); await rename(tmp, p);
 }
 export async function readSecrets() { return existsSync(SECRETS_PATH) ? JSON.parse(await readFile(SECRETS_PATH, 'utf8')) : {}; }
 export async function writeSecrets(s) { await writeFile(SECRETS_PATH, JSON.stringify(s), { encoding: 'utf8', mode: 0o600 }); }

@@ -2,7 +2,7 @@
 // before/after snapshots (statuses and truncated identifiers only) and appends them to the manifest's evidence list.
 // Usage: FIXO_FLOW_SANDBOX_REMOTE=<ref> node scenarios.mjs <scenario> [jobId]
 import assert from 'node:assert/strict';
-import { PROJECT_REF, SITE, actorClient, lit, loadEnv, readManifest, readSecrets, rpc, sql, stamp, writeManifest, writeSecrets } from './lib.mjs';
+import { PROJECT_REF, SITE, actorClient, lit, loadEnv, readManifest, readSecrets, rpc, sql, stamp, updateManifest, writeSecrets } from './lib.mjs';
 import { createJob } from './fixtures.mjs';
 import { loginAs, openBrowser, startPayment } from './browser.mjs';
 
@@ -22,7 +22,7 @@ async function snapshot(job) {
   return r;
 }
 async function record(name, job, data) {
-  const m = await readManifest(); (m.evidence ??= []).push({ at: stamp(), scenario: name, job, ...data }); await writeManifest(m);
+  await updateManifest(m => { (m.evidence ??= []).push({ at: stamp(), scenario: name, job, ...data }); });
   console.log(JSON.stringify({ scenario: name, ...data }));
 }
 async function newJobFor(label) { const j = await createJob(env, label); return j.job; }

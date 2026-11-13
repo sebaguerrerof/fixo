@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { buildRetireCriterionSql } from './logic.mjs';
-import { PROJECT_REF, SITE, actorClient, lit, readManifest, readSecrets, rpc, serviceClient, sql, stamp, writeManifest, writeSecrets } from './lib.mjs';
+import { PROJECT_REF, SITE, actorClient, lit, readManifest, readSecrets, rpc, serviceClient, sql, stamp, withManifestLock, writeManifest, writeSecrets } from './lib.mjs';
 
 const password = () => `Flow-${randomBytes(14).toString('hex')}9aZ`;
 
@@ -12,7 +12,7 @@ export const sharedConfigDigest = async () => (await sql(`select count(*)::int n
 /** Removes the run's synthetic requirement BY ITS UUID in ONE transaction: the applications and the requirements are locked (a concurrent submission cannot pick the
  *  requirement up between the check and the delete), references are verified, the row is deleted and the shared-configuration digest is validated; any
  *  discrepancy RAISES and the delete is rolled back. The digest is also re-read afterwards for the manifest. */
-export async function retireCriterion() {
+async function retireCriterionLocked() {
   const m = await readManifest(); assert.ok(m?.criterion && m.sharedConfigBefore, 'sin criterio ni digest previo en el manifiesto');
   await sql(buildRetireCriterionSql({ criterion: m.criterion, run: m.run, technician: m.accounts.technician.id, before: m.sharedConfigBefore }));
   const after = await sharedConfigDigest(); assert.deepEqual(after, m.sharedConfigBefore);
@@ -20,7 +20,7 @@ export async function retireCriterion() {
 }
 
 /** Creates the three synthetic accounts, approves the technician with a synthetic criterion and authorizes ONLY the customer for Sandbox payments. */
-export async function setup(env) {
+async function setupLocked(env) {
   assert.equal(await readManifest(), null, 'ya existe un manifiesto: use cleanup antes de repetir setup');
   const pre = (await sql(`select (select count(*)::int from auth.users) users,(select count(*)::int from public.jobs) jobs,(select count(*)::int from private.payment_orders) orders,(select count(*)::int from private.payment_sandbox_accounts) allowed,(select count(*)::int from private.category_requirements) reqs,(select count(*)::int from private.technician_applications) apps`))[0];
   // The technician approval below needs ONE active requirement for the category (SHARED configuration): refuse to touch it while a real applicant could be affected.
@@ -52,7 +52,7 @@ update public.technician_profiles set status='active' where user_id=${lit(id('te
 }
 
 /** One awarded job (request -> quote -> accepted quote) between the synthetic customer and technician. Returns { job, request, quote }. */
-export async function createJob(env, label = 'trabajo') {
+async function createJobLocked(env, label = 'trabajo') {
   const manifest = await readManifest(), secrets = await readSecrets(); assert.ok(manifest && manifest.state !== 'cleaned', 'sin manifiesto vigente');
   const customer = await actorClient(env, secrets, 'customer'), tech = await actorClient(env, secrets, 'technician');
   await sql(`update public.service_requests set created_at=now()-interval '3 days' where customer_id=${lit(customer.id)};`);
@@ -66,3 +66,8 @@ export async function createJob(env, label = 'trabajo') {
   manifest.jobs.push({ id: awarded.job.id, label, createdAt: stamp() }); await writeManifest(manifest);
   return { job: awarded.job.id, request: r.id, quote: q.id };
 }
+
+// Every function that reads the manifest and writes it back holds the manifest lock for the WHOLE operation (initial read to final write).
+export const retireCriterion = (...a) => withManifestLock(() => retireCriterionLocked(...a));
+export const setup = (...a) => withManifestLock(() => setupLocked(...a));
+export const createJob = (...a) => withManifestLock(() => createJobLocked(...a));
