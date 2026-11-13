@@ -54,6 +54,8 @@ jobs:
       # Financial/permission invariants (Sprint 05): same pinned tooling as docs/production/sprint-03-evidence/README.md. Auth/Storage are SQL contract fixtures; Flow is never contacted.
       - run: npm install --prefix .audit-backups/tooling/sprint03-postgres --save-exact --no-audit --no-fund embedded-postgres@17.11.0-beta.19
       - run: node scripts/test-payments-postgres.mjs
+      # Backup/restore tooling (Sprint 06): privilege snapshot and reconciliation against real PostgreSQL; nothing remote is contacted.
+      - run: node scripts/test-privilege-reconcile.mjs
       # Real PostgREST/Auth/Kong contract against the isolated local stack started above (loopback only; Flow provider is a test double).
       - name: Payments integration against the isolated local Supabase
         run: |
