@@ -123,3 +123,6 @@ Entorno: `sandbox.flow.cl` real, `www.soyfixo.cl` y proyecto Fixo de producción
 ## 6. Archivos y evidencia
 
 Ver `docs/ai/HANDOFF.md` (detalle por etapa y por corrección de revisión). Evidencia sanitizada: `docs/production/sprint-05-evidence/browser-local.json` (navegador local) y `docs/production/sprint-05-evidence/flow-sandbox-manifest.json` (fase C: cuentas, trabajos, UUID de órdenes, intentos, eventos y bandeja, órdenes externas reconciliadas y 19 entradas de evidencia por escenario). Ninguno incluye tokens, claves, contraseñas ni PII; las contraseñas de las cuentas sintéticas viven fuera del repositorio.
+
+## 7. Cierre del sprint — 2026-11-13
+**Cerrado con limitaciones explícitas** por decisión del propietario (opción 1): la orden externa Flow `11657296` sigue pendiente de pago (reconsultada hoy) y se documenta como asunto externo abierto; el manifiesto sigue en `retained-closure-pending` (`close` → código 3) y la decisión queda en `ownerDecisions`. CI de GitHub sin ejecutar (cuenta bloqueada por facturación). Paquete para Codex: `docs/production/SPRINT_05_CODEX_REVIEW_PACKAGE.md`.
