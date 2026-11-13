@@ -10,6 +10,7 @@ import type {
 } from "@/integrations/auth/auth-provider";
 import { DEMO_SESSION_COOKIE, decodeDemoSession, encodeDemoSession } from "@/integrations/auth/demo-session-cookie";
 import { DEMO_ACCOUNTS } from "@/repositories/mock/fixtures/demo-accounts";
+import { isDemoModeEnabled } from "@/config/demo-mode";
 
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 
@@ -21,6 +22,7 @@ function readCookie(name: string): string | undefined {
 }
 
 function writeSessionCookie(user: AuthSession["user"]): void {
+  if (!isDemoModeEnabled()) throw new Error("Las sesiones demo solo están disponibles en desarrollo aislado.");
   document.cookie = `${DEMO_SESSION_COOKIE}=${encodeDemoSession(user)}; path=/; max-age=${SESSION_MAX_AGE_SECONDS}`;
 }
 
@@ -33,6 +35,7 @@ export class MockAuthProvider implements AuthProvider {
   }
 
   async getCurrentSession(): Promise<AuthSession | null> {
+    if (!isDemoModeEnabled()) return null;
     const user = decodeDemoSession(readCookie(DEMO_SESSION_COOKIE));
     return user ? { user, createdAt: new Date().toISOString() } : null;
   }
@@ -42,13 +45,13 @@ export class MockAuthProvider implements AuthProvider {
   }
 
   async registerCustomer(input: CustomerRegistrationInput): Promise<RegistrationResult> {
-    const user: AuthSession["user"] = { id: `demo-customer-${Date.now()}`, name: input.fullName, email: input.email, role: "customer" };
+    const user: AuthSession["user"] = { id: `demo-customer-${Date.now()}`, name: `${input.firstName} ${input.lastName}`, email: input.email, role: "customer" };
     writeSessionCookie(user);
     return { session: { user, createdAt: new Date().toISOString() }, requiresEmailConfirmation: false };
   }
 
   async registerTechnician(input: TechnicianRegistrationInput): Promise<RegistrationResult> {
-    const user: AuthSession["user"] = { id: `demo-technician-${Date.now()}`, name: input.fullName, email: input.email, role: "technician" };
+    const user: AuthSession["user"] = { id: `demo-technician-${Date.now()}`, name: `${input.firstName} ${input.lastName}`, email: input.email, role: "technician" };
     writeSessionCookie(user);
     return { session: { user, createdAt: new Date().toISOString() }, requiresEmailConfirmation: false };
   }

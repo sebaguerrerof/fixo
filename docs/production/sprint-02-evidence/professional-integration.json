@@ -1,0 +1,24 @@
+{
+  "project": "rjzyqdhotcshvbdcrgon",
+  "runId": "053281bf-74e5-49cb-a31d-4de39e269c8d",
+  "status": "PASS",
+  "checks": [
+    "private application persists and cross-user reads fail",
+    "draft retries are idempotent and stale revisions fail",
+    "unconfigured category cannot be submitted",
+    "requirements are versioned by superadmin without inventing legal rules",
+    "consent is required and technicians cannot approve themselves",
+    "valid PDF is quarantined and cannot be signed or downloaded",
+    "uninspected evidence cannot be approved",
+    "real binary parsing and ClamAV inspect stored PDF",
+    "administrative document review and information request are audited",
+    "correction and concurrent decisions publish exactly once",
+    "sensitive identity edit immediately withdraws publication",
+    "replacement is immutable and old evidence becomes inaccessible",
+    "professional suspension hides directory and blocks old-session writes",
+    "disguised document is rejected by actual byte inspection"
+  ],
+  "failedCheck": null,
+  "fixtureCleanup": "PASS: final-state.json confirms only the two original accounts remain and all synthetic application/Storage data is gone",
+  "completedAt": "2026-11-09T16:03:00.883Z"
+}

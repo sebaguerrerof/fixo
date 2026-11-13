@@ -1,0 +1,9 @@
+{
+  "status": "PASS local",
+  "checks": 20,
+  "remote": false,
+  "version": "17.11",
+  "providerSchemas": "Auth/Storage contract fixtures; no JWT cryptographic verification",
+  "persistentCluster": true,
+  "loopbackOnly": true
+}

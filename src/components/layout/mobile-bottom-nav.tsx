@@ -1,6 +1,6 @@
 "use client";
 
-import { House, Search, Siren, UserRound, type LucideIcon } from "lucide-react";
+import { House, Search, UserRound, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -19,7 +19,6 @@ interface MobileNavigationItem {
 const navigation: readonly MobileNavigationItem[] = [
   { href: "/", label: "Inicio", icon: House },
   { href: "/tecnicos", label: "Buscar", icon: Search },
-  { href: "/urgencia", label: "Urgencia", icon: Siren, emergency: true },
 ] as const;
 
 export function MobileBottomNav() {
@@ -28,7 +27,7 @@ export function MobileBottomNav() {
 
   useEffect(() => {
     let isMounted = true;
-    void new AuthenticationService().getCurrentSession().then((nextSession) => { if (isMounted) setSession(nextSession); });
+    void new AuthenticationService().getCurrentSession().then((nextSession) => { if (isMounted) setSession(nextSession); }).catch(() => { if (isMounted) setSession(null); });
     return () => { isMounted = false; };
   }, []);
   const accountHref = session ? dashboardForRole(session.user.role) : "/login";

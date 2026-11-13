@@ -1,0 +1,5 @@
+
+> fixo-marketplace-tecnicos@0.1.0 test:smoke
+> node scripts/smoke-production.mjs
+
+PASS production HTTP: forged demo cookie rejected by six protected routes; Auth pages, invalid links, no-store/referrer policy and foreign-origin rejection verified without Auth writes.

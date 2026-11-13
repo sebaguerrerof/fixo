@@ -1,0 +1,633 @@
+{
+  "date": "2026-11-09",
+  "project": {
+    "id": "rjzyqdhotcshvbdcrgon",
+    "ref": "rjzyqdhotcshvbdcrgon",
+    "organization_id": "jmbhjccxstrsgywyxdeq",
+    "organization_slug": "jmbhjccxstrsgywyxdeq",
+    "name": "Fixo",
+    "region": "ca-central-1",
+    "status": "ACTIVE_HEALTHY",
+    "database": {
+      "host": "db.rjzyqdhotcshvbdcrgon.supabase.co",
+      "version": "17.11.0.003",
+      "postgres_engine": "17",
+      "release_channel": "ga"
+    },
+    "created_at": "2026-08-17T17:52:58.687236Z"
+  },
+  "organization": {
+    "id": "jmbhjccxstrsgywyxdeq",
+    "name": "fixo",
+    "plan": "free",
+    "tier": "tier_free",
+    "opt_in_tags": [],
+    "allowed_release_channels": [
+      "ga",
+      "preview"
+    ]
+  },
+  "catalog": {
+    "tables": [
+      {
+        "rls": true,
+        "name": "categories",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "name": "technician_documents",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "name": "profiles",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "name": "technician_profiles",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "name": "technician_categories",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "name": "technician_specialties",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "name": "technician_metrics",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "name": "admin_audit_entries",
+        "schema": "public"
+      },
+      {
+        "rls": true,
+        "name": "service_requests",
+        "schema": "public"
+      }
+    ],
+    "buckets": [
+      {
+        "id": "technician-documents",
+        "mime": null,
+        "public": false,
+        "max_size": null
+      }
+    ],
+    "columns": [
+      {
+        "type": "integer",
+        "table": "technician_metrics",
+        "column": "response_time_minutes"
+      },
+      {
+        "type": "integer",
+        "table": "technician_metrics",
+        "column": "completion_rate"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "technician_metrics",
+        "column": "updated_at"
+      },
+      {
+        "type": "uuid",
+        "table": "admin_audit_entries",
+        "column": "id"
+      },
+      {
+        "type": "uuid",
+        "table": "admin_audit_entries",
+        "column": "actor_id"
+      },
+      {
+        "type": "uuid",
+        "table": "admin_audit_entries",
+        "column": "technician_id"
+      },
+      {
+        "type": "uuid",
+        "table": "technician_documents",
+        "column": "id"
+      },
+      {
+        "type": "USER-DEFINED",
+        "table": "admin_audit_entries",
+        "column": "previous_status"
+      },
+      {
+        "type": "USER-DEFINED",
+        "table": "admin_audit_entries",
+        "column": "next_status"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "profiles",
+        "column": "created_at"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "admin_audit_entries",
+        "column": "created_at"
+      },
+      {
+        "type": "uuid",
+        "table": "service_requests",
+        "column": "id"
+      },
+      {
+        "type": "uuid",
+        "table": "service_requests",
+        "column": "customer_id"
+      },
+      {
+        "type": "uuid",
+        "table": "service_requests",
+        "column": "assigned_technician_id"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "profiles",
+        "column": "updated_at"
+      },
+      {
+        "type": "uuid",
+        "table": "technician_profiles",
+        "column": "user_id"
+      },
+      {
+        "type": "uuid",
+        "table": "technician_documents",
+        "column": "technician_id"
+      },
+      {
+        "type": "USER-DEFINED",
+        "table": "service_requests",
+        "column": "priority"
+      },
+      {
+        "type": "USER-DEFINED",
+        "table": "service_requests",
+        "column": "status"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "technician_documents",
+        "column": "created_at"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "service_requests",
+        "column": "scheduled_for"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "service_requests",
+        "column": "created_at"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "service_requests",
+        "column": "updated_at"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "technician_documents",
+        "column": "reviewed_at"
+      },
+      {
+        "type": "uuid",
+        "table": "technician_documents",
+        "column": "reviewed_by"
+      },
+      {
+        "type": "uuid",
+        "table": "profiles",
+        "column": "id"
+      },
+      {
+        "type": "USER-DEFINED",
+        "table": "technician_profiles",
+        "column": "status"
+      },
+      {
+        "type": "integer",
+        "table": "technician_profiles",
+        "column": "years_of_experience"
+      },
+      {
+        "type": "boolean",
+        "table": "technician_profiles",
+        "column": "emergency_enabled"
+      },
+      {
+        "type": "integer",
+        "table": "technician_profiles",
+        "column": "starting_price_clp"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "technician_profiles",
+        "column": "submitted_at"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "technician_profiles",
+        "column": "verified_at"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "technician_profiles",
+        "column": "created_at"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "technician_profiles",
+        "column": "updated_at"
+      },
+      {
+        "type": "uuid",
+        "table": "technician_categories",
+        "column": "technician_id"
+      },
+      {
+        "type": "timestamp with time zone",
+        "table": "categories",
+        "column": "created_at"
+      },
+      {
+        "type": "uuid",
+        "table": "technician_specialties",
+        "column": "id"
+      },
+      {
+        "type": "uuid",
+        "table": "technician_specialties",
+        "column": "technician_id"
+      },
+      {
+        "type": "USER-DEFINED",
+        "table": "profiles",
+        "column": "role"
+      },
+      {
+        "type": "uuid",
+        "table": "technician_metrics",
+        "column": "technician_id"
+      },
+      {
+        "type": "numeric",
+        "table": "technician_metrics",
+        "column": "rating"
+      },
+      {
+        "type": "integer",
+        "table": "technician_metrics",
+        "column": "review_count"
+      },
+      {
+        "type": "integer",
+        "table": "technician_metrics",
+        "column": "completed_jobs"
+      },
+      {
+        "type": "text",
+        "table": "service_requests",
+        "column": "category_id"
+      },
+      {
+        "type": "text",
+        "table": "categories",
+        "column": "slug"
+      },
+      {
+        "type": "text",
+        "table": "categories",
+        "column": "name"
+      },
+      {
+        "type": "text",
+        "table": "categories",
+        "column": "description"
+      },
+      {
+        "type": "text",
+        "table": "categories",
+        "column": "icon"
+      },
+      {
+        "type": "text",
+        "table": "technician_documents",
+        "column": "document_type"
+      },
+      {
+        "type": "text",
+        "table": "technician_documents",
+        "column": "storage_path"
+      },
+      {
+        "type": "text",
+        "table": "technician_documents",
+        "column": "status"
+      },
+      {
+        "type": "text",
+        "table": "profiles",
+        "column": "full_name"
+      },
+      {
+        "type": "text",
+        "table": "profiles",
+        "column": "avatar_url"
+      },
+      {
+        "type": "text",
+        "table": "technician_profiles",
+        "column": "slug"
+      },
+      {
+        "type": "text",
+        "table": "technician_profiles",
+        "column": "city"
+      },
+      {
+        "type": "ARRAY",
+        "table": "technician_profiles",
+        "column": "coverage_areas"
+      },
+      {
+        "type": "text",
+        "table": "technician_profiles",
+        "column": "headline"
+      },
+      {
+        "type": "text",
+        "table": "technician_profiles",
+        "column": "bio"
+      },
+      {
+        "type": "text",
+        "table": "technician_categories",
+        "column": "category_id"
+      },
+      {
+        "type": "text",
+        "table": "technician_specialties",
+        "column": "name"
+      },
+      {
+        "type": "text",
+        "table": "admin_audit_entries",
+        "column": "action"
+      },
+      {
+        "type": "text",
+        "table": "admin_audit_entries",
+        "column": "reason"
+      },
+      {
+        "type": "text",
+        "table": "categories",
+        "column": "id"
+      },
+      {
+        "type": "text",
+        "table": "service_requests",
+        "column": "title"
+      },
+      {
+        "type": "text",
+        "table": "service_requests",
+        "column": "description"
+      },
+      {
+        "type": "text",
+        "table": "service_requests",
+        "column": "location_label"
+      }
+    ],
+    "policies": [
+      {
+        "name": "Technicians and administrators view verification documents",
+        "check": null,
+        "roles": [
+          "authenticated"
+        ],
+        "table": "objects",
+        "using": "((bucket_id = 'technician-documents'::text) AND (((storage.foldername(name))[1] = (auth.uid())::text) OR is_admin()))",
+        "schema": "storage",
+        "command": "SELECT"
+      },
+      {
+        "name": "Technicians upload their own documents",
+        "check": "((bucket_id = 'technician-documents'::text) AND ((storage.foldername(name))[1] = (auth.uid())::text))",
+        "roles": [
+          "authenticated"
+        ],
+        "table": "objects",
+        "using": null,
+        "schema": "storage",
+        "command": "INSERT"
+      },
+      {
+        "name": "Categories are public",
+        "check": null,
+        "roles": [
+          "public"
+        ],
+        "table": "categories",
+        "using": "true",
+        "schema": "public",
+        "command": "SELECT"
+      },
+      {
+        "name": "Technicians and administrators view their documents",
+        "check": null,
+        "roles": [
+          "public"
+        ],
+        "table": "technician_documents",
+        "using": "((technician_id = auth.uid()) OR is_admin())",
+        "schema": "public",
+        "command": "SELECT"
+      },
+      {
+        "name": "Public profiles are visible for public technicians",
+        "check": null,
+        "roles": [
+          "public"
+        ],
+        "table": "profiles",
+        "using": "((id = auth.uid()) OR is_admin() OR (EXISTS ( SELECT 1\n   FROM technician_profiles\n  WHERE ((technician_profiles.user_id = profiles.id) AND (technician_profiles.status = ANY (ARRAY['verified'::technician_status, 'active'::technician_status]))))))",
+        "schema": "public",
+        "command": "SELECT"
+      },
+      {
+        "name": "Public technicians are visible and private profiles remain scop",
+        "check": null,
+        "roles": [
+          "public"
+        ],
+        "table": "technician_profiles",
+        "using": "((status = ANY (ARRAY['verified'::technician_status, 'active'::technician_status])) OR (user_id = auth.uid()) OR is_admin())",
+        "schema": "public",
+        "command": "SELECT"
+      },
+      {
+        "name": "Technician categories follow profile visibility",
+        "check": null,
+        "roles": [
+          "public"
+        ],
+        "table": "technician_categories",
+        "using": "((technician_id = auth.uid()) OR is_admin() OR (EXISTS ( SELECT 1\n   FROM technician_profiles\n  WHERE ((technician_profiles.user_id = technician_categories.technician_id) AND (technician_profiles.status = ANY (ARRAY['verified'::technician_status, 'active'::technician_status]))))))",
+        "schema": "public",
+        "command": "SELECT"
+      },
+      {
+        "name": "Technician specialties follow profile visibility",
+        "check": null,
+        "roles": [
+          "public"
+        ],
+        "table": "technician_specialties",
+        "using": "((technician_id = auth.uid()) OR is_admin() OR (EXISTS ( SELECT 1\n   FROM technician_profiles\n  WHERE ((technician_profiles.user_id = technician_specialties.technician_id) AND (technician_profiles.status = ANY (ARRAY['verified'::technician_status, 'active'::technician_status]))))))",
+        "schema": "public",
+        "command": "SELECT"
+      },
+      {
+        "name": "Technician metrics follow profile visibility",
+        "check": null,
+        "roles": [
+          "public"
+        ],
+        "table": "technician_metrics",
+        "using": "((technician_id = auth.uid()) OR is_admin() OR (EXISTS ( SELECT 1\n   FROM technician_profiles\n  WHERE ((technician_profiles.user_id = technician_metrics.technician_id) AND (technician_profiles.status = ANY (ARRAY['verified'::technician_status, 'active'::technician_status]))))))",
+        "schema": "public",
+        "command": "SELECT"
+      },
+      {
+        "name": "Administrators read audit entries",
+        "check": null,
+        "roles": [
+          "public"
+        ],
+        "table": "admin_audit_entries",
+        "using": "is_admin()",
+        "schema": "public",
+        "command": "SELECT"
+      },
+      {
+        "name": "Customers view their own service requests",
+        "check": null,
+        "roles": [
+          "public"
+        ],
+        "table": "service_requests",
+        "using": "((customer_id = auth.uid()) OR (assigned_technician_id = active_technician_id()) OR is_admin())",
+        "schema": "public",
+        "command": "SELECT"
+      },
+      {
+        "name": "Customers create their own service requests",
+        "check": "((customer_id = auth.uid()) AND (EXISTS ( SELECT 1\n   FROM profiles\n  WHERE ((profiles.id = auth.uid()) AND (profiles.role = 'customer'::app_role)))))",
+        "roles": [
+          "public"
+        ],
+        "table": "service_requests",
+        "using": null,
+        "schema": "public",
+        "command": "INSERT"
+      }
+    ],
+    "functions": [
+      {
+        "name": "touch_updated_at",
+        "schema": "public",
+        "settings": [
+          "search_path=public"
+        ],
+        "arguments": "",
+        "definition_hash": "3198da39f36d279e2c36edcca2e0a47a",
+        "security_definer": false
+      },
+      {
+        "name": "is_admin",
+        "schema": "public",
+        "settings": [
+          "search_path=public"
+        ],
+        "arguments": "",
+        "definition_hash": "60154c9f884e696b0889646da4b54ea4",
+        "security_definer": true
+      },
+      {
+        "name": "active_technician_id",
+        "schema": "public",
+        "settings": [
+          "search_path=public"
+        ],
+        "arguments": "",
+        "definition_hash": "d488fcd63a67ac0521694e09b0d08ae1",
+        "security_definer": true
+      },
+      {
+        "name": "handle_new_user",
+        "schema": "public",
+        "settings": [
+          "search_path=public"
+        ],
+        "arguments": "",
+        "definition_hash": "cb293d392c3739f789add697294c18fe",
+        "security_definer": true
+      },
+      {
+        "name": "technician_status_transition_allowed",
+        "schema": "public",
+        "settings": null,
+        "arguments": "current_status technician_status, next_status technician_status",
+        "definition_hash": "abc7119d81e3fa7bc4cd7a7c5d0b6552",
+        "security_definer": false
+      },
+      {
+        "name": "change_technician_status",
+        "schema": "public",
+        "settings": [
+          "search_path=public"
+        ],
+        "arguments": "target_technician_id uuid, next_status technician_status, change_reason text",
+        "definition_hash": "ea0198aa26685e9a355070fc77e8ed1d",
+        "security_definer": true
+      }
+    ],
+    "connection": {
+      "schema": "public",
+      "database": "postgres",
+      "current_user": "postgres",
+      "postgres_version": "PostgreSQL 17.11 on aarch64-unknown-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit"
+    },
+    "required_tables": {
+      "profiles": true,
+      "categories": true,
+      "service_requests": true,
+      "admin_audit_entries": true,
+      "technician_profiles": true
+    }
+  },
+  "migrations": [],
+  "branches": [],
+  "cost": {
+    "type": "project",
+    "recurrence": "monthly",
+    "amount": 0
+  }
+}

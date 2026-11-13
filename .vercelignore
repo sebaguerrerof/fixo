@@ -1,0 +1,4 @@
+.audit-backups
+.next-dev
+.env*.local
+coverage

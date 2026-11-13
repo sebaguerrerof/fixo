@@ -1,0 +1,21 @@
+{
+  "project": "rjzyqdhotcshvbdcrgon",
+  "runId": "6f7d6762-8c17-4715-94f4-19a35751e0c0",
+  "status": "FAIL",
+  "checks": [
+    "private application persists and cross-user reads fail",
+    "draft retries are idempotent and stale revisions fail",
+    "unconfigured category cannot be submitted",
+    "requirements are versioned by superadmin without inventing legal rules",
+    "consent is required and technicians cannot approve themselves",
+    "valid PDF is quarantined and cannot be signed or downloaded",
+    "uninspected evidence cannot be approved",
+    "real binary parsing and ClamAV inspect stored PDF",
+    "administrative document review and information request are audited",
+    "correction and concurrent decisions publish exactly once",
+    "sensitive identity edit immediately withdraws publication"
+  ],
+  "failedCheck": "replacement is immutable and old evidence becomes inaccessible",
+  "fixtureCleanup": "PENDING",
+  "completedAt": "2026-11-09T15:51:28.889Z"
+}

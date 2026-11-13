@@ -52,7 +52,7 @@ export class QuoteService {
       getTechnicianRepository().findByUserId(technicianId),
     ]);
     if (!request) throw new Error("La solicitud no existe.");
-    if (!["matching", "receiving_quotes"].includes(request.status)) throw new Error("Esta solicitud ya no admite nuevas cotizaciones.");
+    if (!["submitted", "matching", "receiving_quotes"].includes(request.status)) throw new Error("Esta solicitud ya no admite nuevas cotizaciones.");
     if (!technician) throw new Error("No encontramos tu perfil técnico.");
     if (!technician.categoryIds.includes(request.categoryId)) throw new Error("Esta solicitud no corresponde a tu rubro.");
 
@@ -75,9 +75,15 @@ export class QuoteService {
     return repository.withdraw(quoteId);
   }
 
-  async acceptQuote(customerId: string, serviceRequestId: string, quoteId: string): Promise<AcceptQuoteResult> {
+  async acceptQuote(customerId: string, serviceRequestId: string, quoteId: string, expectedRevision?: number): Promise<AcceptQuoteResult> {
     const serviceRequestRepository = getServiceRequestRepository();
     const quoteRepository = getQuoteRepository();
+
+    if (quoteRepository.acceptAtomically) {
+      const quote = await quoteRepository.getById(quoteId);
+      if (!quote) throw new Error("La cotización no está disponible.");
+      return quoteRepository.acceptAtomically(serviceRequestId, quoteId, expectedRevision ?? quote.revision ?? 1);
+    }
 
     const request = await serviceRequestRepository.findById(serviceRequestId);
     if (!request) throw new Error("La solicitud no existe.");

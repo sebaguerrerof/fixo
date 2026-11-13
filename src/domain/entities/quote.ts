@@ -1,6 +1,10 @@
 import type { QuoteStatus } from "@/domain/enums/quote-status";
 
 export interface Quote {
+  readonly revision?: number;
+  readonly laborClp?: number;
+  readonly materialsClp?: number;
+  readonly diagnosticClp?: number;
   readonly id: string;
   readonly serviceRequestId: string;
   readonly technicianId: string;

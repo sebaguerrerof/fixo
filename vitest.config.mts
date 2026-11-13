@@ -8,6 +8,7 @@ export default defineConfig({
     },
   },
   test: {
+    env: { NEXT_PUBLIC_DEMO_MODE: "true" },
     include: ["src/**/*.test.ts"],
   },
 });

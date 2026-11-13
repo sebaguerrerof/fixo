@@ -1,0 +1,313 @@
+{
+  "date": "2026-11-08",
+  "scope": "read-only catalog; no remote modifications",
+  "catalog": {
+    "bucket": [
+      {
+        "id": "technician-documents",
+        "public": false,
+        "file_size_limit": null,
+        "allowed_mime_types": null
+      }
+    ],
+    "tables": 9,
+    "policies": 12,
+    "functions": [
+      {
+        "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+        "name": "touch_updated_at",
+        "config": [
+          "search_path=public"
+        ],
+        "definer": false,
+        "definition": "CREATE OR REPLACE FUNCTION public.touch_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public'\nAS $function$\r\nbegin\r\n  new.updated_at = now();\r\n  return new;\r\nend;\r\n$function$\n"
+      },
+      {
+        "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+        "name": "is_admin",
+        "config": [
+          "search_path=public"
+        ],
+        "definer": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.is_admin()\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  select exists (\r\n    select 1 from public.profiles\r\n    where id = auth.uid() and role in ('moderator', 'superadmin')\r\n  );\r\n$function$\n"
+      },
+      {
+        "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+        "name": "active_technician_id",
+        "config": [
+          "search_path=public"
+        ],
+        "definer": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.active_technician_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  select user_id from public.technician_profiles\r\n  where user_id = auth.uid() and status = 'active'\r\n  limit 1;\r\n$function$\n"
+      },
+      {
+        "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+        "name": "handle_new_user",
+        "config": [
+          "search_path=public"
+        ],
+        "definer": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.handle_new_user()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\ndeclare\r\n  requested_role public.app_role := case when new.raw_user_meta_data ->> 'account_type' = 'technician' then 'technician' else 'customer' end;\r\n  technician_slug text;\r\n  category_id_value text;\r\n  specialty_value text;\r\n  years_value integer := case when coalesce(new.raw_user_meta_data ->> 'years_of_experience', '') ~ '^\\d+$' then least((new.raw_user_meta_data ->> 'years_of_experience')::integer, 80) else 0 end;\r\n  price_value integer := case when coalesce(new.raw_user_meta_data ->> 'starting_price_clp', '') ~ '^\\d+$' then greatest((new.raw_user_meta_data ->> 'starting_price_clp')::integer, 0) else 0 end;\r\nbegin\r\n  insert into public.profiles (id, full_name, role)\r\n  values (\r\n    new.id,\r\n    coalesce(nullif(trim(new.raw_user_meta_data ->> 'full_name'), ''), split_part(new.email, '@', 1)),\r\n    requested_role\r\n  );\r\n\r\n  if requested_role = 'technician' then\r\n    technician_slug := trim(both '-' from regexp_replace(lower(coalesce(new.raw_user_meta_data ->> 'full_name', 'tecnico')), '[^a-z0-9]+', '-', 'g')) || '-' || left(new.id::text, 8);\r\n\r\n    insert into public.technician_profiles (\r\n      user_id, slug, city, coverage_areas, headline, bio, status,\r\n      years_of_experience, emergency_enabled, starting_price_clp, submitted_at\r\n    ) values (\r\n      new.id,\r\n      technician_slug,\r\n      coalesce(nullif(trim(new.raw_user_meta_data ->> 'city'), ''), 'Santiago'),\r\n      coalesce(array(select jsonb_array_elements_text(coalesce(new.raw_user_meta_data -> 'coverage_areas', '[]'::jsonb))), '{}'),\r\n      coalesce(left(new.raw_user_meta_data ->> 'headline', 180), ''),\r\n      coalesce(left(new.raw_user_meta_data ->> 'bio', 2000), ''),\r\n      'pending_verification',\r\n      years_value,\r\n      coalesce((new.raw_user_meta_data ->> 'emergency_enabled')::boolean, false),\r\n      price_value,\r\n      now()\r\n    );\r\n\r\n    for category_id_value in select jsonb_array_elements_text(coalesce(new.raw_user_meta_data -> 'category_ids', '[]'::jsonb)) loop\r\n      insert into public.technician_categories (technician_id, category_id)\r\n      select new.id, category_id_value where exists (select 1 from public.categories where id = category_id_value)\r\n      on conflict do nothing;\r\n    end loop;\r\n\r\n    for specialty_value in select jsonb_array_elements_text(coalesce(new.raw_user_meta_data -> 'specialties', '[]'::jsonb)) loop\r\n      if char_length(trim(specialty_value)) between 2 and 100 then\r\n        insert into public.technician_specialties (technician_id, name) values (new.id, trim(specialty_value)) on conflict do nothing;\r\n      end if;\r\n    end loop;\r\n\r\n    insert into public.technician_metrics (technician_id) values (new.id);\r\n  end if;\r\n\r\n  return new;\r\nend;\r\n$function$\n"
+      },
+      {
+        "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+        "name": "technician_status_transition_allowed",
+        "config": null,
+        "definer": false,
+        "definition": "CREATE OR REPLACE FUNCTION public.technician_status_transition_allowed(current_status technician_status, next_status technician_status)\n RETURNS boolean\n LANGUAGE sql\n IMMUTABLE\nAS $function$\r\n  select (current_status, next_status) in (\r\n    ('draft'::public.technician_status, 'pending_verification'::public.technician_status),\r\n    ('draft'::public.technician_status, 'rejected'::public.technician_status),\r\n    ('pending_verification'::public.technician_status, 'needs_information'::public.technician_status),\r\n    ('pending_verification'::public.technician_status, 'verified'::public.technician_status),\r\n    ('pending_verification'::public.technician_status, 'rejected'::public.technician_status),\r\n    ('needs_information'::public.technician_status, 'pending_verification'::public.technician_status),\r\n    ('needs_information'::public.technician_status, 'rejected'::public.technician_status),\r\n    ('verified'::public.technician_status, 'active'::public.technician_status),\r\n    ('verified'::public.technician_status, 'temporarily_suspended'::public.technician_status),\r\n    ('verified'::public.technician_status, 'banned'::public.technician_status),\r\n    ('active'::public.technician_status, 'temporarily_suspended'::public.technician_status),\r\n    ('active'::public.technician_status, 'suspended'::public.technician_status),\r\n    ('active'::public.technician_status, 'banned'::public.technician_status),\r\n    ('temporarily_suspended'::public.technician_status, 'active'::public.technician_status),\r\n    ('temporarily_suspended'::public.technician_status, 'suspended'::public.technician_status),\r\n    ('temporarily_suspended'::public.technician_status, 'banned'::public.technician_status),\r\n    ('suspended'::public.technician_status, 'active'::public.technician_status),\r\n    ('suspended'::public.technician_status, 'banned'::public.technician_status),\r\n    ('rejected'::public.technician_status, 'pending_verification'::public.technician_status)\r\n  );\r\n$function$\n"
+      },
+      {
+        "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+        "name": "change_technician_status",
+        "config": [
+          "search_path=public"
+        ],
+        "definer": true,
+        "definition": "CREATE OR REPLACE FUNCTION public.change_technician_status(target_technician_id uuid, next_status technician_status, change_reason text DEFAULT ''::text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\ndeclare\r\n  current_status public.technician_status;\r\n  updated_profile public.technician_profiles;\r\nbegin\r\n  if not public.is_admin() then\r\n    raise exception 'No tienes permiso para gestionar técnicos.' using errcode = '42501';\r\n  end if;\r\n\r\n  select status into current_status from public.technician_profiles where user_id = target_technician_id for update;\r\n  if current_status is null then\r\n    raise exception 'No existe el perfil técnico.' using errcode = 'P0002';\r\n  end if;\r\n\r\n  if not public.technician_status_transition_allowed(current_status, next_status) then\r\n    raise exception 'La transición de estado no está permitida.' using errcode = '22023';\r\n  end if;\r\n\r\n  update public.technician_profiles\r\n  set status = next_status,\r\n      verified_at = case when next_status in ('verified', 'active') then now() else verified_at end\r\n  where user_id = target_technician_id\r\n  returning * into updated_profile;\r\n\r\n  insert into public.admin_audit_entries (actor_id, technician_id, action, previous_status, next_status, reason)\r\n  values (auth.uid(), target_technician_id, 'technician_status_changed', current_status, next_status, coalesce(nullif(trim(change_reason), ''), 'Cambio de estado desde administración.'));\r\n\r\n  return jsonb_build_object('technician_id', updated_profile.user_id, 'status', updated_profile.status);\r\nend;\r\n$function$\n"
+      }
+    ],
+    "constraints": [
+      {
+        "name": "technician_categories_pkey",
+        "definition": "PRIMARY KEY (technician_id, category_id)",
+        "table_name": "technician_categories"
+      },
+      {
+        "name": "technician_categories_technician_id_fkey",
+        "definition": "FOREIGN KEY (technician_id) REFERENCES technician_profiles(user_id) ON DELETE CASCADE",
+        "table_name": "technician_categories"
+      },
+      {
+        "name": "technician_categories_category_id_fkey",
+        "definition": "FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT",
+        "table_name": "technician_categories"
+      },
+      {
+        "name": "profiles_full_name_check",
+        "definition": "CHECK (char_length(TRIM(BOTH FROM full_name)) >= 2 AND char_length(TRIM(BOTH FROM full_name)) <= 120)",
+        "table_name": "profiles"
+      },
+      {
+        "name": "profiles_pkey",
+        "definition": "PRIMARY KEY (id)",
+        "table_name": "profiles"
+      },
+      {
+        "name": "profiles_id_fkey",
+        "definition": "FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE",
+        "table_name": "profiles"
+      },
+      {
+        "name": "categories_id_check",
+        "definition": "CHECK (id ~ '^[a-z0-9-]+$'::text)",
+        "table_name": "categories"
+      },
+      {
+        "name": "categories_slug_check",
+        "definition": "CHECK (slug ~ '^[a-z0-9-]+$'::text)",
+        "table_name": "categories"
+      },
+      {
+        "name": "admin_audit_entries_technician_id_fkey",
+        "definition": "FOREIGN KEY (technician_id) REFERENCES technician_profiles(user_id) ON DELETE RESTRICT",
+        "table_name": "admin_audit_entries"
+      },
+      {
+        "name": "categories_icon_check",
+        "definition": "CHECK (icon = ANY (ARRAY['bolt'::text, 'droplets'::text, 'key-round'::text, 'snowflake'::text, 'monitor-cog'::text, 'wrench'::text, 'paint-roller'::text, 'sprout'::text]))",
+        "table_name": "categories"
+      },
+      {
+        "name": "categories_pkey",
+        "definition": "PRIMARY KEY (id)",
+        "table_name": "categories"
+      },
+      {
+        "name": "categories_slug_key",
+        "definition": "UNIQUE (slug)",
+        "table_name": "categories"
+      },
+      {
+        "name": "technician_profiles_slug_check",
+        "definition": "CHECK (slug ~ '^[a-z0-9-]+$'::text)",
+        "table_name": "technician_profiles"
+      },
+      {
+        "name": "technician_profiles_city_check",
+        "definition": "CHECK (char_length(TRIM(BOTH FROM city)) >= 2 AND char_length(TRIM(BOTH FROM city)) <= 80)",
+        "table_name": "technician_profiles"
+      },
+      {
+        "name": "technician_profiles_headline_check",
+        "definition": "CHECK (char_length(headline) <= 180)",
+        "table_name": "technician_profiles"
+      },
+      {
+        "name": "technician_profiles_bio_check",
+        "definition": "CHECK (char_length(bio) <= 2000)",
+        "table_name": "technician_profiles"
+      },
+      {
+        "name": "technician_profiles_years_of_experience_check",
+        "definition": "CHECK (years_of_experience >= 0 AND years_of_experience <= 80)",
+        "table_name": "technician_profiles"
+      },
+      {
+        "name": "technician_profiles_starting_price_clp_check",
+        "definition": "CHECK (starting_price_clp >= 0)",
+        "table_name": "technician_profiles"
+      },
+      {
+        "name": "technician_profiles_pkey",
+        "definition": "PRIMARY KEY (user_id)",
+        "table_name": "technician_profiles"
+      },
+      {
+        "name": "technician_profiles_slug_key",
+        "definition": "UNIQUE (slug)",
+        "table_name": "technician_profiles"
+      },
+      {
+        "name": "technician_profiles_user_id_fkey",
+        "definition": "FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE",
+        "table_name": "technician_profiles"
+      },
+      {
+        "name": "technician_specialties_name_check",
+        "definition": "CHECK (char_length(TRIM(BOTH FROM name)) >= 2 AND char_length(TRIM(BOTH FROM name)) <= 100)",
+        "table_name": "technician_specialties"
+      },
+      {
+        "name": "technician_specialties_pkey",
+        "definition": "PRIMARY KEY (id)",
+        "table_name": "technician_specialties"
+      },
+      {
+        "name": "technician_specialties_technician_id_name_key",
+        "definition": "UNIQUE (technician_id, name)",
+        "table_name": "technician_specialties"
+      },
+      {
+        "name": "technician_specialties_technician_id_fkey",
+        "definition": "FOREIGN KEY (technician_id) REFERENCES technician_profiles(user_id) ON DELETE CASCADE",
+        "table_name": "technician_specialties"
+      },
+      {
+        "name": "technician_metrics_rating_check",
+        "definition": "CHECK (rating >= 0::numeric AND rating <= 5::numeric)",
+        "table_name": "technician_metrics"
+      },
+      {
+        "name": "technician_metrics_review_count_check",
+        "definition": "CHECK (review_count >= 0)",
+        "table_name": "technician_metrics"
+      },
+      {
+        "name": "technician_metrics_completed_jobs_check",
+        "definition": "CHECK (completed_jobs >= 0)",
+        "table_name": "technician_metrics"
+      },
+      {
+        "name": "technician_metrics_response_time_minutes_check",
+        "definition": "CHECK (response_time_minutes >= 0)",
+        "table_name": "technician_metrics"
+      },
+      {
+        "name": "technician_metrics_completion_rate_check",
+        "definition": "CHECK (completion_rate >= 0 AND completion_rate <= 100)",
+        "table_name": "technician_metrics"
+      },
+      {
+        "name": "technician_metrics_pkey",
+        "definition": "PRIMARY KEY (technician_id)",
+        "table_name": "technician_metrics"
+      },
+      {
+        "name": "technician_metrics_technician_id_fkey",
+        "definition": "FOREIGN KEY (technician_id) REFERENCES technician_profiles(user_id) ON DELETE CASCADE",
+        "table_name": "technician_metrics"
+      },
+      {
+        "name": "technician_documents_document_type_check",
+        "definition": "CHECK (document_type = ANY (ARRAY['identity'::text, 'certificate'::text, 'license'::text, 'other'::text]))",
+        "table_name": "technician_documents"
+      },
+      {
+        "name": "technician_documents_status_check",
+        "definition": "CHECK (status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text]))",
+        "table_name": "technician_documents"
+      },
+      {
+        "name": "technician_documents_pkey",
+        "definition": "PRIMARY KEY (id)",
+        "table_name": "technician_documents"
+      },
+      {
+        "name": "technician_documents_storage_path_key",
+        "definition": "UNIQUE (storage_path)",
+        "table_name": "technician_documents"
+      },
+      {
+        "name": "technician_documents_technician_id_fkey",
+        "definition": "FOREIGN KEY (technician_id) REFERENCES technician_profiles(user_id) ON DELETE CASCADE",
+        "table_name": "technician_documents"
+      },
+      {
+        "name": "technician_documents_reviewed_by_fkey",
+        "definition": "FOREIGN KEY (reviewed_by) REFERENCES profiles(id) ON DELETE SET NULL",
+        "table_name": "technician_documents"
+      },
+      {
+        "name": "service_requests_title_check",
+        "definition": "CHECK (char_length(TRIM(BOTH FROM title)) >= 5 AND char_length(TRIM(BOTH FROM title)) <= 160)",
+        "table_name": "service_requests"
+      },
+      {
+        "name": "service_requests_description_check",
+        "definition": "CHECK (char_length(description) <= 3000)",
+        "table_name": "service_requests"
+      },
+      {
+        "name": "service_requests_location_label_check",
+        "definition": "CHECK (char_length(TRIM(BOTH FROM location_label)) >= 2 AND char_length(TRIM(BOTH FROM location_label)) <= 180)",
+        "table_name": "service_requests"
+      },
+      {
+        "name": "service_requests_pkey",
+        "definition": "PRIMARY KEY (id)",
+        "table_name": "service_requests"
+      },
+      {
+        "name": "service_requests_customer_id_fkey",
+        "definition": "FOREIGN KEY (customer_id) REFERENCES profiles(id) ON DELETE CASCADE",
+        "table_name": "service_requests"
+      },
+      {
+        "name": "service_requests_assigned_technician_id_fkey",
+        "definition": "FOREIGN KEY (assigned_technician_id) REFERENCES technician_profiles(user_id) ON DELETE SET NULL",
+        "table_name": "service_requests"
+      },
+      {
+        "name": "service_requests_category_id_fkey",
+        "definition": "FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT",
+        "table_name": "service_requests"
+      },
+      {
+        "name": "admin_audit_entries_action_check",
+        "definition": "CHECK (action = 'technician_status_changed'::text)",
+        "table_name": "admin_audit_entries"
+      },
+      {
+        "name": "admin_audit_entries_pkey",
+        "definition": "PRIMARY KEY (id)",
+        "table_name": "admin_audit_entries"
+      },
+      {
+        "name": "admin_audit_entries_actor_id_fkey",
+        "definition": "FOREIGN KEY (actor_id) REFERENCES profiles(id) ON DELETE RESTRICT",
+        "table_name": "admin_audit_entries"
+      }
+    ]
+  },
+  "migrations": []
+}

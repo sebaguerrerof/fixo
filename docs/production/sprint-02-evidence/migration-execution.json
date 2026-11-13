@@ -1,0 +1,58 @@
+{
+  "date": "2026-11-09",
+  "project": "rjzyqdhotcshvbdcrgon",
+  "existingTargetExplicitlyAuthorized": true,
+  "historyModificationExplicitlyAuthorized": true,
+  "initialSqlReplayed": false,
+  "existingAccountsPreserved": true,
+  "beforeUsers": 2,
+  "after": {
+    "roles": {
+      "superadmin": 2
+    },
+    "users": 2,
+    "profiles": 2,
+    "migrations": [
+      {
+        "name": "initial_marketplace",
+        "version": "202608170001"
+      },
+      {
+        "name": "harden_marketplace_access",
+        "version": "20261108223021"
+      },
+      {
+        "name": "identity_and_account_administration",
+        "version": "20261108234902"
+      }
+    ],
+    "account_status": {
+      "active": 2
+    },
+    "private_tables": 5,
+    "identity_digest": "6c2936a71f2dff1144d2c7926e16f6f8"
+  },
+  "operations": [
+    {
+      "file": "202608170001_initial_marketplace.sql",
+      "operation": "metadata baseline only",
+      "generatedVersion": "20261109135256",
+      "canonicalVersion": "202608170001",
+      "sha256": "7e1d0ad1bf76844974e39b73ad5f8248eaa18a59949b78c8a719c5bf53904d7a"
+    },
+    {
+      "file": "20261108223021_harden_marketplace_access.sql",
+      "operation": "applied",
+      "generatedVersion": "20261109135337",
+      "canonicalVersion": "20261108223021",
+      "sha256": "144deb3cfdce65f3eeba6d9af8eae031a63e0adf047b71e2041785af1b3e1c20"
+    },
+    {
+      "file": "20261108234902_identity_and_account_administration.sql",
+      "operation": "applied",
+      "generatedVersion": "20261109135548",
+      "canonicalVersion": "20261108234902",
+      "sha256": "88293102154c63f075205c868081f2a43761a8c5baffca5cdd95a4517ae8cb95"
+    }
+  ]
+}

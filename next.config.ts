@@ -1,10 +1,14 @@
 import type { NextConfig } from "next";
+import { assertServerEnvironment } from "./src/config/server-environment";
+
+assertServerEnvironment();
 
 const nextConfig: NextConfig = {
   // Keep development chunks apart from production builds. This prevents an
   // active `next dev` session from losing its chunks when `next build` runs.
   distDir: process.env.NODE_ENV === "development" ? ".next-dev" : ".next",
   reactStrictMode: true,
+  experimental: { cpus: 1, serverActions: { bodySizeLimit: "12mb" } },
 };
 
 export default nextConfig;

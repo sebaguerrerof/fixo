@@ -1,0 +1,73 @@
+{
+  "checkedAt": "2026-11-10T00:58:03.513Z",
+  "dns": {
+    "mx": {
+      "code": "ENODATA"
+    },
+    "spf": {
+      "code": "ENODATA"
+    },
+    "dmarc": {
+      "code": "ENOTFOUND"
+    }
+  },
+  "project": {
+    "name": "fixo-marketplace",
+    "framework": "nextjs",
+    "git": null,
+    "latestDeployments": [
+      {
+        "url": "fixo-marketplace-jsmozt2mi-sebastian-guerreros-projects.vercel.app",
+        "readyState": "READY",
+        "target": "production",
+        "createdAt": 1787006691045
+      },
+      {
+        "url": "fixo-marketplace-benahj2fb-sebastian-guerreros-projects.vercel.app",
+        "readyState": "READY",
+        "target": "production",
+        "createdAt": 1786659886237
+      }
+    ]
+  },
+  "env": {
+    "envs": [
+      {
+        "key": "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive"
+      },
+      {
+        "key": "NEXT_PUBLIC_SUPABASE_URL",
+        "target": [
+          "production"
+        ],
+        "type": "sensitive"
+      }
+    ]
+  },
+  "domains": {
+    "domains": [
+      {
+        "name": "soyfixo.cl",
+        "verified": true,
+        "gitBranch": null,
+        "redirect": "www.soyfixo.cl"
+      },
+      {
+        "name": "www.soyfixo.cl",
+        "verified": true,
+        "gitBranch": null,
+        "redirect": null
+      },
+      {
+        "name": "fixo-marketplace.vercel.app",
+        "verified": true,
+        "gitBranch": null,
+        "redirect": null
+      }
+    ]
+  }
+}

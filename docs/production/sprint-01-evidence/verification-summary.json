@@ -1,0 +1,73 @@
+{
+  "date": "2026-11-08",
+  "timezone": "America/Santiago",
+  "base": "69fa1d5",
+  "implementationCommit": "9d4946e",
+  "runtime": {
+    "node": "24.22.2",
+    "platform": "win32"
+  },
+  "checks": {
+    "npmCi": "PASS",
+    "lint": "PASS",
+    "typecheck": "PASS",
+    "unit": {
+      "status": "PASS",
+      "files": 26,
+      "tests": 174
+    },
+    "build": "PASS",
+    "productionHttpSmoke": "PASS (read-only; no real sessions)",
+    "npmAudit": 0,
+    "npmAuditProduction": 0,
+    "sqlSyntax": "PASS offline PostgreSQL/PLpgSQL parsing only",
+    "actionlint": "PASS unchanged workflow",
+    "integrationScriptSyntax": "PASS",
+    "pgTAP": {
+      "status": "NOT TESTED",
+      "preparedAssertions": 80
+    },
+    "supabaseIntegration": {
+      "status": "BLOCKED / NOT TESTED",
+      "preparedScenarios": 24
+    },
+    "smtpCapture": "NOT TESTED",
+    "browserE2E": "NOT TESTED",
+    "githubActions": "NOT TESTED",
+    "remoteMutations": "NONE",
+    "secretScan": {
+      "status": "PASS",
+      "checked": 311,
+      "findings": 0
+    },
+    "markdownLinks": "PASS local targets"
+  },
+  "docker": {
+    "server": "29.9.2 reachable outside sandbox",
+    "wsl": "WSL2 docker-desktop running; no forced restarts",
+    "cli": "3.0.0",
+    "contrastCli": "2.122.1 installed/help only; start rejected before execution",
+    "failures": [
+      "Realtime DB_HOST nxdomain",
+      "Postgres healthcheck ECONNREFUSED"
+    ],
+    "review": "Additional start rejected: CLI can prune project volumes on failure",
+    "userDecision": "No, continuar con la integración bloqueada",
+    "dedicatedCopy": "prepared, never started",
+    "scope": "No manual volume deletion or operations on other projects"
+  },
+  "backup": {
+    "path": ".audit-backups/sprint01-20261108/pre-sprint01.bundle",
+    "sha256": "A93641D00E3AEF2E68C30824546B5E4AE26F327370E5E576B66E45CF62DBBFB1"
+  },
+  "notes": [
+    "No real Supabase acceptance claimed. SQL migrations never executed.",
+    "npm 11 skipped unapproved optional unrs-resolver postinstall.",
+    "Unit Auth tests use infrastructure doubles, not delivery or RLS integration.",
+    "Initial migration preserved unchanged."
+  ],
+  "implementationCommits": [
+    "66deee1",
+    "9d4946e"
+  ]
+}

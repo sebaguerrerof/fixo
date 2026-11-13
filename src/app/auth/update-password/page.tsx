@@ -1,0 +1,12 @@
+import Link from "next/link";
+import { AuthCard } from "@/components/auth/auth-card";
+import { PendingSubmit } from "@/components/auth/pending-submit";
+import { checkPasswordFlow } from "@/services/auth/auth-flow-service";
+import { updatePassword } from "./actions";
+export const dynamic = "force-dynamic";
+export default async function PasswordPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  let kind: "invite" | "recovery" | null = null;
+  try { kind = await checkPasswordFlow(); } catch { /* fail closed */ }
+  const { error } = await searchParams;
+  return <AuthCard title={kind === "invite" ? "Completa tu cuenta" : "Define tu nueva contraseña"} description="Usa al menos 12 caracteres, una mayúscula, una minúscula y un número.">{kind ? <form action={updatePassword} className="space-y-5">{kind === "invite" ? <><p className="text-sm text-muted-foreground">La aprobación profesional de técnicos se revisa por separado.</p>{[["firstName","Nombre"],["lastName","Apellido"],["phone","Teléfono"]].map(([name,label]) => <label className="block space-y-2" key={name}><span>{label}</span><input required name={name} maxLength={name === "phone" ? 24 : 60} className="h-12 w-full rounded-xl border px-3" /></label>)}<label className="flex gap-3 text-sm"><input name="acceptTerms" required type="checkbox" /><span>Acepto los <Link href="/terminos" className="underline">términos</Link> y la <Link href="/privacidad" className="underline">privacidad</Link>.</span></label></> : null}{[["password","Nueva contraseña"],["confirmPassword","Repite la contraseña"]].map(([name,label]) => <label className="block space-y-2" key={name}><span>{label}</span><input name={name} required type="password" autoComplete="new-password" minLength={12} maxLength={128} pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{12,128}" title="Al menos 12 caracteres, mayúscula, minúscula y número" className="h-12 w-full rounded-xl border px-3" /></label>)}{error ? <p role="alert" className="text-sm text-destructive">No pudimos completar el cambio. Revisa los datos o solicita un nuevo enlace.</p> : null}<PendingSubmit label="Guardar contraseña y cerrar sesiones" /></form> : <p role="alert" className="rounded-xl bg-muted p-4 text-sm">El enlace no está disponible o ya expiró. <Link href="/recuperar-contrasena" className="font-semibold underline">Solicita uno nuevo</Link>. Si recibiste una invitación, pide a administración que la reenvíe.</p>}</AuthCard>;
+}

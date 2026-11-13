@@ -1,0 +1,1 @@
+PASS node --check scripts/test-supabase-integration.mjs; script not executed.

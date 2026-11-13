@@ -1,0 +1,33 @@
+{
+  "project": "rjzyqdhotcshvbdcrgon",
+  "date": "2026-11-09",
+  "status": "PASS",
+  "assertions": 105,
+  "tests": [
+    {
+      "file": "00_access_hardening.test.sql",
+      "status": "PASS",
+      "assertions": 27,
+      "rolled_back": true
+    },
+    {
+      "file": "01_identity.test.sql",
+      "status": "PASS",
+      "assertions": 53,
+      "rolled_back": true
+    },
+    {
+      "file": "02_invitation_binding.test.sql",
+      "status": "PASS",
+      "assertions": 7,
+      "rolled_back": true
+    },
+    {
+      "file": "03_professional_application.test.sql",
+      "status": "PASS",
+      "assertions": 18,
+      "rolled_back": true
+    }
+  ],
+  "fixtures": "Every suite rolled back. SQL fixture scan flags test authorization only; native integration separately invokes real ClamAV."
+}

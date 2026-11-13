@@ -1,16 +1,27 @@
-import { ArrowDownToLine, CircleDollarSign, ReceiptText, WalletCards } from "lucide-react";
-
+import Link from "next/link";
 import { TechnicianDashboardShell } from "@/components/technicians/technician-dashboard-shell";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/shared/empty-state";
+import { Card, CardContent } from "@/components/ui/card";
+import { requireServerRole } from "@/services/auth/server-authentication-service";
+import { JobOperationsService } from "@/services/jobs/job-operations-service";
+import { loadJobPayments } from "@/services/payments/payment-read-service";
+import { describeOrder } from "@/domain/payments/presentation";
+import { loadTechnicianPayments } from "@/services/payments/technician-payments-service";
 import { formatClp } from "@/lib/utils";
 
-const transactions = [
-  { service: "Instalación de luminarias", date: "12 ago.", amount: 64000, status: "Pagado" },
-  { service: "Reparación de enchufe", date: "10 ago.", amount: 42000, status: "Pagado" },
-  { service: "Revisión de tablero", date: "Hoy", amount: 78000, status: "Por confirmar" },
-];
-
-export default function TechnicianPaymentsPage() {
-  return <TechnicianDashboardShell activeHref="/tecnico/pagos"><div><p className="text-sm font-semibold text-primary">Resumen financiero</p><h1 className="mt-1 text-3xl font-bold tracking-tight">Pagos e ingresos</h1><p className="mt-3 max-w-2xl leading-7 text-muted-foreground">Revisa el total del servicio, la comisión de plataforma y el monto correspondiente a tu trabajo por separado.</p></div><div className="mt-7 grid gap-4 sm:grid-cols-3"><Card><CardContent className="p-5"><CircleDollarSign className="size-5 text-primary" /><p className="mt-4 text-2xl font-bold">{formatClp(486000)}</p><p className="mt-1 text-sm text-muted-foreground">ingresos de agosto</p></CardContent></Card><Card><CardContent className="p-5"><WalletCards className="size-5 text-primary" /><p className="mt-4 text-2xl font-bold">{formatClp(64000)}</p><p className="mt-1 text-sm text-muted-foreground">próximo pago</p></CardContent></Card><Card><CardContent className="p-5"><ArrowDownToLine className="size-5 text-primary" /><p className="mt-4 text-2xl font-bold">{formatClp(0)}</p><p className="mt-1 text-sm text-muted-foreground">devoluciones pendientes</p></CardContent></Card></div><Card className="mt-5"><CardHeader><CardTitle className="flex items-center gap-2"><ReceiptText className="size-5 text-primary" />Movimientos recientes</CardTitle></CardHeader><CardContent className="divide-y">{transactions.map((transaction) => <div key={transaction.service} className="flex items-center justify-between gap-4 py-4"><div><p className="font-semibold">{transaction.service}</p><p className="mt-1 text-sm text-muted-foreground">{transaction.date}</p></div><div className="text-right"><p className="font-bold">{formatClp(transaction.amount)}</p><Badge className="mt-1" variant={transaction.status === "Pagado" ? "success" : "warning"}>{transaction.status}</Badge></div></div>)}</CardContent></Card></TechnicianDashboardShell>;
+export default async function TechnicianPaymentsPage({ searchParams }: { readonly searchParams: Promise<{ page?: string }> }) {
+  await requireServerRole(["technician"]);
+  const q = await searchParams;
+  const data = await loadTechnicianPayments(q.page, { listJobs: (page) => new JobOperationsService().list(page), loadPayments: loadJobPayments });
+  return <TechnicianDashboardShell activeHref="/tecnico/pagos"><h1 className="mb-3 text-3xl font-bold">Pagos e importes asignados</h1>
+    <p className="mb-7 text-muted-foreground">Entorno de prueba (Sandbox). Los importes son lo asignado a ti por cada trabajo; no son transferencias efectuadas ni saldo disponible para retiro. La liquidación sólo se calcula como simulación al cierre sin reclamos.</p>
+    {data.status === "unavailable" ? <Card><CardContent className="space-y-3 p-6"><p className="font-semibold">Pagos no disponibles por ahora</p><p className="text-sm text-muted-foreground">No pudimos cargar tus trabajos. Esto no significa que no tengas pagos: no se asume ningún estado.</p><Link href={`/tecnico/pagos?page=${data.page}`} className="text-sm font-semibold text-primary underline">Reintentar</Link></CardContent></Card> : data.rows.length === 0 ? <EmptyState title="Aún no hay trabajos con pagos" description="Cuando adjudiquen una cotización, aquí verás el estado del pago y los importes asignados." /> :
+      <><p className="mb-4 text-sm text-muted-foreground">{data.total} trabajos · página {data.page}.</p><div className="grid gap-4 lg:grid-cols-2">{data.rows.map(({ item, payments }) => <Card key={item.job.id}><CardContent className="space-y-3 p-5 break-words">
+        <h2 className="text-xl font-bold"><Link href={`/tecnico/trabajos/${item.job.id}`} className="underline decoration-primary/40 underline-offset-4">{item.title}</Link></h2>
+        {payments.status === "unavailable" ? <p className="text-sm text-muted-foreground">Estado de pagos no disponible. No se asume deuda ni pago.</p> : <>
+          {payments.view.orders.length === 0 ? <p className="text-sm">Pago inicial pendiente: el cliente aún no lo ha iniciado.</p> : null}
+          {payments.view.orders.map((o) => { const d = describeOrder(o); return <div key={o.id} className="rounded-lg border p-3 text-sm"><p className="font-semibold">{o.origin === "initial" ? "Pago inicial" : "Adicional"} · {d.label}</p><p>Importe asignado (Q): {formatClp(o.professionalAmountClp)}</p>{o.simulatedSettlementClp !== null ? <p>Cálculo de prueba (liquidación simulada): {formatClp(o.simulatedSettlementClp)}. No es una transferencia.</p> : null}</div>; })}
+          {payments.view.unpaidExtras ? <p className="text-sm font-semibold">Hay adicionales aceptados pendientes de pago por el cliente.</p> : null}</>}
+      </CardContent></Card>)}</div><nav aria-label="Páginas de pagos" className="mt-6 flex flex-wrap gap-5">{data.hasPrevious ? <Link href={`/tecnico/pagos?page=${data.page - 1}`}>Anterior</Link> : null}{data.hasNext ? <Link href={`/tecnico/pagos?page=${data.page + 1}`}>Siguiente</Link> : null}</nav></>}
+  </TechnicianDashboardShell>;
 }

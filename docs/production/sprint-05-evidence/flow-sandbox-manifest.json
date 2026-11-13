@@ -1,0 +1,1807 @@
+{
+  "run": "s05f601d9e",
+  "project": "rjzyqdhotcshvbdcrgon",
+  "site": "https://www.soyfixo.cl",
+  "createdAt": "2026-11-12T17:35:00.320Z",
+  "state": "retained-closure-pending",
+  "preflight": {
+    "allowed": 0,
+    "jobs": 0,
+    "orders": 0,
+    "reqs": 0,
+    "users": 2
+  },
+  "accounts": {
+    "customer": {
+      "id": "9e74439f-731e-42ae-a4b2-bcd99c2bdba0",
+      "email": "s05f601d9e-customer@sandbox.fixo.invalid",
+      "createdAt": "2026-11-12T17:35:01.486Z"
+    },
+    "technician": {
+      "id": "1a19bf2f-6409-41d8-b821-97f8d5f3ef82",
+      "email": "s05f601d9e-technician@sandbox.fixo.invalid",
+      "createdAt": "2026-11-12T17:35:01.790Z"
+    },
+    "superadmin": {
+      "id": "da01b98b-8666-480a-9088-23b199e7e7de",
+      "email": "s05f601d9e-superadmin@sandbox.fixo.invalid",
+      "createdAt": "2026-11-12T17:35:02.369Z"
+    }
+  },
+  "criterion": "938e3f97-4860-4a27-a1c3-777f072e2bce",
+  "requests": [
+    {
+      "id": "b1fa990a-8ea6-4e73-b934-83167e795338",
+      "createdAt": "2026-11-12T17:35:29.078Z"
+    },
+    {
+      "id": "57d7f8fc-3ef7-42a2-8337-687e6638e9be",
+      "createdAt": "2026-11-12T18:39:00.617Z"
+    },
+    {
+      "id": "f780c067-cdfb-4181-b161-90e5e550466e",
+      "createdAt": "2026-11-12T18:43:23.298Z"
+    },
+    {
+      "id": "21adad84-d17a-40c9-bd6d-14ff57257f01",
+      "createdAt": "2026-11-12T18:57:10.535Z"
+    },
+    {
+      "id": "98208233-e1d0-42aa-a1a5-33fd63835e11",
+      "createdAt": "2026-11-12T18:59:23.859Z"
+    },
+    {
+      "id": "e2726a56-fac7-4d80-95b3-ac22b24cf3ab",
+      "createdAt": "2026-11-12T19:01:23.163Z"
+    },
+    {
+      "id": "82a2bb90-dd5e-4ef1-92f1-1c9a75d2d9b9",
+      "createdAt": "2026-11-12T19:04:39.937Z"
+    }
+  ],
+  "quotes": [
+    {
+      "id": "a2bd2681-8b41-408b-bd5f-d667b90bd9a0",
+      "createdAt": "2026-11-12T17:35:29.293Z"
+    },
+    {
+      "id": "cc96f9f1-b3ba-4c78-9453-87c540c7f444",
+      "createdAt": "2026-11-12T18:39:01.107Z"
+    },
+    {
+      "id": "405feeb5-6e6f-41cc-bb6e-dcfb2bee4c43",
+      "createdAt": "2026-11-12T18:43:23.546Z"
+    },
+    {
+      "id": "d798a452-f573-42c8-a03f-a77a46e2754d",
+      "createdAt": "2026-11-12T18:57:10.757Z"
+    },
+    {
+      "id": "552fb96b-31f1-4818-9b55-37a8796df99b",
+      "createdAt": "2026-11-12T18:59:24.055Z"
+    },
+    {
+      "id": "c917f40b-0081-43ce-82ab-e730412a9097",
+      "createdAt": "2026-11-12T19:01:23.402Z"
+    },
+    {
+      "id": "a410397d-df32-43c2-92f0-2d779feb9758",
+      "createdAt": "2026-11-12T19:04:40.213Z"
+    }
+  ],
+  "jobs": [
+    {
+      "id": "6056f113-11bc-40ce-85e0-dc911beef950",
+      "label": "aprobado",
+      "createdAt": "2026-11-12T17:35:29.705Z"
+    },
+    {
+      "id": "f8753c1c-72e6-4ac5-9d58-ddd4f9247e60",
+      "label": "rechazado",
+      "createdAt": "2026-11-12T18:39:01.520Z"
+    },
+    {
+      "id": "36e16355-fa0b-4fd0-8fc5-8099a92cda06",
+      "label": "pendiente",
+      "createdAt": "2026-11-12T18:43:23.961Z"
+    },
+    {
+      "id": "9fdee44e-97a6-4df1-948e-eddf8176ee9c",
+      "label": "pago tardio",
+      "createdAt": "2026-11-12T18:57:11.142Z"
+    },
+    {
+      "id": "d0215639-d1df-4f34-916e-5708be05cff3",
+      "label": "sin callback",
+      "createdAt": "2026-11-12T18:59:24.431Z"
+    },
+    {
+      "id": "0f637045-2106-418f-bf3e-00594c7a4f85",
+      "label": "sin callback",
+      "createdAt": "2026-11-12T19:01:23.830Z"
+    },
+    {
+      "id": "ecbcbd60-ba57-4a81-a566-529ce9b2c162",
+      "label": "worker caido",
+      "createdAt": "2026-11-12T19:04:40.673Z"
+    }
+  ],
+  "orders": [
+    {
+      "extra_charge_id": null,
+      "flow_cost_clp": 837,
+      "id": "e301a1c6-522b-4719-a947-3e58f14e6498",
+      "job_id": "6056f113-11bc-40ce-85e0-dc911beef950",
+      "origin": "initial",
+      "paid_attempt_id": "a5e4204b-d392-45b9-9cda-6ffa5b101922",
+      "platform_fee_clp": 1250,
+      "professional_amount_clp": 25000,
+      "review_reason": null,
+      "status": "paid",
+      "total_clp": 26250
+    },
+    {
+      "extra_charge_id": null,
+      "flow_cost_clp": 837,
+      "id": "1143bffc-7192-497a-9038-7ce5dc18a445",
+      "job_id": "f8753c1c-72e6-4ac5-9d58-ddd4f9247e60",
+      "origin": "initial",
+      "paid_attempt_id": "451e1a78-0d5c-43d3-b6d5-4907d4c5c60a",
+      "platform_fee_clp": 1250,
+      "professional_amount_clp": 25000,
+      "review_reason": null,
+      "status": "paid",
+      "total_clp": 26250
+    },
+    {
+      "extra_charge_id": null,
+      "flow_cost_clp": 837,
+      "id": "ea9c05d0-7ad0-4ac8-8471-70994bb995f3",
+      "job_id": "36e16355-fa0b-4fd0-8fc5-8099a92cda06",
+      "origin": "initial",
+      "paid_attempt_id": "af491a47-d651-4a5b-b1d4-4c6386cc6185",
+      "platform_fee_clp": 1250,
+      "professional_amount_clp": 25000,
+      "review_reason": null,
+      "status": "paid",
+      "total_clp": 26250
+    },
+    {
+      "extra_charge_id": null,
+      "flow_cost_clp": 837,
+      "id": "c40b6263-c229-4e5a-a843-2bed38960cb4",
+      "job_id": "9fdee44e-97a6-4df1-948e-eddf8176ee9c",
+      "origin": "initial",
+      "paid_attempt_id": "dbdf3b70-2703-43e4-9264-3c12e53f0abe",
+      "platform_fee_clp": 1250,
+      "professional_amount_clp": 25000,
+      "review_reason": "job_cancelled",
+      "status": "paid",
+      "total_clp": 26250
+    },
+    {
+      "extra_charge_id": null,
+      "flow_cost_clp": 837,
+      "id": "052b8d12-bcc9-4eac-aa59-f13d53ff3bde",
+      "job_id": "d0215639-d1df-4f34-916e-5708be05cff3",
+      "origin": "initial",
+      "paid_attempt_id": "e1984d95-1eac-42fa-99dc-3a1befd823f7",
+      "platform_fee_clp": 1250,
+      "professional_amount_clp": 25000,
+      "review_reason": null,
+      "status": "paid",
+      "total_clp": 26250
+    },
+    {
+      "extra_charge_id": null,
+      "flow_cost_clp": 837,
+      "id": "5e6ef392-cb12-4bb1-99c1-a8549a2c6823",
+      "job_id": "0f637045-2106-418f-bf3e-00594c7a4f85",
+      "origin": "initial",
+      "paid_attempt_id": "2121cc3f-d731-48ff-9664-a393c8696f58",
+      "platform_fee_clp": 1250,
+      "professional_amount_clp": 25000,
+      "review_reason": null,
+      "status": "paid",
+      "total_clp": 26250
+    },
+    {
+      "extra_charge_id": null,
+      "flow_cost_clp": 837,
+      "id": "466d9d39-f8ba-4973-b621-45e9589a7919",
+      "job_id": "ecbcbd60-ba57-4a81-a566-529ce9b2c162",
+      "origin": "initial",
+      "paid_attempt_id": "0cfbb63a-8612-4f0f-ade5-e02d75042007",
+      "platform_fee_clp": 1250,
+      "professional_amount_clp": 25000,
+      "review_reason": null,
+      "status": "paid",
+      "total_clp": 26250
+    },
+    {
+      "extra_charge_id": "e35fc19c-8ed2-4593-98e3-6bf60c3a8448",
+      "flow_cost_clp": 335,
+      "id": "1cf20190-d67b-413a-9771-bf9b7a1fedb1",
+      "job_id": "6056f113-11bc-40ce-85e0-dc911beef950",
+      "origin": "extra",
+      "paid_attempt_id": "8dace981-c29f-4e0a-8556-7dba2ec9b9dd",
+      "platform_fee_clp": 500,
+      "professional_amount_clp": 10000,
+      "review_reason": null,
+      "status": "paid",
+      "total_clp": 10500
+    }
+  ],
+  "attempts": [
+    {
+      "commerce_order": "fixo-sandbox-b741e419-1186-48a6-9b51-e0f6d08e5a2e",
+      "error_code": "http_error",
+      "flow_order": null,
+      "id": "b741e419-1186-48a6-9b51-e0f6d08e5a2e",
+      "order_id": "e301a1c6-522b-4719-a947-3e58f14e6498",
+      "state": "failed"
+    },
+    {
+      "commerce_order": "fixo-sbx-e2ad90a2b0304d609c47e99717577a39",
+      "error_code": "http_error",
+      "flow_order": null,
+      "id": "e2ad90a2-b030-4d60-9c47-e99717577a39",
+      "order_id": "e301a1c6-522b-4719-a947-3e58f14e6498",
+      "state": "failed"
+    },
+    {
+      "commerce_order": "fixo-sbx-f459b4b661624795bd2644f96a91015a",
+      "error_code": "http_error",
+      "flow_order": null,
+      "id": "f459b4b6-6162-4795-bd26-44f96a91015a",
+      "order_id": "e301a1c6-522b-4719-a947-3e58f14e6498",
+      "state": "failed"
+    },
+    {
+      "commerce_order": "fixo-sbx-270c4756c198486aaa8cc936adac085f",
+      "error_code": "http_error",
+      "flow_order": null,
+      "id": "270c4756-c198-486a-aa8c-c936adac085f",
+      "order_id": "e301a1c6-522b-4719-a947-3e58f14e6498",
+      "state": "failed"
+    },
+    {
+      "commerce_order": "fixo-sbx-a5e4204bd39245b99cda6ffa5b101922",
+      "error_code": null,
+      "flow_order": "11657326",
+      "id": "a5e4204b-d392-45b9-9cda-6ffa5b101922",
+      "order_id": "e301a1c6-522b-4719-a947-3e58f14e6498",
+      "state": "paid"
+    },
+    {
+      "commerce_order": "fixo-sbx-d1fb3a0cefff48c492e857a967b20956",
+      "error_code": null,
+      "flow_order": "11657333",
+      "id": "d1fb3a0c-efff-48c4-92e8-57a967b20956",
+      "order_id": "1143bffc-7192-497a-9038-7ce5dc18a445",
+      "state": "failed"
+    },
+    {
+      "commerce_order": "fixo-sbx-451e1a780d5c43d3b6d54907d4c5c60a",
+      "error_code": null,
+      "flow_order": "11657336",
+      "id": "451e1a78-0d5c-43d3-b6d5-4907d4c5c60a",
+      "order_id": "1143bffc-7192-497a-9038-7ce5dc18a445",
+      "state": "paid"
+    },
+    {
+      "commerce_order": "fixo-sbx-af491a47d6514a5bb1d44c6386cc6185",
+      "error_code": null,
+      "flow_order": "11657339",
+      "id": "af491a47-d651-4a5b-b1d4-4c6386cc6185",
+      "order_id": "ea9c05d0-7ad0-4ac8-8471-70994bb995f3",
+      "state": "paid"
+    },
+    {
+      "commerce_order": "fixo-sbx-dbdf3b70270343e492643c12e53f0abe",
+      "error_code": null,
+      "flow_order": "11657345",
+      "id": "dbdf3b70-2703-43e4-9264-3c12e53f0abe",
+      "order_id": "c40b6263-c229-4e5a-a843-2bed38960cb4",
+      "state": "paid"
+    },
+    {
+      "commerce_order": "fixo-sbx-e1984d951eac42fa99dc3a1befd823f7",
+      "error_code": null,
+      "flow_order": "11657347",
+      "id": "e1984d95-1eac-42fa-99dc-3a1befd823f7",
+      "order_id": "052b8d12-bcc9-4eac-aa59-f13d53ff3bde",
+      "state": "paid"
+    },
+    {
+      "commerce_order": "fixo-sbx-2121cc3fd73148ff9664a393c8696f58",
+      "error_code": null,
+      "flow_order": "11657348",
+      "id": "2121cc3f-d731-48ff-9664-a393c8696f58",
+      "order_id": "5e6ef392-cb12-4bb1-99c1-a8549a2c6823",
+      "state": "paid"
+    },
+    {
+      "commerce_order": "fixo-sbx-0cfbb63a86124f0fade5e02d75042007",
+      "error_code": null,
+      "flow_order": "11657350",
+      "id": "0cfbb63a-8612-4f0f-ade5-e02d75042007",
+      "order_id": "466d9d39-f8ba-4973-b621-45e9589a7919",
+      "state": "paid"
+    },
+    {
+      "commerce_order": "fixo-sbx-8dace981c29f4e0a85567dba2ec9b9dd",
+      "error_code": null,
+      "flow_order": "11657356",
+      "id": "8dace981-c29f-4e0a-8556-7dba2ec9b9dd",
+      "order_id": "1cf20190-d67b-413a-9771-bf9b7a1fedb1",
+      "state": "paid"
+    }
+  ],
+  "notes": [
+    "2026-11-12T17:35:14.189Z cuenta cliente autorizada para pagos Sandbox",
+    "2026-11-12T19:15:28.851Z autorización Sandbox del cliente sintético revocada (enabled=false)",
+    "2026-11-12 matriz ejecutada contra Flow Sandbox real; interruptores de creación y recepción apagados; autorización revocada; limpieza (fase D) pendiente de decisión del propietario",
+    "Cuarentena restante: 1 fila de bandeja flow_http_error_400 = token fabricado por la prueba (escenario duplicates); clasificada «sin obligación, con evidencia».",
+    "Orden en revisión: 1 (late/pago tardío tras cancelación, job_cancelled): pago verificado, trabajo cancelado, sin reembolso automático.",
+    "sharedConfigBefore reconstruido del preflight (category_requirements vacía ⇒ n=0, md5 de la cadena vacía); el setup original no lo registró",
+    "2026-11-12T19:26:52.993Z criterio sintético retirado (1 fila) y configuración compartida idéntica a la previa",
+    "2026-11-12T19:51:18.108Z fase D (retención etiquetada): cuentas sintéticas suspendidas y vetadas, técnico fuera del directorio público, sesiones eliminadas, autorizaciones Sandbox 0; las filas financieras se conservan (append-only) identificadas por este manifiesto",
+    "2026-11-12T19:53:33.714Z corrección de datos sintéticos: coste Flow = fee + impuestos (decisión del propietario); 8 órdenes actualizadas ([[837,996],[837,996],[837,996],[837,996],[837,996],[837,996],[837,996],[335,399]])",
+    "2026-11-12 estado corregido: la retención terminó pero el cierre financiero sigue pendiente (orden externa 11657296 aún pagable)"
+  ],
+  "evidence": [
+    {
+      "at": "2026-11-12T18:42:05.550Z",
+      "scenario": "rejected/after-rejection",
+      "job": "f8753c1c-72e6-4ac5-9d58-ddd4f9247e60",
+      "flow": {
+        "reachedFlow": true,
+        "simulatorOptions": [
+          "Quiero pagar la orden",
+          "Quiero rechazar el pago de la orden"
+        ],
+        "chose": "reject",
+        "returnedTo": "www.soyfixo.cl/cliente/trabajos",
+        "tokenInReturnUrl": false
+      },
+      "job_state": "payment_pending",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "awaiting_payment",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7333",
+          "ref_len": 41,
+          "state": "failed"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": null,
+          "status": 3,
+          "validation": "applied"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 1
+    },
+    {
+      "at": "2026-11-12T18:43:08.332Z",
+      "scenario": "rejected/retry-approved",
+      "job": "f8753c1c-72e6-4ac5-9d58-ddd4f9247e60",
+      "flow": {
+        "reachedFlow": true,
+        "simulatorOptions": [
+          "Quiero pagar la orden",
+          "Quiero rechazar el pago de la orden"
+        ],
+        "chose": "approve",
+        "returnedTo": "www.soyfixo.cl/cliente/trabajos",
+        "tokenInReturnUrl": false
+      },
+      "job_state": "paid",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "paid",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7333",
+          "ref_len": 41,
+          "state": "failed"
+        },
+        {
+          "err": null,
+          "flow": "7336",
+          "ref_len": 41,
+          "state": "paid"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": null,
+          "status": 3,
+          "validation": "applied"
+        },
+        {
+          "amount": 26250,
+          "fee": null,
+          "status": 2,
+          "validation": "applied"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 2
+    },
+    {
+      "at": "2026-11-12T18:43:39.180Z",
+      "scenario": "pending/first-open",
+      "job": "36e16355-fa0b-4fd0-8fc5-8099a92cda06",
+      "flow": {
+        "reachedFlow": true
+      },
+      "job_state": "payment_pending",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "awaiting_payment",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7339",
+          "ref_len": 41,
+          "state": "pending"
+        }
+      ],
+      "events": null,
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 0
+    },
+    {
+      "at": "2026-11-12T18:43:52.309Z",
+      "scenario": "pending/reopen",
+      "job": "36e16355-fa0b-4fd0-8fc5-8099a92cda06",
+      "flow": {
+        "reachedFlow": true
+      },
+      "job_state": "payment_pending",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "awaiting_payment",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7339",
+          "ref_len": 41,
+          "state": "pending"
+        }
+      ],
+      "events": null,
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 0
+    },
+    {
+      "at": "2026-11-12T18:46:10.311Z",
+      "scenario": "pending/after-reconciliation",
+      "job": "36e16355-fa0b-4fd0-8fc5-8099a92cda06",
+      "job_state": "payment_pending",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "awaiting_payment",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7339",
+          "ref_len": 41,
+          "state": "pending"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": null,
+          "status": 1,
+          "validation": "pending"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 0
+    },
+    {
+      "at": "2026-11-12T18:49:18.736Z",
+      "scenario": "duplicates/replayed-while-pending",
+      "job": "36e16355-fa0b-4fd0-8fc5-8099a92cda06",
+      "callbackStatuses": [
+        200,
+        200,
+        200,
+        200,
+        200,
+        400,
+        405
+      ],
+      "job_state": "payment_pending",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "awaiting_payment",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7339",
+          "ref_len": 41,
+          "state": "pending"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": null,
+          "status": 1,
+          "validation": "pending"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 3,
+          "processed": 3,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        }
+      ],
+      "provider_job_events": 0
+    },
+    {
+      "at": "2026-11-12T18:52:47.597Z",
+      "scenario": "duplicates/state-change-and-replay-after-paid",
+      "job": "36e16355-fa0b-4fd0-8fc5-8099a92cda06",
+      "flow": {
+        "reachedFlow": true,
+        "simulatorOptions": [
+          "Quiero pagar la orden",
+          "Quiero rechazar el pago de la orden"
+        ],
+        "chose": "approve",
+        "returnedTo": "www.soyfixo.cl/cliente/trabajos",
+        "tokenInReturnUrl": false
+      },
+      "callbackStatuses": [
+        200,
+        200,
+        200
+      ],
+      "job_state": "paid",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "paid",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7339",
+          "ref_len": 41,
+          "state": "paid"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": null,
+          "status": 1,
+          "validation": "pending"
+        },
+        {
+          "amount": 26250,
+          "fee": null,
+          "status": 2,
+          "validation": "applied"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        }
+      ],
+      "provider_job_events": 1
+    },
+    {
+      "at": "2026-11-12T18:57:30.998Z",
+      "scenario": "late/checkout-open",
+      "job": "9fdee44e-97a6-4df1-948e-eddf8176ee9c",
+      "flow": {
+        "reachedFlow": true
+      },
+      "job_state": "payment_pending",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "awaiting_payment",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7345",
+          "ref_len": 41,
+          "state": "pending"
+        }
+      ],
+      "events": null,
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        }
+      ],
+      "provider_job_events": 0
+    },
+    {
+      "at": "2026-11-12T18:57:35.434Z",
+      "scenario": "late/after-cancellation",
+      "job": "9fdee44e-97a6-4df1-948e-eddf8176ee9c",
+      "job_state": "payment_review",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": "job_cancelled",
+          "status": "awaiting_payment",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7345",
+          "ref_len": 41,
+          "state": "pending"
+        }
+      ],
+      "events": [
+        {
+          "amount": null,
+          "fee": null,
+          "status": 0,
+          "validation": "job_cancelled"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        }
+      ],
+      "provider_job_events": 1
+    },
+    {
+      "at": "2026-11-12T18:59:06.080Z",
+      "scenario": "late/payment-after-cancellation",
+      "job": "9fdee44e-97a6-4df1-948e-eddf8176ee9c",
+      "flow": {
+        "reachedFlow": true,
+        "chose": "approve",
+        "returnedTo": "sandbox.flow.cl/app/dummy/result.php",
+        "tokenInReturnUrl": false
+      },
+      "jobStatus": "cancelled",
+      "job_state": "payment_review",
+      "orders": [
+        {
+          "cost": 837,
+          "origin": "initial",
+          "review": "job_cancelled",
+          "status": "paid",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7345",
+          "ref_len": 41,
+          "state": "paid"
+        }
+      ],
+      "events": [
+        {
+          "amount": null,
+          "fee": null,
+          "status": 0,
+          "validation": "job_cancelled"
+        },
+        {
+          "amount": 26250,
+          "fee": 837,
+          "status": 2,
+          "validation": "late_payment"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 2
+    },
+    {
+      "at": "2026-11-12T19:00:14.886Z",
+      "scenario": "nocallback/notification-lost",
+      "job": "d0215639-d1df-4f34-916e-5708be05cff3",
+      "flow": {
+        "reachedFlow": true,
+        "simulatorOptions": [
+          "Quiero pagar la orden",
+          "Quiero rechazar el pago de la orden"
+        ],
+        "chose": "approve",
+        "returnedTo": "www.soyfixo.cl/cliente/trabajos",
+        "tokenInReturnUrl": false
+      },
+      "inboxBeforeDelete": "pending",
+      "deleted": 1,
+      "job_state": "paid",
+      "orders": [
+        {
+          "cost": 837,
+          "origin": "initial",
+          "review": null,
+          "status": "paid",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7347",
+          "ref_len": 41,
+          "state": "paid"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": 837,
+          "status": 2,
+          "validation": "applied"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 1
+    },
+    {
+      "at": "2026-11-12T19:00:23.889Z",
+      "scenario": "nocallback/reconciled-by-worker",
+      "job": "d0215639-d1df-4f34-916e-5708be05cff3",
+      "job_state": "paid",
+      "orders": [
+        {
+          "cost": 837,
+          "origin": "initial",
+          "review": null,
+          "status": "paid",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7347",
+          "ref_len": 41,
+          "state": "paid"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": 837,
+          "status": 2,
+          "validation": "applied"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 1
+    },
+    {
+      "at": "2026-11-12T19:03:31.650Z",
+      "scenario": "nocallback/notification-lost-worker-paused",
+      "job": "0f637045-2106-418f-bf3e-00594c7a4f85",
+      "flow": {
+        "reachedFlow": true,
+        "simulatorOptions": [
+          "Quiero pagar la orden",
+          "Quiero rechazar el pago de la orden"
+        ],
+        "chose": "approve",
+        "returnedTo": "www.soyfixo.cl/cliente/trabajos",
+        "tokenInReturnUrl": false
+      },
+      "inboxBeforeDelete": "pending",
+      "deleted": 1,
+      "job_state": "payment_pending",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "awaiting_payment",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7348",
+          "ref_len": 41,
+          "state": "pending"
+        }
+      ],
+      "events": null,
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 0
+    },
+    {
+      "at": "2026-11-12T19:04:06.426Z",
+      "scenario": "nocallback/reconciled-by-worker",
+      "job": "0f637045-2106-418f-bf3e-00594c7a4f85",
+      "job_state": "paid",
+      "orders": [
+        {
+          "cost": 837,
+          "origin": "initial",
+          "review": null,
+          "status": "paid",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7348",
+          "ref_len": 41,
+          "state": "paid"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": 837,
+          "status": 2,
+          "validation": "applied"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 1
+    },
+    {
+      "at": "2026-11-12T19:10:23.177Z",
+      "scenario": "workerdown/while-stopped",
+      "job": "ecbcbd60-ba57-4a81-a566-529ce9b2c162",
+      "flow": {
+        "reachedFlow": true,
+        "simulatorOptions": [
+          "Quiero pagar la orden",
+          "Quiero rechazar el pago de la orden"
+        ],
+        "chose": "approve",
+        "returnedTo": "www.soyfixo.cl/cliente/trabajos",
+        "tokenInReturnUrl": false
+      },
+      "job_state": "payment_pending",
+      "orders": [
+        {
+          "cost": null,
+          "origin": "initial",
+          "review": null,
+          "status": "awaiting_payment",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7350",
+          "ref_len": 41,
+          "state": "pending"
+        }
+      ],
+      "events": null,
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 0,
+          "reason": null,
+          "state": "pending"
+        }
+      ],
+      "provider_job_events": 0
+    },
+    {
+      "at": "2026-11-12T19:11:10.906Z",
+      "scenario": "workerdown/after-restart",
+      "job": "ecbcbd60-ba57-4a81-a566-529ce9b2c162",
+      "job_state": "paid",
+      "orders": [
+        {
+          "cost": 837,
+          "origin": "initial",
+          "review": null,
+          "status": "paid",
+          "total": 26250
+        }
+      ],
+      "attempts": [
+        {
+          "err": null,
+          "flow": "7350",
+          "ref_len": 41,
+          "state": "paid"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": 837,
+          "status": 2,
+          "validation": "applied"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 1
+    },
+    {
+      "at": "2026-11-12T19:11:38.758Z",
+      "scenario": "extra/proposed",
+      "job": "6056f113-11bc-40ce-85e0-dc911beef950",
+      "unpaidExtras": false,
+      "extrasStates": [
+        "proposed"
+      ]
+    },
+    {
+      "at": "2026-11-12T19:11:39.138Z",
+      "scenario": "extra/accepted-balance-visible",
+      "job": "6056f113-11bc-40ce-85e0-dc911beef950",
+      "unpaidExtras": true,
+      "orders": [
+        {
+          "origin": "initial",
+          "status": "paid"
+        },
+        {
+          "origin": "extra",
+          "status": "awaiting_payment"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-12T19:13:06.847Z",
+      "scenario": "extra/paid",
+      "job": "6056f113-11bc-40ce-85e0-dc911beef950",
+      "flow": {
+        "reachedFlow": true,
+        "simulatorOptions": [
+          "Quiero pagar la orden",
+          "Quiero rechazar el pago de la orden"
+        ],
+        "chose": "approve",
+        "returnedTo": "www.soyfixo.cl/cliente/trabajos",
+        "tokenInReturnUrl": false
+      },
+      "unpaidExtras": false,
+      "job_state": "paid",
+      "orders": [
+        {
+          "cost": 837,
+          "origin": "initial",
+          "review": null,
+          "status": "paid",
+          "total": 26250
+        },
+        {
+          "cost": 335,
+          "origin": "extra",
+          "review": null,
+          "status": "paid",
+          "total": 10500
+        }
+      ],
+      "attempts": [
+        {
+          "err": "http_error",
+          "flow": null,
+          "ref_len": 49,
+          "state": "failed"
+        },
+        {
+          "err": "http_error",
+          "flow": null,
+          "ref_len": 41,
+          "state": "failed"
+        },
+        {
+          "err": "http_error",
+          "flow": null,
+          "ref_len": 41,
+          "state": "failed"
+        },
+        {
+          "err": "http_error",
+          "flow": null,
+          "ref_len": 41,
+          "state": "failed"
+        },
+        {
+          "err": null,
+          "flow": "7326",
+          "ref_len": 41,
+          "state": "paid"
+        },
+        {
+          "err": null,
+          "flow": "7356",
+          "ref_len": 41,
+          "state": "paid"
+        }
+      ],
+      "events": [
+        {
+          "amount": 26250,
+          "fee": null,
+          "status": 2,
+          "validation": "applied"
+        },
+        {
+          "amount": 26250,
+          "fee": 837,
+          "status": 2,
+          "validation": "stale"
+        },
+        {
+          "amount": 10500,
+          "fee": 335,
+          "status": 2,
+          "validation": "applied"
+        }
+      ],
+      "inbox": [
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 7,
+          "processed": 7,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 2,
+          "processed": 0,
+          "reason": "flow_http_error_400",
+          "state": "quarantined"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        },
+        {
+          "gen": 1,
+          "processed": 1,
+          "reason": null,
+          "state": "done"
+        }
+      ],
+      "provider_job_events": 2
+    }
+  ],
+  "sharedConfigBefore": {
+    "n": 0,
+    "d": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "criterionRetiredAt": "2026-11-12T19:26:52.991Z",
+  "externalOrders": [
+    {
+      "at": "2026-11-12T19:00:00Z",
+      "kind": "diagnose-create (anterior a la persistencia previa al envío)",
+      "commerceOrder": "fixo-sbx-6710d0c209d0493582b421f6ca675989",
+      "flowOrder": "11657296",
+      "payerDomain": "gmail.com",
+      "state": "created",
+      "note": "Creada por un diagnóstico fuera de Fixo con un pagador que NO era del propietario (prueba@gmail.com); nunca se abrió su checkout. Se identificó por getStatusByFlowOrder; sin fila local. Reconciliada abajo.",
+      "reconciliation": {
+        "at": "2026-11-13T15:01:12.565Z",
+        "via": "flowOrder",
+        "flowOrder": "11657296",
+        "flowStatusCode": 1,
+        "amount": "26250",
+        "currency": "CLP",
+        "flowState": "pending",
+        "open": true,
+        "problem": "still_payable"
+      },
+      "reconciliations": [
+        {
+          "at": "2026-11-12T19:40:58.419Z",
+          "via": "flowOrder",
+          "flowOrder": "11657296",
+          "flowStatusCode": 1,
+          "amount": "26250",
+          "currency": "CLP",
+          "flowState": "pending",
+          "open": true,
+          "problem": "still_payable"
+        },
+        {
+          "at": "2026-11-13T15:01:12.565Z",
+          "via": "flowOrder",
+          "flowOrder": "11657296",
+          "flowStatusCode": 1,
+          "amount": "26250",
+          "currency": "CLP",
+          "flowState": "pending",
+          "open": true,
+          "problem": "still_payable"
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "attempt_id": "a5e4204b-d392-45b9-9cda-6ffa5b101922",
+      "id": "24e0d0d1-7acc-44c3-b203-1ad3c717c516",
+      "observed_status": 2,
+      "order_id": "e301a1c6-522b-4719-a947-3e58f14e6498",
+      "validation": "applied"
+    },
+    {
+      "attempt_id": "d1fb3a0c-efff-48c4-92e8-57a967b20956",
+      "id": "10e9f2e2-9d57-4811-b91d-88d431fc8b3b",
+      "observed_status": 3,
+      "order_id": "1143bffc-7192-497a-9038-7ce5dc18a445",
+      "validation": "applied"
+    },
+    {
+      "attempt_id": "451e1a78-0d5c-43d3-b6d5-4907d4c5c60a",
+      "id": "47f5fab6-0540-4f61-8950-3bec8d0e86ec",
+      "observed_status": 2,
+      "order_id": "1143bffc-7192-497a-9038-7ce5dc18a445",
+      "validation": "applied"
+    },
+    {
+      "attempt_id": "af491a47-d651-4a5b-b1d4-4c6386cc6185",
+      "id": "10afeb43-c541-46cf-81ca-e91d053c3aaa",
+      "observed_status": 1,
+      "order_id": "ea9c05d0-7ad0-4ac8-8471-70994bb995f3",
+      "validation": "pending"
+    },
+    {
+      "attempt_id": "af491a47-d651-4a5b-b1d4-4c6386cc6185",
+      "id": "ce7e2c7b-04be-4c69-a57f-774da7305ab1",
+      "observed_status": 2,
+      "order_id": "ea9c05d0-7ad0-4ac8-8471-70994bb995f3",
+      "validation": "applied"
+    },
+    {
+      "attempt_id": null,
+      "id": "02556bcb-8ae5-4d7f-a3c4-833830fee4fc",
+      "observed_status": 0,
+      "order_id": "c40b6263-c229-4e5a-a843-2bed38960cb4",
+      "validation": "job_cancelled"
+    },
+    {
+      "attempt_id": "dbdf3b70-2703-43e4-9264-3c12e53f0abe",
+      "id": "1fef26a2-dc6b-4b55-aee3-20b16ad5ad17",
+      "observed_status": 2,
+      "order_id": "c40b6263-c229-4e5a-a843-2bed38960cb4",
+      "validation": "late_payment"
+    },
+    {
+      "attempt_id": "a5e4204b-d392-45b9-9cda-6ffa5b101922",
+      "id": "4741ff2c-50b1-4e75-b473-97567fb67f67",
+      "observed_status": 2,
+      "order_id": "e301a1c6-522b-4719-a947-3e58f14e6498",
+      "validation": "stale"
+    },
+    {
+      "attempt_id": "e1984d95-1eac-42fa-99dc-3a1befd823f7",
+      "id": "6c1cba92-5332-4cb3-adc6-fcfbf83e16c5",
+      "observed_status": 2,
+      "order_id": "052b8d12-bcc9-4eac-aa59-f13d53ff3bde",
+      "validation": "applied"
+    },
+    {
+      "attempt_id": "af491a47-d651-4a5b-b1d4-4c6386cc6185",
+      "id": "65b0c6f9-1803-4c81-bad6-e157192886ad",
+      "observed_status": 2,
+      "order_id": "ea9c05d0-7ad0-4ac8-8471-70994bb995f3",
+      "validation": "stale"
+    },
+    {
+      "attempt_id": "2121cc3f-d731-48ff-9664-a393c8696f58",
+      "id": "16c5f0bb-5dbb-44e4-91ab-314abdaf1308",
+      "observed_status": 2,
+      "order_id": "5e6ef392-cb12-4bb1-99c1-a8549a2c6823",
+      "validation": "applied"
+    },
+    {
+      "attempt_id": "451e1a78-0d5c-43d3-b6d5-4907d4c5c60a",
+      "id": "a5af206a-55b3-44c7-8084-511c58b5c5d4",
+      "observed_status": 2,
+      "order_id": "1143bffc-7192-497a-9038-7ce5dc18a445",
+      "validation": "stale"
+    },
+    {
+      "attempt_id": "0cfbb63a-8612-4f0f-ade5-e02d75042007",
+      "id": "86f06a98-8cf0-4179-a6a4-24490978d38b",
+      "observed_status": 2,
+      "order_id": "466d9d39-f8ba-4973-b621-45e9589a7919",
+      "validation": "applied"
+    },
+    {
+      "attempt_id": "8dace981-c29f-4e0a-8556-7dba2ec9b9dd",
+      "id": "43d3e7d9-9482-4aa7-8230-2a6b6359fb35",
+      "observed_status": 2,
+      "order_id": "1cf20190-d67b-413a-9771-bf9b7a1fedb1",
+      "validation": "applied"
+    }
+  ],
+  "inbox": [
+    {
+      "generation": 1,
+      "id": "d3ad6c2d-3b97-4f2f-a376-aa250f272a47",
+      "processed_generation": 1,
+      "quarantine_reason": null,
+      "state": "done"
+    },
+    {
+      "generation": 1,
+      "id": "5ce6be5e-724c-44c1-b79e-766101adbb50",
+      "processed_generation": 1,
+      "quarantine_reason": null,
+      "state": "done"
+    },
+    {
+      "generation": 7,
+      "id": "27a39bc1-7432-4dbd-9be3-1339a745b81d",
+      "processed_generation": 7,
+      "quarantine_reason": null,
+      "state": "done"
+    },
+    {
+      "generation": 2,
+      "id": "8116ad6f-4ea2-4651-b0e4-10357c592e90",
+      "processed_generation": 0,
+      "quarantine_reason": "flow_http_error_400",
+      "state": "quarantined"
+    },
+    {
+      "generation": 1,
+      "id": "49aaa7af-33a8-4e6a-866f-03430590e462",
+      "processed_generation": 1,
+      "quarantine_reason": null,
+      "state": "done"
+    },
+    {
+      "generation": 1,
+      "id": "f1b01e6d-70ef-448e-8697-a75e8c227481",
+      "processed_generation": 1,
+      "quarantine_reason": null,
+      "state": "done"
+    },
+    {
+      "generation": 1,
+      "id": "20264a48-57f2-4d13-81e8-d35417c05f0f",
+      "processed_generation": 1,
+      "quarantine_reason": null,
+      "state": "done"
+    }
+  ],
+  "financialRecordedAt": "2026-11-12T19:52:58.647Z",
+  "retainedAt": "2026-11-12T19:51:18.107Z",
+  "costCorrections": [
+    {
+      "at": "2026-11-12T19:53:33.717Z",
+      "rule": "fee + taxes, cross-checked with balance",
+      "changes": [
+        {
+          "order": "e301a1c6-522b-4719-a947-3e58f14e6498",
+          "flowOrderTail": "7326",
+          "from": 837,
+          "to": 996,
+          "fee": "837.00",
+          "taxes": 159,
+          "balance": 25254
+        },
+        {
+          "order": "1143bffc-7192-497a-9038-7ce5dc18a445",
+          "flowOrderTail": "7336",
+          "from": 837,
+          "to": 996,
+          "fee": "837.00",
+          "taxes": 159,
+          "balance": 25254
+        },
+        {
+          "order": "ea9c05d0-7ad0-4ac8-8471-70994bb995f3",
+          "flowOrderTail": "7339",
+          "from": 837,
+          "to": 996,
+          "fee": "837.00",
+          "taxes": 159,
+          "balance": 25254
+        },
+        {
+          "order": "c40b6263-c229-4e5a-a843-2bed38960cb4",
+          "flowOrderTail": "7345",
+          "from": 837,
+          "to": 996,
+          "fee": "837.00",
+          "taxes": 159,
+          "balance": 25254
+        },
+        {
+          "order": "052b8d12-bcc9-4eac-aa59-f13d53ff3bde",
+          "flowOrderTail": "7347",
+          "from": 837,
+          "to": 996,
+          "fee": "837.00",
+          "taxes": 159,
+          "balance": 25254
+        },
+        {
+          "order": "5e6ef392-cb12-4bb1-99c1-a8549a2c6823",
+          "flowOrderTail": "7348",
+          "from": 837,
+          "to": 996,
+          "fee": "837.00",
+          "taxes": 159,
+          "balance": 25254
+        },
+        {
+          "order": "466d9d39-f8ba-4973-b621-45e9589a7919",
+          "flowOrderTail": "7350",
+          "from": 837,
+          "to": 996,
+          "fee": "837.00",
+          "taxes": 159,
+          "balance": 25254
+        },
+        {
+          "order": "1cf20190-d67b-413a-9771-bf9b7a1fedb1",
+          "flowOrderTail": "7356",
+          "from": 335,
+          "to": 399,
+          "fee": "335.00",
+          "taxes": 64,
+          "balance": 10101
+        }
+      ]
+    }
+  ],
+  "ownerDecisions": [
+    {
+      "at": "2026-11-13",
+      "decision": "close_with_documented_open_external_issue",
+      "scope": "orden externa Flow 11657296 (pending/still_payable)",
+      "note": "El propietario elige cerrar el sprint con esta orden Sandbox documentada como asunto externo abierto. El estado del manifiesto NO se cambia a closed-retained: reconcile-external.mjs close sigue devolviendo 3."
+    }
+  ]
+}

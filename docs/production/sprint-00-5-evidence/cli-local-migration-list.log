@@ -1,0 +1,2 @@
+Target: local stack (127.0.0.1:54322)
+{"target":{"kind":"local","host":"127.0.0.1","port":54322},"_tag":"Error","error":{"code":"DbConnectError","message":"failed to connect to postgres: failed to connect to `host=127.0.0.1 user=postgres database=postgres`: dial error (connect ECONNREFUSED 127.0.0.1:54322)","suggestion":"Make sure Docker is running, then run: supabase start"}}

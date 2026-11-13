@@ -1,0 +1,1136 @@
+{
+  "date": "2026-11-09",
+  "preflight": [
+    {
+      "preflight": {
+        "indexes": 16,
+        "triggers": 4,
+        "constraints": 48,
+        "data_counts": {
+          "audit": 0,
+          "roles": {
+            "superadmin": 2
+          },
+          "objects": 0,
+          "profiles": 2,
+          "requests": 0,
+          "documents": 0,
+          "auth_users": 2,
+          "categories": 8,
+          "technicians": 0
+        },
+        "auth_columns": [
+          "id",
+          "user_id",
+          "created_at",
+          "updated_at",
+          "factor_id",
+          "aal",
+          "not_after",
+          "refreshed_at",
+          "user_agent",
+          "ip",
+          "tag",
+          "oauth_client_id",
+          "refresh_token_hmac_key",
+          "refresh_token_counter",
+          "scopes"
+        ],
+        "pgtap_available": true,
+        "pgtap_installed": false,
+        "migration_columns": null,
+        "migration_relation": null
+      }
+    }
+  ],
+  "before": [
+    {
+      "before_snapshot": {
+        "grants": [
+          {
+            "role": "anon",
+            "table": "categories",
+            "privilege": "INSERT"
+          },
+          {
+            "role": "anon",
+            "table": "categories",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "anon",
+            "table": "categories",
+            "privilege": "UPDATE"
+          },
+          {
+            "role": "anon",
+            "table": "categories",
+            "privilege": "DELETE"
+          },
+          {
+            "role": "anon",
+            "table": "categories",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "anon",
+            "table": "categories",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "anon",
+            "table": "categories",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "authenticated",
+            "table": "categories",
+            "privilege": "INSERT"
+          },
+          {
+            "role": "authenticated",
+            "table": "categories",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "authenticated",
+            "table": "categories",
+            "privilege": "UPDATE"
+          },
+          {
+            "role": "authenticated",
+            "table": "categories",
+            "privilege": "DELETE"
+          },
+          {
+            "role": "authenticated",
+            "table": "categories",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "authenticated",
+            "table": "categories",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "authenticated",
+            "table": "categories",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "service_role",
+            "table": "categories",
+            "privilege": "INSERT"
+          },
+          {
+            "role": "service_role",
+            "table": "categories",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "service_role",
+            "table": "categories",
+            "privilege": "UPDATE"
+          },
+          {
+            "role": "service_role",
+            "table": "categories",
+            "privilege": "DELETE"
+          },
+          {
+            "role": "service_role",
+            "table": "categories",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "service_role",
+            "table": "categories",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "service_role",
+            "table": "categories",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "anon",
+            "table": "technician_documents",
+            "privilege": "INSERT"
+          },
+          {
+            "role": "anon",
+            "table": "technician_documents",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "anon",
+            "table": "technician_documents",
+            "privilege": "UPDATE"
+          },
+          {
+            "role": "anon",
+            "table": "technician_documents",
+            "privilege": "DELETE"
+          },
+          {
+            "role": "anon",
+            "table": "technician_documents",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "anon",
+            "table": "technician_documents",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "anon",
+            "table": "technician_documents",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_documents",
+            "privilege": "INSERT"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_documents",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_documents",
+            "privilege": "UPDATE"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_documents",
+            "privilege": "DELETE"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_documents",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_documents",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_documents",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_documents",
+            "privilege": "INSERT"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_documents",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_documents",
+            "privilege": "UPDATE"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_documents",
+            "privilege": "DELETE"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_documents",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_documents",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_documents",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "anon",
+            "table": "profiles",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "anon",
+            "table": "profiles",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "anon",
+            "table": "profiles",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "anon",
+            "table": "profiles",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "authenticated",
+            "table": "profiles",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "authenticated",
+            "table": "profiles",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "authenticated",
+            "table": "profiles",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "authenticated",
+            "table": "profiles",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "service_role",
+            "table": "profiles",
+            "privilege": "INSERT"
+          },
+          {
+            "role": "service_role",
+            "table": "profiles",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "service_role",
+            "table": "profiles",
+            "privilege": "UPDATE"
+          },
+          {
+            "role": "service_role",
+            "table": "profiles",
+            "privilege": "DELETE"
+          },
+          {
+            "role": "service_role",
+            "table": "profiles",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "service_role",
+            "table": "profiles",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "service_role",
+            "table": "profiles",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "anon",
+            "table": "technician_profiles",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "anon",
+            "table": "technician_profiles",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "anon",
+            "table": "technician_profiles",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "anon",
+            "table": "technician_profiles",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_profiles",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_profiles",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_profiles",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_profiles",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_profiles",
+            "privilege": "INSERT"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_profiles",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_profiles",
+            "privilege": "UPDATE"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_profiles",
+            "privilege": "DELETE"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_profiles",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_profiles",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_profiles",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "anon",
+            "table": "technician_categories",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "anon",
+            "table": "technician_categories",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "anon",
+            "table": "technician_categories",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "anon",
+            "table": "technician_categories",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_categories",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_categories",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_categories",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_categories",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_categories",
+            "privilege": "INSERT"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_categories",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_categories",
+            "privilege": "UPDATE"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_categories",
+            "privilege": "DELETE"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_categories",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_categories",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_categories",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "anon",
+            "table": "technician_specialties",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "anon",
+            "table": "technician_specialties",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "anon",
+            "table": "technician_specialties",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "anon",
+            "table": "technician_specialties",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_specialties",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_specialties",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_specialties",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_specialties",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_specialties",
+            "privilege": "INSERT"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_specialties",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_specialties",
+            "privilege": "UPDATE"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_specialties",
+            "privilege": "DELETE"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_specialties",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_specialties",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_specialties",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "anon",
+            "table": "technician_metrics",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "anon",
+            "table": "technician_metrics",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "anon",
+            "table": "technician_metrics",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "anon",
+            "table": "technician_metrics",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_metrics",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_metrics",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_metrics",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "authenticated",
+            "table": "technician_metrics",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_metrics",
+            "privilege": "INSERT"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_metrics",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_metrics",
+            "privilege": "UPDATE"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_metrics",
+            "privilege": "DELETE"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_metrics",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_metrics",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "service_role",
+            "table": "technician_metrics",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "anon",
+            "table": "admin_audit_entries",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "anon",
+            "table": "admin_audit_entries",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "anon",
+            "table": "admin_audit_entries",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "anon",
+            "table": "admin_audit_entries",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "authenticated",
+            "table": "admin_audit_entries",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "authenticated",
+            "table": "admin_audit_entries",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "authenticated",
+            "table": "admin_audit_entries",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "authenticated",
+            "table": "admin_audit_entries",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "service_role",
+            "table": "admin_audit_entries",
+            "privilege": "INSERT"
+          },
+          {
+            "role": "service_role",
+            "table": "admin_audit_entries",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "service_role",
+            "table": "admin_audit_entries",
+            "privilege": "UPDATE"
+          },
+          {
+            "role": "service_role",
+            "table": "admin_audit_entries",
+            "privilege": "DELETE"
+          },
+          {
+            "role": "service_role",
+            "table": "admin_audit_entries",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "service_role",
+            "table": "admin_audit_entries",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "service_role",
+            "table": "admin_audit_entries",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "anon",
+            "table": "service_requests",
+            "privilege": "INSERT"
+          },
+          {
+            "role": "anon",
+            "table": "service_requests",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "anon",
+            "table": "service_requests",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "anon",
+            "table": "service_requests",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "anon",
+            "table": "service_requests",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "authenticated",
+            "table": "service_requests",
+            "privilege": "INSERT"
+          },
+          {
+            "role": "authenticated",
+            "table": "service_requests",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "authenticated",
+            "table": "service_requests",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "authenticated",
+            "table": "service_requests",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "authenticated",
+            "table": "service_requests",
+            "privilege": "TRIGGER"
+          },
+          {
+            "role": "service_role",
+            "table": "service_requests",
+            "privilege": "INSERT"
+          },
+          {
+            "role": "service_role",
+            "table": "service_requests",
+            "privilege": "SELECT"
+          },
+          {
+            "role": "service_role",
+            "table": "service_requests",
+            "privilege": "UPDATE"
+          },
+          {
+            "role": "service_role",
+            "table": "service_requests",
+            "privilege": "DELETE"
+          },
+          {
+            "role": "service_role",
+            "table": "service_requests",
+            "privilege": "TRUNCATE"
+          },
+          {
+            "role": "service_role",
+            "table": "service_requests",
+            "privilege": "REFERENCES"
+          },
+          {
+            "role": "service_role",
+            "table": "service_requests",
+            "privilege": "TRIGGER"
+          }
+        ],
+        "indexes": [
+          {
+            "name": "categories_pkey",
+            "definition": "CREATE UNIQUE INDEX categories_pkey ON public.categories USING btree (id)"
+          },
+          {
+            "name": "categories_slug_key",
+            "definition": "CREATE UNIQUE INDEX categories_slug_key ON public.categories USING btree (slug)"
+          },
+          {
+            "name": "technician_documents_pkey",
+            "definition": "CREATE UNIQUE INDEX technician_documents_pkey ON public.technician_documents USING btree (id)"
+          },
+          {
+            "name": "technician_documents_storage_path_key",
+            "definition": "CREATE UNIQUE INDEX technician_documents_storage_path_key ON public.technician_documents USING btree (storage_path)"
+          },
+          {
+            "name": "profiles_pkey",
+            "definition": "CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id)"
+          },
+          {
+            "name": "technician_profiles_pkey",
+            "definition": "CREATE UNIQUE INDEX technician_profiles_pkey ON public.technician_profiles USING btree (user_id)"
+          },
+          {
+            "name": "technician_profiles_slug_key",
+            "definition": "CREATE UNIQUE INDEX technician_profiles_slug_key ON public.technician_profiles USING btree (slug)"
+          },
+          {
+            "name": "technician_profiles_public_directory_idx",
+            "definition": "CREATE INDEX technician_profiles_public_directory_idx ON public.technician_profiles USING btree (status, city)"
+          },
+          {
+            "name": "technician_categories_pkey",
+            "definition": "CREATE UNIQUE INDEX technician_categories_pkey ON public.technician_categories USING btree (technician_id, category_id)"
+          },
+          {
+            "name": "technician_specialties_pkey",
+            "definition": "CREATE UNIQUE INDEX technician_specialties_pkey ON public.technician_specialties USING btree (id)"
+          },
+          {
+            "name": "technician_specialties_technician_id_name_key",
+            "definition": "CREATE UNIQUE INDEX technician_specialties_technician_id_name_key ON public.technician_specialties USING btree (technician_id, name)"
+          },
+          {
+            "name": "technician_metrics_pkey",
+            "definition": "CREATE UNIQUE INDEX technician_metrics_pkey ON public.technician_metrics USING btree (technician_id)"
+          },
+          {
+            "name": "admin_audit_entries_pkey",
+            "definition": "CREATE UNIQUE INDEX admin_audit_entries_pkey ON public.admin_audit_entries USING btree (id)"
+          },
+          {
+            "name": "admin_audit_entries_technician_idx",
+            "definition": "CREATE INDEX admin_audit_entries_technician_idx ON public.admin_audit_entries USING btree (technician_id, created_at DESC)"
+          },
+          {
+            "name": "service_requests_pkey",
+            "definition": "CREATE UNIQUE INDEX service_requests_pkey ON public.service_requests USING btree (id)"
+          },
+          {
+            "name": "service_requests_customer_idx",
+            "definition": "CREATE INDEX service_requests_customer_idx ON public.service_requests USING btree (customer_id, created_at DESC)"
+          }
+        ],
+        "functions": [
+          {
+            "name": "touch_updated_at",
+            "definition": "CREATE OR REPLACE FUNCTION public.touch_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public'\nAS $function$\r\nbegin\r\n  new.updated_at = now();\r\n  return new;\r\nend;\r\n$function$\n"
+          },
+          {
+            "name": "is_admin",
+            "definition": "CREATE OR REPLACE FUNCTION public.is_admin()\n RETURNS boolean\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  select exists (\r\n    select 1 from public.profiles\r\n    where id = auth.uid() and role in ('moderator', 'superadmin')\r\n  );\r\n$function$\n"
+          },
+          {
+            "name": "active_technician_id",
+            "definition": "CREATE OR REPLACE FUNCTION public.active_technician_id()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\n  select user_id from public.technician_profiles\r\n  where user_id = auth.uid() and status = 'active'\r\n  limit 1;\r\n$function$\n"
+          },
+          {
+            "name": "handle_new_user",
+            "definition": "CREATE OR REPLACE FUNCTION public.handle_new_user()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\ndeclare\r\n  requested_role public.app_role := case when new.raw_user_meta_data ->> 'account_type' = 'technician' then 'technician' else 'customer' end;\r\n  technician_slug text;\r\n  category_id_value text;\r\n  specialty_value text;\r\n  years_value integer := case when coalesce(new.raw_user_meta_data ->> 'years_of_experience', '') ~ '^\\d+$' then least((new.raw_user_meta_data ->> 'years_of_experience')::integer, 80) else 0 end;\r\n  price_value integer := case when coalesce(new.raw_user_meta_data ->> 'starting_price_clp', '') ~ '^\\d+$' then greatest((new.raw_user_meta_data ->> 'starting_price_clp')::integer, 0) else 0 end;\r\nbegin\r\n  insert into public.profiles (id, full_name, role)\r\n  values (\r\n    new.id,\r\n    coalesce(nullif(trim(new.raw_user_meta_data ->> 'full_name'), ''), split_part(new.email, '@', 1)),\r\n    requested_role\r\n  );\r\n\r\n  if requested_role = 'technician' then\r\n    technician_slug := trim(both '-' from regexp_replace(lower(coalesce(new.raw_user_meta_data ->> 'full_name', 'tecnico')), '[^a-z0-9]+', '-', 'g')) || '-' || left(new.id::text, 8);\r\n\r\n    insert into public.technician_profiles (\r\n      user_id, slug, city, coverage_areas, headline, bio, status,\r\n      years_of_experience, emergency_enabled, starting_price_clp, submitted_at\r\n    ) values (\r\n      new.id,\r\n      technician_slug,\r\n      coalesce(nullif(trim(new.raw_user_meta_data ->> 'city'), ''), 'Santiago'),\r\n      coalesce(array(select jsonb_array_elements_text(coalesce(new.raw_user_meta_data -> 'coverage_areas', '[]'::jsonb))), '{}'),\r\n      coalesce(left(new.raw_user_meta_data ->> 'headline', 180), ''),\r\n      coalesce(left(new.raw_user_meta_data ->> 'bio', 2000), ''),\r\n      'pending_verification',\r\n      years_value,\r\n      coalesce((new.raw_user_meta_data ->> 'emergency_enabled')::boolean, false),\r\n      price_value,\r\n      now()\r\n    );\r\n\r\n    for category_id_value in select jsonb_array_elements_text(coalesce(new.raw_user_meta_data -> 'category_ids', '[]'::jsonb)) loop\r\n      insert into public.technician_categories (technician_id, category_id)\r\n      select new.id, category_id_value where exists (select 1 from public.categories where id = category_id_value)\r\n      on conflict do nothing;\r\n    end loop;\r\n\r\n    for specialty_value in select jsonb_array_elements_text(coalesce(new.raw_user_meta_data -> 'specialties', '[]'::jsonb)) loop\r\n      if char_length(trim(specialty_value)) between 2 and 100 then\r\n        insert into public.technician_specialties (technician_id, name) values (new.id, trim(specialty_value)) on conflict do nothing;\r\n      end if;\r\n    end loop;\r\n\r\n    insert into public.technician_metrics (technician_id) values (new.id);\r\n  end if;\r\n\r\n  return new;\r\nend;\r\n$function$\n"
+          },
+          {
+            "name": "technician_status_transition_allowed",
+            "definition": "CREATE OR REPLACE FUNCTION public.technician_status_transition_allowed(current_status technician_status, next_status technician_status)\n RETURNS boolean\n LANGUAGE sql\n IMMUTABLE\nAS $function$\r\n  select (current_status, next_status) in (\r\n    ('draft'::public.technician_status, 'pending_verification'::public.technician_status),\r\n    ('draft'::public.technician_status, 'rejected'::public.technician_status),\r\n    ('pending_verification'::public.technician_status, 'needs_information'::public.technician_status),\r\n    ('pending_verification'::public.technician_status, 'verified'::public.technician_status),\r\n    ('pending_verification'::public.technician_status, 'rejected'::public.technician_status),\r\n    ('needs_information'::public.technician_status, 'pending_verification'::public.technician_status),\r\n    ('needs_information'::public.technician_status, 'rejected'::public.technician_status),\r\n    ('verified'::public.technician_status, 'active'::public.technician_status),\r\n    ('verified'::public.technician_status, 'temporarily_suspended'::public.technician_status),\r\n    ('verified'::public.technician_status, 'banned'::public.technician_status),\r\n    ('active'::public.technician_status, 'temporarily_suspended'::public.technician_status),\r\n    ('active'::public.technician_status, 'suspended'::public.technician_status),\r\n    ('active'::public.technician_status, 'banned'::public.technician_status),\r\n    ('temporarily_suspended'::public.technician_status, 'active'::public.technician_status),\r\n    ('temporarily_suspended'::public.technician_status, 'suspended'::public.technician_status),\r\n    ('temporarily_suspended'::public.technician_status, 'banned'::public.technician_status),\r\n    ('suspended'::public.technician_status, 'active'::public.technician_status),\r\n    ('suspended'::public.technician_status, 'banned'::public.technician_status),\r\n    ('rejected'::public.technician_status, 'pending_verification'::public.technician_status)\r\n  );\r\n$function$\n"
+          },
+          {
+            "name": "change_technician_status",
+            "definition": "CREATE OR REPLACE FUNCTION public.change_technician_status(target_technician_id uuid, next_status technician_status, change_reason text DEFAULT ''::text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'public'\nAS $function$\r\ndeclare\r\n  current_status public.technician_status;\r\n  updated_profile public.technician_profiles;\r\nbegin\r\n  if not public.is_admin() then\r\n    raise exception 'No tienes permiso para gestionar técnicos.' using errcode = '42501';\r\n  end if;\r\n\r\n  select status into current_status from public.technician_profiles where user_id = target_technician_id for update;\r\n  if current_status is null then\r\n    raise exception 'No existe el perfil técnico.' using errcode = 'P0002';\r\n  end if;\r\n\r\n  if not public.technician_status_transition_allowed(current_status, next_status) then\r\n    raise exception 'La transición de estado no está permitida.' using errcode = '22023';\r\n  end if;\r\n\r\n  update public.technician_profiles\r\n  set status = next_status,\r\n      verified_at = case when next_status in ('verified', 'active') then now() else verified_at end\r\n  where user_id = target_technician_id\r\n  returning * into updated_profile;\r\n\r\n  insert into public.admin_audit_entries (actor_id, technician_id, action, previous_status, next_status, reason)\r\n  values (auth.uid(), target_technician_id, 'technician_status_changed', current_status, next_status, coalesce(nullif(trim(change_reason), ''), 'Cambio de estado desde administración.'));\r\n\r\n  return jsonb_build_object('technician_id', updated_profile.user_id, 'status', updated_profile.status);\r\nend;\r\n$function$\n"
+          }
+        ],
+        "constraints": [
+          {
+            "name": "technician_categories_pkey",
+            "table": "technician_categories",
+            "definition": "PRIMARY KEY (technician_id, category_id)"
+          },
+          {
+            "name": "technician_categories_technician_id_fkey",
+            "table": "technician_categories",
+            "definition": "FOREIGN KEY (technician_id) REFERENCES technician_profiles(user_id) ON DELETE CASCADE"
+          },
+          {
+            "name": "technician_categories_category_id_fkey",
+            "table": "technician_categories",
+            "definition": "FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT"
+          },
+          {
+            "name": "profiles_full_name_check",
+            "table": "profiles",
+            "definition": "CHECK (((char_length(TRIM(BOTH FROM full_name)) >= 2) AND (char_length(TRIM(BOTH FROM full_name)) <= 120)))"
+          },
+          {
+            "name": "profiles_pkey",
+            "table": "profiles",
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "name": "profiles_id_fkey",
+            "table": "profiles",
+            "definition": "FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "categories_id_check",
+            "table": "categories",
+            "definition": "CHECK ((id ~ '^[a-z0-9-]+$'::text))"
+          },
+          {
+            "name": "categories_slug_check",
+            "table": "categories",
+            "definition": "CHECK ((slug ~ '^[a-z0-9-]+$'::text))"
+          },
+          {
+            "name": "admin_audit_entries_technician_id_fkey",
+            "table": "admin_audit_entries",
+            "definition": "FOREIGN KEY (technician_id) REFERENCES technician_profiles(user_id) ON DELETE RESTRICT"
+          },
+          {
+            "name": "categories_icon_check",
+            "table": "categories",
+            "definition": "CHECK ((icon = ANY (ARRAY['bolt'::text, 'droplets'::text, 'key-round'::text, 'snowflake'::text, 'monitor-cog'::text, 'wrench'::text, 'paint-roller'::text, 'sprout'::text])))"
+          },
+          {
+            "name": "categories_pkey",
+            "table": "categories",
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "name": "categories_slug_key",
+            "table": "categories",
+            "definition": "UNIQUE (slug)"
+          },
+          {
+            "name": "technician_profiles_slug_check",
+            "table": "technician_profiles",
+            "definition": "CHECK ((slug ~ '^[a-z0-9-]+$'::text))"
+          },
+          {
+            "name": "technician_profiles_city_check",
+            "table": "technician_profiles",
+            "definition": "CHECK (((char_length(TRIM(BOTH FROM city)) >= 2) AND (char_length(TRIM(BOTH FROM city)) <= 80)))"
+          },
+          {
+            "name": "technician_profiles_headline_check",
+            "table": "technician_profiles",
+            "definition": "CHECK ((char_length(headline) <= 180))"
+          },
+          {
+            "name": "technician_profiles_bio_check",
+            "table": "technician_profiles",
+            "definition": "CHECK ((char_length(bio) <= 2000))"
+          },
+          {
+            "name": "technician_profiles_years_of_experience_check",
+            "table": "technician_profiles",
+            "definition": "CHECK (((years_of_experience >= 0) AND (years_of_experience <= 80)))"
+          },
+          {
+            "name": "technician_profiles_starting_price_clp_check",
+            "table": "technician_profiles",
+            "definition": "CHECK ((starting_price_clp >= 0))"
+          },
+          {
+            "name": "technician_profiles_pkey",
+            "table": "technician_profiles",
+            "definition": "PRIMARY KEY (user_id)"
+          },
+          {
+            "name": "technician_profiles_slug_key",
+            "table": "technician_profiles",
+            "definition": "UNIQUE (slug)"
+          },
+          {
+            "name": "technician_profiles_user_id_fkey",
+            "table": "technician_profiles",
+            "definition": "FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "technician_specialties_name_check",
+            "table": "technician_specialties",
+            "definition": "CHECK (((char_length(TRIM(BOTH FROM name)) >= 2) AND (char_length(TRIM(BOTH FROM name)) <= 100)))"
+          },
+          {
+            "name": "technician_specialties_pkey",
+            "table": "technician_specialties",
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "name": "technician_specialties_technician_id_name_key",
+            "table": "technician_specialties",
+            "definition": "UNIQUE (technician_id, name)"
+          },
+          {
+            "name": "technician_specialties_technician_id_fkey",
+            "table": "technician_specialties",
+            "definition": "FOREIGN KEY (technician_id) REFERENCES technician_profiles(user_id) ON DELETE CASCADE"
+          },
+          {
+            "name": "technician_metrics_rating_check",
+            "table": "technician_metrics",
+            "definition": "CHECK (((rating >= (0)::numeric) AND (rating <= (5)::numeric)))"
+          },
+          {
+            "name": "technician_metrics_review_count_check",
+            "table": "technician_metrics",
+            "definition": "CHECK ((review_count >= 0))"
+          },
+          {
+            "name": "technician_metrics_completed_jobs_check",
+            "table": "technician_metrics",
+            "definition": "CHECK ((completed_jobs >= 0))"
+          },
+          {
+            "name": "technician_metrics_response_time_minutes_check",
+            "table": "technician_metrics",
+            "definition": "CHECK ((response_time_minutes >= 0))"
+          },
+          {
+            "name": "technician_metrics_completion_rate_check",
+            "table": "technician_metrics",
+            "definition": "CHECK (((completion_rate >= 0) AND (completion_rate <= 100)))"
+          },
+          {
+            "name": "technician_metrics_pkey",
+            "table": "technician_metrics",
+            "definition": "PRIMARY KEY (technician_id)"
+          },
+          {
+            "name": "technician_metrics_technician_id_fkey",
+            "table": "technician_metrics",
+            "definition": "FOREIGN KEY (technician_id) REFERENCES technician_profiles(user_id) ON DELETE CASCADE"
+          },
+          {
+            "name": "technician_documents_document_type_check",
+            "table": "technician_documents",
+            "definition": "CHECK ((document_type = ANY (ARRAY['identity'::text, 'certificate'::text, 'license'::text, 'other'::text])))"
+          },
+          {
+            "name": "technician_documents_status_check",
+            "table": "technician_documents",
+            "definition": "CHECK ((status = ANY (ARRAY['pending'::text, 'approved'::text, 'rejected'::text])))"
+          },
+          {
+            "name": "technician_documents_pkey",
+            "table": "technician_documents",
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "name": "technician_documents_storage_path_key",
+            "table": "technician_documents",
+            "definition": "UNIQUE (storage_path)"
+          },
+          {
+            "name": "technician_documents_technician_id_fkey",
+            "table": "technician_documents",
+            "definition": "FOREIGN KEY (technician_id) REFERENCES technician_profiles(user_id) ON DELETE CASCADE"
+          },
+          {
+            "name": "technician_documents_reviewed_by_fkey",
+            "table": "technician_documents",
+            "definition": "FOREIGN KEY (reviewed_by) REFERENCES profiles(id) ON DELETE SET NULL"
+          },
+          {
+            "name": "service_requests_title_check",
+            "table": "service_requests",
+            "definition": "CHECK (((char_length(TRIM(BOTH FROM title)) >= 5) AND (char_length(TRIM(BOTH FROM title)) <= 160)))"
+          },
+          {
+            "name": "service_requests_description_check",
+            "table": "service_requests",
+            "definition": "CHECK ((char_length(description) <= 3000))"
+          },
+          {
+            "name": "service_requests_location_label_check",
+            "table": "service_requests",
+            "definition": "CHECK (((char_length(TRIM(BOTH FROM location_label)) >= 2) AND (char_length(TRIM(BOTH FROM location_label)) <= 180)))"
+          },
+          {
+            "name": "service_requests_pkey",
+            "table": "service_requests",
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "name": "service_requests_customer_id_fkey",
+            "table": "service_requests",
+            "definition": "FOREIGN KEY (customer_id) REFERENCES profiles(id) ON DELETE CASCADE"
+          },
+          {
+            "name": "service_requests_assigned_technician_id_fkey",
+            "table": "service_requests",
+            "definition": "FOREIGN KEY (assigned_technician_id) REFERENCES technician_profiles(user_id) ON DELETE SET NULL"
+          },
+          {
+            "name": "service_requests_category_id_fkey",
+            "table": "service_requests",
+            "definition": "FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT"
+          },
+          {
+            "name": "admin_audit_entries_action_check",
+            "table": "admin_audit_entries",
+            "definition": "CHECK ((action = 'technician_status_changed'::text))"
+          },
+          {
+            "name": "admin_audit_entries_pkey",
+            "table": "admin_audit_entries",
+            "definition": "PRIMARY KEY (id)"
+          },
+          {
+            "name": "admin_audit_entries_actor_id_fkey",
+            "table": "admin_audit_entries",
+            "definition": "FOREIGN KEY (actor_id) REFERENCES profiles(id) ON DELETE RESTRICT"
+          }
+        ],
+        "existing_user_count": 2,
+        "existing_identity_digest": "6c2936a71f2dff1144d2c7926e16f6f8"
+      }
+    }
+  ],
+  "remoteChanges": false
+}

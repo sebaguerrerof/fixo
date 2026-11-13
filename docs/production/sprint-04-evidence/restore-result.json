@@ -1,0 +1,12 @@
+{
+  "status": "PASS local",
+  "scope": "synthetic application data, canonical migrations, SQL Auth/Storage fixtures only",
+  "tables": 37,
+  "rows": 406,
+  "foreignKeys": 64,
+  "digestsMatch": true,
+  "rlsRechecked": true,
+  "hostedAuthRestore": false,
+  "storageBlobs": false,
+  "database": "restore_s04_d9bc000fa2bd4b45bcb21618ad23f8b2"
+}

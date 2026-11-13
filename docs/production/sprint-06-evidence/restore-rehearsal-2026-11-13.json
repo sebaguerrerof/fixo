@@ -1,0 +1,91 @@
+{
+  "kind": "ensayo de restauración local aislado (sin datos)",
+  "date": "2026-11-13",
+  "source": "respaldo cifrado prod-backup-2026-11-13 (ver prod-backup-2026-11-13.json)",
+  "target": "contenedor Docker efímero public.ecr.aws/supabase/postgres:17.11.0.018 (producción: 17.11.0.003), 127.0.0.1:54399, eliminado al terminar",
+  "decryptedHashMatchedRegistered": true,
+  "initialAttemptsWithErrors": [
+    "1.ª carga: 0 filas cargadas; mi filtro sólo buscaba 'ERROR' y Git Bash convirtió /tmp/... en una ruta de Windows (psql no encontró los archivos): falso '0 errores'",
+    "2.ª carga: schema sin errores; auth.* con esquema antiguo de la imagen (columnas faltantes) y storage.* inexistente: 0 de 17 filas de Auth y 0 de 3 de Storage"
+  ],
+  "restoreProcedureThatWorked": [
+    "destino con roles de Supabase",
+    "cargar 01-roles, 02-schema, 03-data (public/private)",
+    "ejecutar las migraciones de GoTrue (75; auth.schema_migrations = 82, igual que producción) y de storage-api (storage.migrations = 81 frente a 80 en producción)",
+    "cargar datos de auth y de storage",
+    "reconciliar privilegios con la instantánea de producción"
+  ],
+  "rowCounts": {
+    "tablesCompared": 76,
+    "identical": 76,
+    "rowsExpected": 1708,
+    "rowsRestored": 1708
+  },
+  "contentDigestsIdenticalToProduction": [
+    "payment_orders",
+    "payment_attempts",
+    "payment_events",
+    "payment_inbox",
+    "payment_pricing_policies",
+    "job_extra_charges",
+    "notification_outbox",
+    "jobs",
+    "profiles",
+    "service_requests",
+    "quotes",
+    "job_events",
+    "categories"
+  ],
+  "structure": {
+    "tablesPublicPrivate": "43/43",
+    "policies": "15/15",
+    "functions": "130/130",
+    "triggers": "21/21",
+    "rls": "43/43"
+  },
+  "finding_privileges_widened": {
+    "before_reconciliation": {
+      "functions": {
+        "objects": 130,
+        "identical": 51,
+        "morePermissiveInCopy": 79
+      },
+      "relations": {
+        "objects": 43,
+        "identical": 32,
+        "morePermissiveInCopy": 11
+      },
+      "moreRestrictiveInCopy": 0
+    },
+    "cause": "el volcado emite REVOKE FROM PUBLIC y GRANT a los roles finales pero no revoca a anon/service_role: pg_dump asume los privilegios por defecto del origen y el destino tiene otros (pg_default_acl)",
+    "example": "public.payment_prepare y public.payment_sandbox_account_set eran ejecutables por anon y service_role en la copia; en producción sólo por authenticated",
+    "after_reconciliation": {
+      "functions": "130/130 idénticas",
+      "relations": "43/43 idénticas"
+    }
+  },
+  "securityChecksAfterReconciliation": {
+    "anonJobs": "permission denied",
+    "foreignAuthenticatedJobsVisible": 0,
+    "foreignAuthenticatedRequestsVisible": 0,
+    "foreignAuthenticatedPrivatePayments": "permission denied",
+    "serviceRoleJobs": 7,
+    "paymentRpcExecutableByAnon": false,
+    "cronJobsInCopy": 0,
+    "externalConnections": 0
+  },
+  "timingSeconds": {
+    "decrypt": 1,
+    "loadFourLayers": 4,
+    "wholeSessionIncludingDiagnosis": 246,
+    "note": "no es un RTO: base de 18 MB, destino local, sin Auth/Storage reales ni tráfico; incluye diagnóstico manual"
+  },
+  "notTested": [
+    "inicio de sesión con un usuario restaurado (no hay contraseñas conocidas y GoTrue no se arrancó como servicio)",
+    "la aplicación contra la copia",
+    "objetos de Storage (producción tiene 0)",
+    "Vault y configuración de Auth/SMTP (no están en el respaldo)",
+    "restauración en un proyecto Supabase hospedado",
+    "RPO/RTO reales"
+  ]
+}

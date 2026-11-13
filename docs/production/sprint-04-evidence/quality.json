@@ -1,0 +1,18 @@
+{
+  "status": "PASS local",
+  "npmCi": true,
+  "lint": true,
+  "typecheck": true,
+  "vitest": {
+    "files": 37,
+    "tests": 221
+  },
+  "productionBuild": true,
+  "audit": {
+    "all": 0,
+    "production": 0
+  },
+  "noDeploy": true,
+  "smokeHttp": true,
+  "secretScanFindings": 0
+}

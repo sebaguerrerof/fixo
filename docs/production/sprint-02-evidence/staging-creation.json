@@ -1,0 +1,18 @@
+{
+  "date": "2026-11-09",
+  "name": "fixo-staging",
+  "organization": "jmbhjccxstrsgywyxdeq",
+  "region": "ca-central-1",
+  "quote": {
+    "amount": 0,
+    "recurrence": "monthly"
+  },
+  "organizationConfirmed": true,
+  "creationAndSyntheticTestingAuthorized": true,
+  "status": "FAIL",
+  "reason": "global_active_free_project_limit_2_for_organization_owner_or_admin",
+  "projectCreated": false,
+  "productionMutations": false,
+  "otherProjectsPaused": false,
+  "paidUpgrade": false
+}

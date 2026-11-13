@@ -1,0 +1,86 @@
+{
+  "project": "rjzyqdhotcshvbdcrgon",
+  "status": "PASS integración",
+  "originalIdentitiesAndRolesPreserved": true,
+  "temporaryTokensRemoved": true,
+  "state": {
+    "jobs": 0,
+    "quotes": 0,
+    "buckets": [
+      {
+        "id": "service-request-photos",
+        "mime": [
+          "image/jpeg"
+        ],
+        "public": false,
+        "file_size_limit": 4194304
+      },
+      {
+        "id": "technician-documents",
+        "mime": [
+          "application/pdf",
+          "image/jpeg",
+          "image/png"
+        ],
+        "public": false,
+        "file_size_limit": 10485760
+      }
+    ],
+    "profiles": 2,
+    "documents": 0,
+    "auth_flows": 0,
+    "auth_users": 2,
+    "migrations": [
+      {
+        "name": "initial_marketplace",
+        "version": "202608170001"
+      },
+      {
+        "name": "harden_marketplace_access",
+        "version": "20261108223021"
+      },
+      {
+        "name": "identity_and_account_administration",
+        "version": "20261108234902"
+      },
+      {
+        "name": "close_invitation_binding_window",
+        "version": "20261109141115"
+      },
+      {
+        "name": "professional_applications_and_document_quarantine",
+        "version": "20261109141946"
+      },
+      {
+        "name": "stabilize_professional_review_retries",
+        "version": "20261109155802"
+      },
+      {
+        "name": "inspection_queue_and_marketplace_transactions",
+        "version": "20261109185924"
+      },
+      {
+        "name": "require_category_scoped_professional_approval",
+        "version": "20261109194648"
+      }
+    ],
+    "invitations": 0,
+    "technicians": 0,
+    "applications": 0,
+    "account_events": 0,
+    "request_photos": 0,
+    "account_details": 2,
+    "identity_digest": "6c2936a71f2dff1144d2c7926e16f6f8",
+    "inspection_jobs": 0,
+    "request_details": 0,
+    "storage_objects": 0,
+    "service_requests": 0,
+    "public_rls_tables": 11,
+    "active_superadmins": 2,
+    "marketplace_events": 0,
+    "private_rls_tables": 13,
+    "professional_events": 0,
+    "category_requirements": 0,
+    "marketplace_operations": 0
+  }
+}

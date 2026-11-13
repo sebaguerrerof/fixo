@@ -1,6 +1,8 @@
 import { isDemoModeEnabled } from "@/config/demo-mode";
 import type { EmergencyRepository } from "@/repositories/contracts/emergency-repository";
 import type { JobRepository } from "@/repositories/contracts/job-repository";
+import type { PaymentInboxRepository, PaymentProcessingRepository, PaymentRateLimiter, PaymentRepository, PaymentWorkerRepository } from "@/repositories/contracts/payment-repository";
+import { SupabasePaymentInboxRepository, SupabasePaymentProcessingRepository, SupabasePaymentRateLimiter, SupabasePaymentRepository, SupabasePaymentWorkerRepository } from "@/repositories/supabase/supabase-payment-repository";
 import type { QuoteRepository } from "@/repositories/contracts/quote-repository";
 import type { ServiceRequestRepository } from "@/repositories/contracts/service-request-repository";
 import type { TechnicianRepository } from "@/repositories/contracts/technician-repository";
@@ -31,6 +33,32 @@ export function getJobRepository(): JobRepository {
   return isDemoModeEnabled() ? new MockJobRepository() : new SupabaseJobRepository();
 }
 
+/** Payments have no mock: demo mode must never simulate a charge. */
+export function getPaymentRepository(): PaymentRepository {
+  if (isDemoModeEnabled()) throw new Error("Los pagos no están disponibles en modo demostración.");
+  return new SupabasePaymentRepository();
+}
+
+export function getPaymentProcessingRepository(): PaymentProcessingRepository {
+  if (isDemoModeEnabled()) throw new Error("Los pagos no están disponibles en modo demostración.");
+  return new SupabasePaymentProcessingRepository();
+}
+
 export function getEmergencyRepository(): EmergencyRepository {
   return isDemoModeEnabled() ? new MockEmergencyRepository() : new SupabaseEmergencyRepository();
+}
+
+export function getPaymentInboxRepository(): PaymentInboxRepository {
+  if (isDemoModeEnabled()) throw new Error("Los pagos no están disponibles en modo demostración.");
+  return new SupabasePaymentInboxRepository();
+}
+
+export function getPaymentWorkerRepository(): PaymentWorkerRepository {
+  if (isDemoModeEnabled()) throw new Error("Los pagos no están disponibles en modo demostración.");
+  return new SupabasePaymentWorkerRepository();
+}
+
+export function getPaymentRateLimiter(): PaymentRateLimiter {
+  if (isDemoModeEnabled()) throw new Error("Los pagos no están disponibles en modo demostración.");
+  return new SupabasePaymentRateLimiter();
 }

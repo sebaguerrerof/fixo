@@ -1,0 +1,36 @@
+{
+  "project": "rjzyqdhotcshvbdcrgon",
+  "status": "PASS integración",
+  "scenarios": [
+    "synthetic internal requirement configured with administrator JWT",
+    "technicianA real professional approval and queued ClamAV inspection",
+    "technicianB real professional approval and queued ClamAV inspection",
+    "customer A publishes, persists and retries without duplicate",
+    "customer B REST/RPC isolation and no generic privileged DML",
+    "eligible JWT discovers redacted opportunity; unapproved JWT blocked",
+    "ineligible cannot quote or forge owner/status; invalid dates roll back",
+    "technicianA draft persists, version edit, submit and retry",
+    "technicianB draft persists, version edit, submit and retry",
+    "withdraw -> edit -> resubmit uses a single versioned quote",
+    "customer proposals are scoped and counts are real",
+    "suspension blocks old JWT opportunities and acceptance, then reversible",
+    "two simultaneous acceptances yield one award, one PT409 and immutable snapshot",
+    "selected active technician gets private address; others cannot",
+    "administrator supervision sees exact actor history and single job",
+    "cancel ownership, state transition and retry"
+  ],
+  "categoryScope": {
+    "status": "PASS integración",
+    "checks": [
+      "profile edit invalidates approval until reviewed again",
+      "secondary category detail and quote denied",
+      "primary reviewed category remains eligible"
+    ]
+  },
+  "cleanup": {
+    "status": "PASS",
+    "deletedSyntheticUsers": 8,
+    "temporaryTokensRemoved": true,
+    "completedAt": "2026-11-09T20:29:08.861Z"
+  }
+}

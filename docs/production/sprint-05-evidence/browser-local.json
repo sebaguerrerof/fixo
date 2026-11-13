@@ -1,0 +1,24 @@
+{
+  "status": "PASS local (Chrome headless, stack local aislado, sin Flow)",
+  "checks": [
+    "unauthenticated users are sent to login from every payment screen",
+    "customer: Q/F/T breakdown, explicit consent by keyboard, and an unavailable service never looks like a payment",
+    "a customer who is NOT authorized for Sandbox sees no payment panel and no pay button; revoking mirrors immediately; the database refuses a forged attempt",
+    "customer list shows the initial payment state per job",
+    "technician: sees only the assigned amount Q, no fee/total, no pay controls; payments page says assigned, not transferred",
+    "a customer who is not a participant sees a not-found screen with no financial data",
+    "paid job: customer sees Pagado; technician proposes an extra; customer accepts with Q/F/T and consent; second extra can be rejected",
+    "mobile (390px): payment screens have no horizontal overflow and keep the actions reachable",
+    "moderator: read-only settings with fee history and pending Flow cost; no edit or re-check controls",
+    "superadmin: validates the percentage, previews the effect, creates a versioned change and can only schedule a re-check",
+    "return and confirmation routes never echo or act on a token; Fixo URLs and the browser never leave loopback"
+  ],
+  "desktop": true,
+  "mobile": true,
+  "keyboard": true,
+  "origins": [
+    "http://127.0.0.1:3055",
+    "http://localhost:3055",
+    "http://127.0.0.1:54321"
+  ]
+}

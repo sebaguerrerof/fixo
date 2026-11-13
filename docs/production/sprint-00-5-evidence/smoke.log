@@ -1,0 +1,5 @@
+
+> fixo-marketplace-tecnicos@0.1.0 test:smoke
+> node scripts/smoke-production.mjs
+
+PASS production HTTP: forged demo cookie rejected by all protected layouts; unavailable urgency is explicit.

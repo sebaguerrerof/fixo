@@ -1,0 +1,39 @@
+{
+  "date": "2026-11-08",
+  "node": "24.22.2",
+  "checks": {
+    "lint": "PASS",
+    "typecheck": "PASS",
+    "unit": {
+      "status": "PASS",
+      "files": 19,
+      "tests": 88
+    },
+    "build": "PASS",
+    "productionHttpSmoke": "PASS",
+    "npmAudit": {
+      "status": "PASS",
+      "vulnerablePackages": 0
+    },
+    "npmAuditProduction": {
+      "status": "PASS",
+      "vulnerablePackages": 0
+    },
+    "actionlint": "PASS",
+    "secretScan": "PASS",
+    "localSupabaseStart": "BLOCKED: Docker daemon unavailable",
+    "pgTAP": {
+      "status": "NOT TESTED",
+      "assertionsPrepared": 27
+    },
+    "githubActionsRun": "NOT TESTED",
+    "remoteMutations": "NONE",
+    "npmCi": "PASS",
+    "sharpRuntime": "PASS Windows Node 24.22.2"
+  },
+  "note": "Final checks performed with Node 24.22.2 after npm ci. UI-only copy/navigation corrections followed the unit run; final lint/build (including TypeScript) and HTTP smoke cover the resulting source. SQL prepared, not applied. Filesystem EPERM resolved by running build outside sandbox.",
+  "backup": {
+    "bundle": ".audit-backups/sprint00-5-20261108/pre-sprint.bundle",
+    "sha256": "562433B0A5F791D542766BA653B4799625AC8CA4C558724DA6D5211C71574508"
+  }
+}

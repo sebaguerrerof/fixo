@@ -5,7 +5,7 @@ export class CustomerDashboardService {
     const requests = await getServiceRequestRepository().listForCustomer(customerId);
     return {
       requests,
-      activeRequests: requests.filter((request) => ["matching", "receiving_quotes", "scheduled", "in_progress"].includes(request.status)),
+      activeRequests: requests.filter((request) => ["submitted", "matching", "receiving_quotes", "technician_selected", "awaiting_payment", "scheduled", "in_progress"].includes(request.status)),
     };
   }
 }

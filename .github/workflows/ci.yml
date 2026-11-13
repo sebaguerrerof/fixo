@@ -1,0 +1,66 @@
+name: Fixo CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  application:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_DEMO_MODE: 'false'
+      # Build-only, non-functional configuration. Never production credentials.
+      NEXT_PUBLIC_SUPABASE_URL: https://ci-build-only.supabase.invalid
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_build_only
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci --no-fund
+      - run: npm run secrets:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build
+      - run: npm run test:smoke
+      - run: npm audit --omit=dev --audit-level=moderate
+      - run: npm audit --audit-level=moderate
+
+  database:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci --no-fund
+      # No project link, access token, production password or --remote flag.
+      - run: npx --yes supabase@3.1.0 start --exclude studio,realtime,edge-runtime,imgproxy,logflare,vector,supavisor
+      - run: npx --yes supabase@3.1.0 db reset --no-seed
+      - run: npx --yes supabase@3.1.0 test db
+      # Financial/permission invariants (Sprint 05): same pinned tooling as docs/production/sprint-03-evidence/README.md. Auth/Storage are SQL contract fixtures; Flow is never contacted.
+      - run: npm install --prefix .audit-backups/tooling/sprint03-postgres --save-exact --no-audit --no-fund embedded-postgres@17.11.0-beta.19
+      - run: node scripts/test-payments-postgres.mjs
+      # Backup/restore tooling (Sprint 06): privilege snapshot and reconciliation against real PostgreSQL; nothing remote is contacted.
+      - run: node scripts/test-privilege-reconcile.mjs
+      # Real PostgREST/Auth/Kong contract against the isolated local stack started above (loopback only; Flow provider is a test double).
+      - name: Payments integration against the isolated local Supabase
+        run: |
+          eval "$(npx --yes supabase@3.1.0 status -o env | grep -E '^(API_URL|ANON_KEY|SERVICE_ROLE_KEY|DB_URL)=')"
+          export FIXO_PAYMENTS_LOCAL_SUPABASE=isolated-local FIXO_TEST_SUPABASE_URL="$API_URL" FIXO_TEST_ANON_KEY="$ANON_KEY" FIXO_TEST_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" FIXO_TEST_DB_URL="$DB_URL"
+          npx vitest run src/repositories/supabase/supabase-payment-repository.local.test.ts
+      - if: always()
+        run: npx --yes supabase@3.1.0 stop

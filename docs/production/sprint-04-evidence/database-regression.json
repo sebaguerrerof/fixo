@@ -1,0 +1,44 @@
+{
+  "status": "PASS integración",
+  "historicalAssertions": 130,
+  "newAssertions": 30,
+  "totalAssertions": 160,
+  "suites": [
+    {
+      "file": "00_access_hardening.test.sql",
+      "status": "PASS",
+      "assertions": 27,
+      "rolled_back": true
+    },
+    {
+      "file": "01_identity.test.sql",
+      "status": "PASS",
+      "assertions": 53,
+      "rolled_back": true
+    },
+    {
+      "file": "02_invitation_binding.test.sql",
+      "status": "PASS",
+      "assertions": 7,
+      "rolled_back": true
+    },
+    {
+      "file": "03_professional_application.test.sql",
+      "status": "PASS",
+      "assertions": 18,
+      "rolled_back": true
+    },
+    {
+      "file": "04_marketplace.test.sql",
+      "status": "PASS",
+      "assertions": 25,
+      "rolled_back": true
+    },
+    {
+      "file": "05_job_operations.test.sql",
+      "status": "PASS",
+      "assertions": 30,
+      "rolled_back": true
+    }
+  ]
+}

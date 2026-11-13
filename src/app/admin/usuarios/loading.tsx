@@ -1,0 +1,1 @@
+export default function LoadingUsers(){return <div role="status" aria-busy="true" className="space-y-4 p-6"><p className="text-sm text-muted-foreground">Cargando usuarios…</p>{[1,2,3].map(value=><div className="h-16 animate-pulse rounded-xl bg-muted" key={value}/>)}</div>;}
