@@ -1527,7 +1527,7 @@
       "state": "created",
       "note": "Creada por un diagnóstico fuera de Fixo con un pagador que NO era del propietario (prueba@gmail.com); nunca se abrió su checkout. Se identificó por getStatusByFlowOrder; sin fila local. Reconciliada abajo.",
       "reconciliation": {
-        "at": "2026-11-12T19:40:58.419Z",
+        "at": "2026-11-13T15:01:12.565Z",
         "via": "flowOrder",
         "flowOrder": "11657296",
         "flowStatusCode": 1,
@@ -1540,6 +1540,17 @@
       "reconciliations": [
         {
           "at": "2026-11-12T19:40:58.419Z",
+          "via": "flowOrder",
+          "flowOrder": "11657296",
+          "flowStatusCode": 1,
+          "amount": "26250",
+          "currency": "CLP",
+          "flowState": "pending",
+          "open": true,
+          "problem": "still_payable"
+        },
+        {
+          "at": "2026-11-13T15:01:12.565Z",
           "via": "flowOrder",
           "flowOrder": "11657296",
           "flowStatusCode": 1,
