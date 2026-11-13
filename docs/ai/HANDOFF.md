@@ -93,3 +93,15 @@ Sólo herramientas y documentación de respaldo; sin cambios de esquema ni de pr
 - **Errores míos durante la corrección:** la herramienta de escritura convirtió `\u2028` en un carácter real y rompió una expresión regular (detectado por `node --check`); dos parches de Python abortaron sin aplicar nada y se rehicieron con ediciones directas.
 - **NOT TESTED:** el nuevo paso en GitHub Actions (sin push); privilegios por columna; roles distintos de los cuatro; ejecución en un proyecto Supabase hospedado. Sin commit ni push.
 
+## Ramas, PR y protección en GitHub (2026-11-13, autorizado paso a paso)
+Autorizaciones del propietario: elegir **`main` protegida + PR**; "Sí, ejecútalo por pasos" (subir `main`, cambiar la rama por defecto, crear el PR, configurar la protección); y, tras un bloqueo de permisos al intentar mergear sin autorización explícita, "Si autorizo" para el **merge**. Verificación previa de lectura: en GitHub sólo existía la rama de trabajo (por defecto, sin protección, sin PR); `main` y las demás ramas de sprint sólo en el equipo local y contenidas íntegras en la rama de trabajo (historia lineal).
+1. `git push origin main` (rama nueva en `58ba08a`, sin force).
+2. **PR #1** `codex/sprint-04-job-management` → `main` (https://github.com/sebaguerrerof/fixo/pull/1); CI: `application` y `database` verdes en `push` y en `pull_request`.
+3. Rama por defecto = `main`.
+4. **Protección de `main`:** checks `application` y `database` (al día), PR obligatorio con 0 aprobaciones (un solo propietario no puede aprobarse a sí mismo), sin force-push ni borrado, `enforce_admins` activado, conversaciones resueltas.
+5. **Merge del PR #1** con commit de merge (`155ca18`; 38 commits conservados); la rama de trabajo no se borró. Mergear no publica nada (Vercel no está enlazado a Git; despliegues por CLI).
+- **Un intento mío fue bloqueado** por el sistema de permisos: mergear antes de tener autorización explícita; no se rodeó. Se esperó la respuesta del propietario.
+- **Pendiente (decisión del propietario):** visibilidad. Eligió volver a privado, pero la protección de ramas en repositorios privados requiere plan de pago de GitHub y el bloqueo de facturación apareció con el repositorio privado. **No se cambió.** El repositorio sigue público.
+- **Pendiente:** el CI sobre `main` (run `43480877665` al escribir esto, en curso); a partir de ahora todo cambio a `main` entra por PR, incluidos estos documentos (se commitean en la rama de trabajo y requieren un PR nuevo, que necesita autorización para mergear).
+- Local: `main` actualizada por fast-forward (`git fetch origin main:main`); no se cambió de rama ni se tocaron `PLAN.md`, `AGENTS.md`, `CLAUDE.md`.
+
