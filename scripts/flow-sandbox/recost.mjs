@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { PROJECT_REF, lit, readManifest, sql, writeManifest } from './lib.mjs';
+import { PROJECT_REF, lit, lockManifest, readManifest, sql, writeManifest } from './lib.mjs';
 import { flowCost } from './logic.mjs';
 import { runCostCorrection } from './recost-core.mjs';
 
@@ -28,6 +28,6 @@ const summary = await runCostCorrection({
     return flowCost(j.amount, j.paymentData);
   },
   applyUpdate: (id, from, to) => sql(`update private.payment_orders set flow_cost_clp=${to} where id=${lit(id)} and status='paid' and flow_cost_clp is not distinct from ${from === null ? 'null' : from} returning flow_cost_clp::int`),
-  load: readManifest, save: writeManifest,
+  load: readManifest, save: writeManifest, lock: lockManifest,
 });
 console.log(JSON.stringify(summary));

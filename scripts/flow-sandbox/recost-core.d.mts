@@ -7,4 +7,7 @@ export function runCostCorrection(deps: {
   load: () => Promise<any>;
   save: (m: any) => Promise<void>;
   now?: () => string;
+  lock?: () => Promise<() => Promise<void>>;
+  newId?: () => string;
 }): Promise<{ applied: number; recovered: number; skipped: number; conflicts: number }>;
+export function memoryLock(): () => Promise<() => Promise<void>>;

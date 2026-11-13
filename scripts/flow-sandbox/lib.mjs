@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
@@ -46,6 +46,14 @@ export const lit = v => v === null ? 'null' : `'${String(v).replaceAll("'", "''"
 
 export async function readManifest() { return existsSync(MANIFEST_PATH) ? JSON.parse(await readFile(MANIFEST_PATH, 'utf8')) : null; }
 export async function writeManifest(m) { await mkdir(dirname(MANIFEST_PATH), { recursive: true }); await writeFile(MANIFEST_PATH, JSON.stringify(m, null, 2) + '\n', 'utf8'); }
+/** Exclusive lock over the manifest (O_EXCL lock file, fails fast). A stale lock after a crash must be removed by hand (the message says which file). */
+export async function lockManifest() {
+  const path = MANIFEST_PATH + '.lock';
+  await mkdir(dirname(path), { recursive: true });
+  try { await writeFile(path, JSON.stringify({ pid: process.pid, at: new Date().toISOString() }), { flag: 'wx' }); }
+  catch (error) { if (error?.code === 'EEXIST') throw new Error('el manifiesto está bloqueado por otra ejecución (si quedó tras una caída, revise y borre ' + path + ')'); throw error; }
+  return async () => { await rm(path, { force: true }); };
+}
 export async function readSecrets() { return existsSync(SECRETS_PATH) ? JSON.parse(await readFile(SECRETS_PATH, 'utf8')) : {}; }
 export async function writeSecrets(s) { await writeFile(SECRETS_PATH, JSON.stringify(s), { encoding: 'utf8', mode: 0o600 }); }
 export const stamp = () => new Date().toISOString();

@@ -6,13 +6,17 @@
 //   issues                                 list the external orders that still block considering the run closed
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
+import { rmSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { PROJECT_REF, readManifest, sql, stamp, writeManifest } from './lib.mjs';
-import { classifyReconciliation, closureState, openExternalIssues } from './logic.mjs';
+import { MANIFEST_PATH, PROJECT_REF, lockManifest, readManifest, sql, stamp, writeManifest } from './lib.mjs';
+import { applyClosure, classifyReconciliation, openExternalIssues } from './logic.mjs';
 
 assert.equal(process.env.FIXO_FLOW_SANDBOX_REMOTE, PROJECT_REF);
-const mode = process.argv[2], m = await readManifest(); assert.ok(m);
+const mode = process.argv[2];
+await lockManifest();                  // exclusive over the manifest: the read-modify-write below can never interleave with another run
+process.on('exit', () => { try { rmSync(MANIFEST_PATH + '.lock', { force: true }); } catch { /* best effort */ } });
+const m = await readManifest(); assert.ok(m);
 if (mode === 'financial') {
   const jobs = m.jobs.map(j => `'${j.id}'`).join(',');
   m.orders = await sql(`select o.id,o.job_id,o.origin,o.extra_charge_id,o.status,o.review_reason,o.professional_amount_clp,o.platform_fee_clp,o.total_clp,o.flow_cost_clp,o.paid_attempt_id from private.payment_orders o where o.job_id in (${jobs}) order by o.created_at`);
@@ -36,11 +40,12 @@ if (mode === 'financial') {
   const result = { at: stamp(), via: flowOrder ? 'flowOrder' : 'commerceOrder', ...classifyReconciliation({ commerceOrder, flowOrder }, answer) };
   entry.reconciliation = result; (entry.reconciliations ??= []).push(result);
   if (result.flowOrder && !entry.flowOrder) entry.flowOrder = result.flowOrder;
+  applyClosure(m, stamp());                       // a new reconciliation can never leave a stale closure
   await writeManifest(m); console.log(JSON.stringify({ commerceOrder, ...result }));
 } else if (mode === 'issues') {
   console.log(JSON.stringify(openExternalIssues(m)));
 } else if (mode === 'close') {
   // Definitive financial closure: allowed only after retention and with NO open external issue.
-  const state = closureState(m); m.state = state; if (state === 'closed-retained') m.closedAt = stamp(); await writeManifest(m);
+  const state = applyClosure(m, stamp(), { closing: true }); await writeManifest(m);
   console.log(JSON.stringify({ state, openExternalIssues: openExternalIssues(m) })); process.exitCode = state === 'closed-retained' ? 0 : 3;
 }

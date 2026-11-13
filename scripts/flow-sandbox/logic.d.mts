@@ -8,3 +8,4 @@ export function buildRetireCriterionSql(input: { criterion: string; run: string;
 export function flowCost(amount: unknown, paymentData: unknown): number | null;
 export function strictInt(v: unknown): number | null;
 export function closureState(manifest: { retainedAt?: string; externalOrders?: unknown[] } | null): "open" | "retained-closure-pending" | "closed-retained";
+export function applyClosure(manifest: { state?: string; closedAt?: string; closureHistory?: unknown[]; retainedAt?: string; externalOrders?: unknown[] }, at: string, options?: { closing?: boolean }): "open" | "retained-closure-pending" | "closed-retained";

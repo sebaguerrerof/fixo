@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-import { assertAllowedPayer, buildRetireCriterionSql, classifyCreate, classifyReconciliation, closureState, flowCost, openExternalIssues, strictInt } from "../../../scripts/flow-sandbox/logic.mjs";
-import { runCostCorrection } from "../../../scripts/flow-sandbox/recost-core.mjs";
+import { applyClosure, assertAllowedPayer, buildRetireCriterionSql, classifyCreate, classifyReconciliation, closureState, flowCost, openExternalIssues, strictInt } from "../../../scripts/flow-sandbox/logic.mjs";
+import { memoryLock, runCostCorrection } from "../../../scripts/flow-sandbox/recost-core.mjs";
 
 const OWNER = "owner.test@gmail.com";
 
@@ -128,7 +128,7 @@ describe("remote Sandbox tooling: retention is not the financial closure", () =>
   });
 });
 
-interface Entry { order: string; from: number | null; to: number; state: string; recovered?: boolean; resolvedAt?: string }
+interface Entry { order: string; from: number | null; to: number; state: string; recovered?: boolean; resolvedAt?: string; id?: string; kind?: string; found?: number | null }
 describe("remote Sandbox tooling: durable, idempotent Flow-cost correction", () => {
   const mk = (costs: Record<string, number | null>, targets: Record<string, number | null>) => {
     const db = new Map(Object.entries(costs)); let manifest: { notes: string[]; costCorrectionLog?: Entry[] } = { notes: [] }; let updates = 0;
@@ -144,7 +144,7 @@ describe("remote Sandbox tooling: durable, idempotent Flow-cost correction", () 
     const t = mk({ a: 837, b: 335 }, { a: 996, b: 399 }); const seen: unknown[] = [];
     const sum = await runCostCorrection(t.deps({ applyUpdate: async (id: string, _from: number, to: number) => { seen.push(structuredClone(t.manifest().costCorrectionLog!.find((e: Entry) => e.order === id))); t.db.set(id, to); return [{ flow_cost_clp: to }]; } }) as never);
     expect(sum).toEqual({ applied: 2, recovered: 0, skipped: 0, conflicts: 0 });
-    expect(seen).toEqual([{ order: "a", from: 837, to: 996, state: "intent", at: "T" }, { order: "b", from: 335, to: 399, state: "intent", at: "T" }]);   // durable before the update
+    expect(seen).toEqual([{ id: expect.any(String), order: "a", from: 837, to: 996, state: "intent", at: "T" }, { id: expect.any(String), order: "b", from: 335, to: 399, state: "intent", at: "T" }]);   // durable before the update
     expect(t.manifest().costCorrectionLog!.map((e: Entry) => [e.order, e.from, e.to, e.state])).toEqual([["a", 837, 996, "applied"], ["b", 335, 399, "applied"]]);
   });
   it("an interruption AFTER the first update loses nothing: the rerun finishes the rest and keeps every previous value", async () => {
@@ -183,5 +183,55 @@ describe("remote Sandbox tooling: durable, idempotent Flow-cost correction", () 
     const m = t.manifest(); m.costCorrectionLog![0].resolvedAt = "T2"; await t.deps().save(m);                    // explicit resolution
     expect(await runCostCorrection(t.deps() as never)).toMatchObject({ applied: 1 }); expect(t.db.get("a")).toBe(996);
     expect(t.manifest().costCorrectionLog!.map((e: Entry) => [e.from, e.to, e.state])).toEqual([[837, 996, "conflict"], [5000, 996, "applied"]]);
+  });
+});
+
+describe("remote Sandbox tooling: drift, concurrency and stale closure (Codex round 5)", () => {
+  const mk = (cost: number, target: number) => {
+    const db = { cost }; let manifest: { costCorrectionLog?: Entry[] } = {}; let n = 0;
+    const deps = (over: Record<string, unknown> = {}) => ({
+      rows: [{ id: "a", cost: db.cost }], getCost: async () => target, readCost: async () => db.cost, newId: () => "id" + ++n,
+      applyUpdate: async (_id: string, from: number | null, to: number) => { await new Promise((r) => setTimeout(r, 15)); if (db.cost !== from) return []; db.cost = to; return [{ flow_cost_clp: to }]; },
+      load: async () => structuredClone(manifest), save: async (m: typeof manifest) => { manifest = structuredClone(m); }, now: () => "T", ...over,
+    });
+    return { db, deps, manifest: () => manifest };
+  };
+  it("a change AFTER a completed correction is a recorded drift conflict, never overwritten, on every rerun", async () => {
+    const t = mk(837, 996); await runCostCorrection(t.deps() as never); expect(t.db.cost).toBe(996);
+    t.db.cost = 5000;
+    for (let i = 0; i < 3; i++) { expect(await runCostCorrection(t.deps() as never)).toMatchObject({ applied: 0, conflicts: 1 }); expect(t.db.cost).toBe(5000); }
+    const log = t.manifest().costCorrectionLog!; expect(log).toHaveLength(2);
+    expect(log[1]).toMatchObject({ kind: "drift", state: "conflict", from: 996, found: 5000 });
+    log[1].resolvedAt = "T2"; await t.deps().save(t.manifest());                                                  // explicit resolution
+    expect(await runCostCorrection(t.deps() as never)).toMatchObject({ applied: 1 }); expect(t.db.cost).toBe(996);
+  });
+  it("two simultaneous runs: the second is refused by the exclusive lock; the database and the history stay coherent (unique intent ids)", async () => {
+    const t = mk(837, 996); const lock = memoryLock();
+    const out = await Promise.allSettled([runCostCorrection(t.deps({ lock }) as never), runCostCorrection(t.deps({ lock }) as never)]);
+    expect(out.map((o) => o.status).sort()).toEqual(["fulfilled", "rejected"]);
+    expect(t.db.cost).toBe(996);
+    const log = t.manifest().costCorrectionLog!; expect(log).toHaveLength(1); expect(log[0]).toMatchObject({ id: "id1", from: 837, to: 996, state: "applied" });
+    expect(await runCostCorrection(t.deps({ lock }) as never)).toMatchObject({ skipped: 1 });                       // the lock is released afterwards
+  });
+  it("a failing run releases the lock", async () => {
+    const t = mk(837, 996); const lock = memoryLock();
+    await expect(runCostCorrection(t.deps({ lock, applyUpdate: async () => { throw new Error("killed"); } }) as never)).rejects.toThrow("killed");
+    await expect(runCostCorrection(t.deps({ lock }) as never)).resolves.toMatchObject({ applied: 1 });
+  });
+  it("a closure followed by a failed query or a late payment is invalidated and kept as history; closing again is explicit", () => {
+    const open = { commerceOrder: "a", state: "created", reconciliation: { open: true, problem: "query_failed" } };
+    const m: Parameters<typeof applyClosure>[0] & { externalOrders: unknown[] } = { retainedAt: "R", state: "closed-retained", closedAt: "C1", externalOrders: [{ commerceOrder: "a", state: "created", reconciliation: { open: false, flowState: "rejected" } }] };
+    expect(applyClosure(m, "T1")).toBe("closed-retained"); expect(m.closedAt).toBe("C1");                           // still clean: untouched
+    m.externalOrders[0] = open;                                                                                      // a new failed reconciliation
+    expect(applyClosure(m, "T2")).toBe("retained-closure-pending");
+    expect(m).toMatchObject({ state: "retained-closure-pending" }); expect(m.closedAt).toBeUndefined();
+    expect(m.closureHistory).toEqual([{ closedAt: "C1", invalidatedAt: "T2", reason: "open_issues_reappeared" }]);
+    m.externalOrders[0] = { commerceOrder: "a", state: "created", reconciliation: { open: true, problem: "paid_outside_fixo" } };    // late payment
+    expect(applyClosure(m, "T3")).toBe("retained-closure-pending"); expect(m.state).toBe("retained-closure-pending");
+    m.externalOrders[0] = { commerceOrder: "a", state: "created", reconciliation: { open: false, flowState: "rejected" } };
+    expect(applyClosure(m, "T4")).toBe("closed-retained"); expect(m.state).toBe("retained-closure-pending");       // reconciling alone never closes
+    expect(applyClosure(m, "T5", { closing: true })).toBe("closed-retained"); expect(m).toMatchObject({ state: "closed-retained", closedAt: "T5" });
+    m.externalOrders[0] = open; expect(applyClosure(m, "T6", { closing: true })).toBe("retained-closure-pending");     // explicit close with issues: no closedAt
+    expect(m.closedAt).toBeUndefined(); expect(m.closureHistory).toHaveLength(2);
   });
 });

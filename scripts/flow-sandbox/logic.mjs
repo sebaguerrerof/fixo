@@ -70,6 +70,22 @@ export function closureState(manifest) {
   return openExternalIssues(manifest).length === 0 ? 'closed-retained' : 'retained-closure-pending';
 }
 
+/**
+ * Recompute the closure state AFTER any change to the external reconciliations and never leave a stale closure: if the manifest carries a `closedAt` and open issues
+ * exist again, the closure is invalidated (kept in `closureHistory`, `closedAt` removed). Closing again is only done by the explicit `close` (`closing:true`):
+ * a clean state stamps a new `closedAt` (a previous one is archived first).
+ */
+export function applyClosure(manifest, at, { closing = false } = {}) {
+  const state = closureState(manifest);
+  if (manifest.closedAt && (closing || state !== 'closed-retained')) {
+    (manifest.closureHistory ??= []).push({ closedAt: manifest.closedAt, invalidatedAt: at, reason: state === 'closed-retained' ? 'reclosed' : 'open_issues_reappeared' });
+    delete manifest.closedAt;
+  }
+  if (closing) { manifest.state = state; if (state === 'closed-retained') manifest.closedAt = at; }
+  else if (manifest.state === 'closed-retained' && state !== 'closed-retained') manifest.state = state;
+  return state;
+}
+
 /** Single-transaction SQL that retires the run's synthetic requirement. Locks the applications (blocks concurrent submissions until the end) and the requirements,
  *  verifies the references are only the synthetic technician's, deletes by UUID+key, and RAISES (rolling back the delete) unless the digest equals `before`. */
 export function buildRetireCriterionSql({ criterion, run, technician, before }) {
