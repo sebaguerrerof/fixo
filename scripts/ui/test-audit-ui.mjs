@@ -30,7 +30,25 @@ function stretchedCardPage(stripStyle) {
   return page(`${heading}<article style="position:relative;width:300px;height:120px;border:2px solid #000;box-sizing:border-box"><h3 style="margin:8px"><a href="#a" class="s" style="display:inline;height:auto;min-width:0;padding:0;border:0;margin:0">Camila Rojas</a></h3>${strip}</article><style>.s::after{content:"";position:absolute;inset:0}</style>`);
 }
 
+// The same card under CSS transforms. Layout pixels (client*/offset*) and viewport pixels (getBoundingClientRect) differ under scale, so
+// the audit must convert; rotation, skew, 3D and the individual `rotate` property are reported as NOT VERIFIED instead of guessed.
+function transformedCardPage({ cardStyle = "", wrapperStyle = "", strip = "" }) {
+  const blocker = strip ? `<div style="position:absolute;background:transparent;${strip}"></div>` : "";
+  return page(`${heading}<div style="margin:40px 0 160px 0;${wrapperStyle}"><article style="position:relative;width:300px;height:120px;border:2px solid #000;box-sizing:border-box;${cardStyle}"><h3 style="margin:8px"><a href="#a" class="s" style="display:inline;height:auto;min-width:0;padding:0;border:0;margin:0">Camila Rojas</a></h3>${blocker}</article></div><style>.s::after{content:"";position:absolute;inset:0}</style>`);
+}
+
 const pages = {
+  "/scaled-card": transformedCardPage({ cardStyle: "transform:scale(.8);transform-origin:top left" }),
+  "/scaled-ancestor": transformedCardPage({ wrapperStyle: "transform:scale(.8);transform-origin:top left" }),
+  "/scaled-nonuniform": transformedCardPage({ cardStyle: "transform:scale(.5,1);transform-origin:top left" }),
+  "/scaled-translated": transformedCardPage({ cardStyle: "transform:translate(30px,10px) scale(.9);transform-origin:top left" }),
+  "/scaled-property": transformedCardPage({ cardStyle: "scale:.8;transform-origin:top left" }),
+  "/scaled-strip-bottom": transformedCardPage({ cardStyle: "transform:scale(.8);transform-origin:top left", strip: "left:0;right:0;bottom:0;height:10px" }),
+  "/scaled-ancestor-strip-right": transformedCardPage({ wrapperStyle: "transform:scale(.8);transform-origin:top left", strip: "top:0;bottom:0;right:0;width:6px" }),
+  "/rotated-card": transformedCardPage({ cardStyle: "transform:rotate(5deg)" }),
+  "/skewed-card": transformedCardPage({ cardStyle: "transform:skewX(8deg)" }),
+  "/rotate-property": transformedCardPage({ cardStyle: "rotate:5deg" }),
+  "/rotated-ancestor": transformedCardPage({ wrapperStyle: "transform:rotate(3deg)" }),
   "/stretched-clean": stretchedCardPage(""),
   "/stretched-bottom-10": stretchedCardPage("left:0;right:0;bottom:0;height:10px"),
   "/stretched-bottom-2": stretchedCardPage("left:0;right:0;bottom:0;height:2px"),
@@ -205,6 +223,17 @@ const cases = [
   { name: "franja bloqueadora de 10 px arriba se detecta (borde superior)", route: { path: "/stretched-top-10", identify }, expect: (f) => f.some((x) => /borde superior/.test(x) && /llega a/.test(x)) },
   { name: "franja bloqueadora de 6 px a la derecha se detecta (borde derecho)", route: { path: "/stretched-right-6", identify }, expect: (f) => f.some((x) => /borde derecho/.test(x) && /llega a/.test(x)) },
   { name: "franja bloqueadora de 3 px a la izquierda se detecta (borde izquierdo)", route: { path: "/stretched-left-3", identify }, expect: (f) => f.some((x) => /borde izquierdo/.test(x) && /llega a/.test(x)) },
+  { name: "tarjeta sana escalada (scale .8) pasa: el area del ::after se convierte a coordenadas del viewport", route: { path: "/scaled-card", identify }, expect: (f) => !f.some((x) => /llega a|area tactil/.test(x)) },
+  { name: "tarjeta sana con un ANCESTRO escalado (.8) pasa", route: { path: "/scaled-ancestor", identify }, expect: (f) => !f.some((x) => /llega a|area tactil/.test(x)) },
+  { name: "escala no uniforme (.5, 1) pasa", route: { path: "/scaled-nonuniform", identify }, expect: (f) => !f.some((x) => /llega a|area tactil/.test(x)) },
+  { name: "traslacion mas escala pasa", route: { path: "/scaled-translated", identify }, expect: (f) => !f.some((x) => /llega a|area tactil/.test(x)) },
+  { name: "la propiedad individual `scale` pasa (se mide por la razon entre caja renderizada y de layout)", route: { path: "/scaled-property", identify }, expect: (f) => !f.some((x) => /llega a|area tactil/.test(x)) },
+  { name: "franja de 10 px bloqueando el borde inferior de una tarjeta ESCALADA se detecta", route: { path: "/scaled-strip-bottom", identify }, expect: (f) => f.some((x) => /borde inferior/.test(x) && /llega a/.test(x)) },
+  { name: "franja de 6 px a la derecha con un ANCESTRO escalado se detecta", route: { path: "/scaled-ancestor-strip-right", identify }, expect: (f) => f.some((x) => /borde derecho/.test(x) && /llega a/.test(x)) },
+  { name: "rotacion se informa como NO VERIFICADO (no se adivina)", route: { path: "/rotated-card", identify }, expect: (f) => f.some((x) => /NO VERIFICADO/.test(x) && /rotacion/.test(x)) && !f.some((x) => /llega a/.test(x)) },
+  { name: "sesgo se informa como NO VERIFICADO", route: { path: "/skewed-card", identify }, expect: (f) => f.some((x) => /NO VERIFICADO/.test(x)) },
+  { name: "la propiedad individual `rotate` se informa como NO VERIFICADO", route: { path: "/rotate-property", identify }, expect: (f) => f.some((x) => /NO VERIFICADO/.test(x)) },
+  { name: "un ancestro rotado tambien lo marca como NO VERIFICADO", route: { path: "/rotated-ancestor", identify }, expect: (f) => f.some((x) => /NO VERIFICADO/.test(x)) },
   { name: "un enlace estirado cuyo borde inferior esta cubierto se detecta en el hit test", route: { path: "/stretched-link-covered", identify }, expect: (f) => f.some((x) => /llega a/.test(x) && /Camila Rojas/.test(x)) },
   { name: "un h1 seguido de un h3 es un salto de encabezado", route: { path: "/heading-skip", identify }, expect: (f) => f.some((x) => /salto de encabezado: h3/.test(x)) },
   { name: "h1, h2, h3 y volver a h2 no es salto", route: { path: "/heading-ok", identify }, expect: (f) => !f.some((x) => /salto de encabezado/.test(x)) },

@@ -303,7 +303,12 @@ export function staticAudit(minTarget) {
   });
   // A "stretched link" (a link whose ::after is absolutely positioned with all insets 0) is clickable over the whole of its
   // nearest positioned ancestor's PADDING box (inside its border), which is the interactive area users actually have; measure and probe that, not the link text.
-  const paddingBox = (node) => { const r = node.getBoundingClientRect(); const left = r.left + node.clientLeft, top = r.top + node.clientTop; return { left, top, width: node.clientWidth, height: node.clientHeight, right: left + node.clientWidth, bottom: top + node.clientHeight }; };
+  // Transforms: getBoundingClientRect is in VIEWPORT coordinates (transforms applied) while client*/offset* are layout pixels, so
+  // every layout length is scaled by the rendered/layout ratio. Rotation, skew, 3D and the individual rotate property cannot be
+  // reduced to a scale, so a control under them is NOT VERIFIED instead of guessed.
+  const unsupportedTransform = (element) => { for (let node = element; node; node = node.parentElement) { const style = getComputedStyle(node); if (style.rotate !== "none" && style.rotate !== undefined) return true; if (style.transform !== "none") { const m = new DOMMatrix(style.transform); if (!m.is2D || Math.abs(m.b) > 1e-6 || Math.abs(m.c) > 1e-6) return true; } } return false; };
+  const layoutScale = (node) => { const r = node.getBoundingClientRect(); return { sx: node.offsetWidth ? r.width / node.offsetWidth : 1, sy: node.offsetHeight ? r.height / node.offsetHeight : 1 }; };
+  const paddingBox = (node) => { const r = node.getBoundingClientRect(); const { sx, sy } = layoutScale(node); const left = r.left + node.clientLeft * sx, top = r.top + node.clientTop * sy, width = node.clientWidth * sx, height = node.clientHeight * sy; return { left, top, width, height, right: left + width, bottom: top + height }; };
   const stretchedRect = (element) => {
     const after = getComputedStyle(element, "::after");
     if (after.content === "none" || after.position !== "absolute") return null;
@@ -311,14 +316,17 @@ export function staticAudit(minTarget) {
     for (let node = element.parentElement; node; node = node.parentElement) if (getComputedStyle(node).position !== "static") return paddingBox(node);
     return null;
   };
-  const boxes = interactive.map((element) => {
+  const untransformed = [];
+  for (const control of interactive) if (unsupportedTransform(control)) failures.push(`area tactil NO VERIFICADO (rotacion, sesgo o 3D no soportados)  <${control.tagName.toLowerCase()}> «${(control.textContent || control.getAttribute("aria-label") || "").trim().slice(0, 28)}»`);
+  const boxes = interactive.filter((control) => !unsupportedTransform(control)).map((element) => {
     const stretched = stretchedRect(element);
     if (stretched) return { element, left: stretched.left, right: stretched.right, top: stretched.top, bottom: stretched.bottom, w: stretched.width, h: stretched.height };
     const rect = element.getBoundingClientRect();
     const before = getComputedStyle(element, "::before");
     const extra = before.content !== "none" && before.position === "absolute";
-    const w = extra ? Math.max(rect.width, parseFloat(before.width) || 0) : rect.width;
-    const h = extra ? Math.max(rect.height, parseFloat(before.height) || 0) : rect.height;
+    const scale = layoutScale(element);
+    const w = extra ? Math.max(rect.width, (parseFloat(before.width) || 0) * scale.sx) : rect.width;
+    const h = extra ? Math.max(rect.height, (parseFloat(before.height) || 0) * scale.sy) : rect.height;
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
     return { element, left: cx - w / 2, right: cx + w / 2, top: cy - h / 2, bottom: cy + h / 2, w, h };
@@ -381,16 +389,24 @@ export function staticAudit(minTarget) {
  */
 export async function hitTestAudit() {
   const failures = [];
+  const layoutScale = (node) => { const r = node.getBoundingClientRect(); return { sx: node.offsetWidth ? r.width / node.offsetWidth : 1, sy: node.offsetHeight ? r.height / node.offsetHeight : 1 }; };
   const label = (e) => `<${e.tagName.toLowerCase()}> «${(e.textContent || e.getAttribute("aria-label") || e.getAttribute("name") || "").trim().slice(0, 28)}»`;
   const controls = [...document.querySelectorAll("a[href], button, input:not([type=hidden]), select, textarea, [role=button]")].filter((e) => !e.disabled && !e.closest("nextjs-portal"));
   for (const element of controls) {
     if (window.__auditOpacity(element) < window.__auditMinOpacity) continue;
+    // (the unsupported-transform helper lives inside the static audit scope; recompute the same condition here)
+    { let unsupported = false; for (let node = element; node; node = node.parentElement) { const style = getComputedStyle(node); if (style.rotate !== "none" && style.rotate !== undefined) unsupported = true; else if (style.transform !== "none") { const m = new DOMMatrix(style.transform); if (!m.is2D || Math.abs(m.b) > 1e-6 || Math.abs(m.c) > 1e-6) unsupported = true; } } if (unsupported) continue; }
     element.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
     await new Promise((resolve) => requestAnimationFrame(() => resolve()));
     // An inline element that wraps over several lines has one box per line: probe EVERY line box (a block over the second or last
     // line must be found), each at its centre and four edges. The enlarged ::before area only exists for single-box controls.
     const stretched = (() => {
-      const paddingBox = (node) => { const r = node.getBoundingClientRect(); const left = r.left + node.clientLeft, top = r.top + node.clientTop; return { left, top, width: node.clientWidth, height: node.clientHeight, right: left + node.clientWidth, bottom: top + node.clientHeight }; };
+      // Transforms: getBoundingClientRect is in VIEWPORT coordinates (transforms applied) while client*/offset* are layout pixels, so
+      // every layout length is scaled by the rendered/layout ratio. Rotation, skew, 3D and the individual rotate property cannot be
+      // reduced to a scale, so a control under them is NOT VERIFIED instead of guessed.
+      const unsupportedTransform = (element) => { for (let node = element; node; node = node.parentElement) { const style = getComputedStyle(node); if (style.rotate !== "none" && style.rotate !== undefined) return true; if (style.transform !== "none") { const m = new DOMMatrix(style.transform); if (!m.is2D || Math.abs(m.b) > 1e-6 || Math.abs(m.c) > 1e-6) return true; } } return false; };
+      const layoutScale = (node) => { const r = node.getBoundingClientRect(); return { sx: node.offsetWidth ? r.width / node.offsetWidth : 1, sy: node.offsetHeight ? r.height / node.offsetHeight : 1 }; };
+      const paddingBox = (node) => { const r = node.getBoundingClientRect(); const { sx, sy } = layoutScale(node); const left = r.left + node.clientLeft * sx, top = r.top + node.clientTop * sy, width = node.clientWidth * sx, height = node.clientHeight * sy; return { left, top, width, height, right: left + width, bottom: top + height }; };
       const after = getComputedStyle(element, "::after");
       if (after.content === "none" || after.position !== "absolute") return null;
       if (![after.top, after.right, after.bottom, after.left].every((value) => value === "0px")) return null;
@@ -403,8 +419,9 @@ export async function hitTestAudit() {
     const extra = !stretched && boxes.length === 1 && before.content !== "none" && before.position === "absolute";
     let blocked = false;
     for (const [lineIndex, rect] of boxes.entries()) {
-      const w = extra ? Math.max(rect.width, parseFloat(before.width) || 0) : rect.width;
-      const h = extra ? Math.max(rect.height, parseFloat(before.height) || 0) : rect.height;
+      const scale = layoutScale(element);
+      const w = extra ? Math.max(rect.width, (parseFloat(before.width) || 0) * scale.sx) : rect.width;
+      const h = extra ? Math.max(rect.height, (parseFloat(before.height) || 0) * scale.sy) : rect.height;
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
       const left = Math.max(cx - w / 2 + 1, 1), right = Math.min(cx + w / 2 - 1, innerWidth - 1);
