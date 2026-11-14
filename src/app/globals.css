@@ -165,6 +165,7 @@
   .motion-card { transition: border-color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out); }
   @media (hover: hover) { .motion-card:hover { @apply border-primary/50 bg-card; } }
 
+  .stamp-in { animation: stamp-in 420ms var(--ease-out) 350ms both; }
   .press { transition: transform var(--duration-fast) var(--ease-out); }
   .press:active { transform: scale(0.97); }
 
@@ -208,3 +209,4 @@
 @keyframes shimmer { to { transform: translateX(100%); } }
 @keyframes pop-in { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: none; } }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes stamp-in { from { opacity: 0; transform: rotate(-6deg) scale(1.35); } to { opacity: 1; transform: rotate(-6deg) scale(1); } }

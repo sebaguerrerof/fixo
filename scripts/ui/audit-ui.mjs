@@ -22,7 +22,7 @@ const routes = [
   { path: "/como-funciona", migrated: true, identify: { selector: "h1", text: "Cómo funciona SoyFixo" } },
   { path: "/terminos", migrated: true, identify: { selector: "h1", text: "Términos de uso" } },
   { path: "/privacidad", migrated: true, identify: { selector: "h1", text: "Privacidad" } },
-  { path: "/tecnicos", migrated: true, identify: { selector: "h1, h2", text: "Encuentra al técnico indicado" } },
+  { path: "/tecnicos", migrated: true, identify: { selector: "h1", text: "Encuentra al técnico indicado" } },
   { path: "/login", migrated: true, identify: { selector: "h1", text: "en un solo lugar|Bienvenido de vuelta" } },
   { path: "/registro", migrated: true, identify: { selector: "h1", text: "Crea tu cuenta de cliente" } },
   { path: "/registro/tecnico", migrated: true, identify: { selector: "h1", text: "Haz crecer tu trabajo" } },

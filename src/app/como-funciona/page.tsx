@@ -31,6 +31,15 @@ export default function HowItWorksPage() {
             ))}
           </ol>
         </section>
+        <section className="border-y border-border bg-card/60">
+          <div className="container grid gap-6 py-12 sm:py-16 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-14">
+            <h2 className="text-balance text-4xl leading-tight">Qué significa “perfil aprobado”</h2>
+            <div className="max-w-prose space-y-4 text-lg leading-8 text-muted-foreground">
+              <p>Antes de publicar a un técnico, el equipo de {brand.name} revisa su postulación, sus antecedentes y los requisitos de su rubro. Solo entonces su perfil aparece en el directorio, con el sello <strong className="font-semibold text-foreground">Perfil aprobado</strong>.</p>
+              <p>El sello habla de esa revisión. No son reseñas de clientes ni una garantía del trabajo: todavía no publicamos evaluaciones.</p>
+            </div>
+          </div>
+        </section>
         <section className="bg-inverse text-inverse-foreground">
           <div className="container grid gap-6 py-14 sm:py-16 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>

@@ -292,7 +292,18 @@ export function staticAudit(minTarget) {
   const interactive = [...document.querySelectorAll("a[href], button, input:not([type=hidden]), select, textarea, [role=button]")].filter((e) => {
     return window.__auditOpacity(e) >= window.__auditMinOpacity && !e.disabled && !e.closest("nextjs-portal");
   });
+  // A "stretched link" (a link whose ::after is absolutely positioned with all insets 0) is clickable over the whole of its
+  // nearest positioned ancestor, which is the interactive area users actually have; measure and probe that, not the link text.
+  const stretchedRect = (element) => {
+    const after = getComputedStyle(element, "::after");
+    if (after.content === "none" || after.position !== "absolute") return null;
+    if (![after.top, after.right, after.bottom, after.left].every((value) => value === "0px")) return null;
+    for (let node = element.parentElement; node; node = node.parentElement) if (getComputedStyle(node).position !== "static") return node.getBoundingClientRect();
+    return null;
+  };
   const boxes = interactive.map((element) => {
+    const stretched = stretchedRect(element);
+    if (stretched) return { element, left: stretched.left, right: stretched.right, top: stretched.top, bottom: stretched.bottom, w: stretched.width, h: stretched.height };
     const rect = element.getBoundingClientRect();
     const before = getComputedStyle(element, "::before");
     const extra = before.content !== "none" && before.position === "absolute";
@@ -368,10 +379,17 @@ export async function hitTestAudit() {
     await new Promise((resolve) => requestAnimationFrame(() => resolve()));
     // An inline element that wraps over several lines has one box per line: probe EVERY line box (a block over the second or last
     // line must be found), each at its centre and four edges. The enlarged ::before area only exists for single-box controls.
-    const boxes = [...element.getClientRects()].filter((r) => r.width > 0 && r.height > 0);
+    const stretched = (() => {
+      const after = getComputedStyle(element, "::after");
+      if (after.content === "none" || after.position !== "absolute") return null;
+      if (![after.top, after.right, after.bottom, after.left].every((value) => value === "0px")) return null;
+      for (let node = element.parentElement; node; node = node.parentElement) if (getComputedStyle(node).position !== "static") return node.getBoundingClientRect();
+      return null;
+    })();
+    const boxes = stretched ? [stretched] : [...element.getClientRects()].filter((r) => r.width > 0 && r.height > 0);
     if (boxes.length === 0) boxes.push(element.getBoundingClientRect());
     const before = getComputedStyle(element, "::before");
-    const extra = boxes.length === 1 && before.content !== "none" && before.position === "absolute";
+    const extra = !stretched && boxes.length === 1 && before.content !== "none" && before.position === "absolute";
     let blocked = false;
     for (const [lineIndex, rect] of boxes.entries()) {
       const w = extra ? Math.max(rect.width, parseFloat(before.width) || 0) : rect.width;
