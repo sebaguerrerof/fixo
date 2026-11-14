@@ -14,8 +14,13 @@ const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
 );
 CardHeader.displayName = "CardHeader";
 
-const CardTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) => <h3 ref={ref} className={cn("font-semibold leading-none tracking-tight", className)} {...props} />,
+interface CardTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {
+  /** Heading level. Defaults to h2 because card titles in dashboards sit directly under the page's h1; use "h3" inside a section that has its own h2. */
+  readonly as?: "h2" | "h3";
+}
+
+const CardTitle = React.forwardRef<HTMLHeadingElement, CardTitleProps>(
+  ({ className, as: Heading = "h2", ...props }, ref) => <Heading ref={ref} className={cn("text-xl font-bold leading-tight", className)} {...props} />,
 );
 CardTitle.displayName = "CardTitle";
 

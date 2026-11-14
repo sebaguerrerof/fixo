@@ -4,6 +4,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { CredentialCard, CredentialSlot } from "@/components/technicians/credential-card";
+import { HeroCredential } from "@/components/technicians/hero-credential";
 import type { Technician } from "@/domain/entities/technician";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -71,6 +72,28 @@ describe("CredentialCard", () => {
   it("falls back to 'A convenir' when no reference price was declared", () => {
     render(<CredentialCard technician={{ ...technician, startingPriceClp: 0 }} />);
     expect(container.textContent).toContain("A convenir");
+  });
+});
+
+describe("Home hero credential", () => {
+  // The home page is an h1 followed by the hero credential, with or without published profiles.
+  const levels = () => [...container.querySelectorAll("h1, h2, h3, h4")].map((heading) => Number(heading.tagName.slice(1)));
+
+  it("with a published profile the heading order is h1, h2", () => {
+    render(<><h1>Titular</h1><HeroCredential technician={technician} /></>);
+    expect(levels()).toEqual([1, 2]);
+  });
+
+  it("with NO published profiles (empty directory) the slot title is an h2 too: no jump from h1 to h3", () => {
+    render(<><h1>Titular</h1><HeroCredential technician={null} /></>);
+    expect(levels()).toEqual([1, 2]);
+    expect(container.textContent).toContain("Aquí aparecerá el primer perfil aprobado");
+    expect(container.querySelector("a")!.getAttribute("href")).toBe("/registro/tecnico");
+  });
+
+  it("the slot defaults to h3 for use under a section heading", () => {
+    render(<CredentialSlot title="Pendiente"><p>x</p></CredentialSlot>);
+    expect(container.querySelector("h3")).not.toBeNull();
   });
 });
 

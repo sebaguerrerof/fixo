@@ -289,16 +289,26 @@ export function staticAudit(minTarget) {
     if (ratio < 4.5) failures.push(`contraste ${ratio.toFixed(2)}:1 < 4.5:1  ${where}`);
   }
 
+  // Heading order: a visible heading must not skip a level below the previous one (h1 -> h3). Screen-reader users navigate by heading.
+  let previousLevel = 0;
+  for (const heading of document.querySelectorAll("h1, h2, h3, h4, h5, h6")) {
+    if (window.__auditOpacity(heading) < window.__auditMinOpacity || heading.closest("nextjs-portal")) continue;
+    const level = Number(heading.tagName.slice(1));
+    if (previousLevel > 0 && level > previousLevel + 1) failures.push(`salto de encabezado: h${level} «${heading.textContent.trim().slice(0, 30)}» despues de h${previousLevel}`);
+    previousLevel = level;
+  }
+
   const interactive = [...document.querySelectorAll("a[href], button, input:not([type=hidden]), select, textarea, [role=button]")].filter((e) => {
     return window.__auditOpacity(e) >= window.__auditMinOpacity && !e.disabled && !e.closest("nextjs-portal");
   });
   // A "stretched link" (a link whose ::after is absolutely positioned with all insets 0) is clickable over the whole of its
-  // nearest positioned ancestor, which is the interactive area users actually have; measure and probe that, not the link text.
+  // nearest positioned ancestor's PADDING box (inside its border), which is the interactive area users actually have; measure and probe that, not the link text.
+  const paddingBox = (node) => { const r = node.getBoundingClientRect(); const left = r.left + node.clientLeft, top = r.top + node.clientTop; return { left, top, width: node.clientWidth, height: node.clientHeight, right: left + node.clientWidth, bottom: top + node.clientHeight }; };
   const stretchedRect = (element) => {
     const after = getComputedStyle(element, "::after");
     if (after.content === "none" || after.position !== "absolute") return null;
     if (![after.top, after.right, after.bottom, after.left].every((value) => value === "0px")) return null;
-    for (let node = element.parentElement; node; node = node.parentElement) if (getComputedStyle(node).position !== "static") return node.getBoundingClientRect();
+    for (let node = element.parentElement; node; node = node.parentElement) if (getComputedStyle(node).position !== "static") return paddingBox(node);
     return null;
   };
   const boxes = interactive.map((element) => {
@@ -380,10 +390,11 @@ export async function hitTestAudit() {
     // An inline element that wraps over several lines has one box per line: probe EVERY line box (a block over the second or last
     // line must be found), each at its centre and four edges. The enlarged ::before area only exists for single-box controls.
     const stretched = (() => {
+      const paddingBox = (node) => { const r = node.getBoundingClientRect(); const left = r.left + node.clientLeft, top = r.top + node.clientTop; return { left, top, width: node.clientWidth, height: node.clientHeight, right: left + node.clientWidth, bottom: top + node.clientHeight }; };
       const after = getComputedStyle(element, "::after");
       if (after.content === "none" || after.position !== "absolute") return null;
       if (![after.top, after.right, after.bottom, after.left].every((value) => value === "0px")) return null;
-      for (let node = element.parentElement; node; node = node.parentElement) if (getComputedStyle(node).position !== "static") return node.getBoundingClientRect();
+      for (let node = element.parentElement; node; node = node.parentElement) if (getComputedStyle(node).position !== "static") return paddingBox(node);
       return null;
     })();
     const boxes = stretched ? [stretched] : [...element.getClientRects()].filter((r) => r.width > 0 && r.height > 0);
@@ -401,7 +412,7 @@ export async function hitTestAudit() {
       const midX = Math.min(Math.max(cx, left), right), midY = Math.min(Math.max(cy, top), bottom);
       // Boxed controls are probed at their real edges (1 px inside). The line fragments of a wrapped inline element have ragged ends
       // (trailing space, sub-pixel advances; the same holds for a single-line inline link), so there the side probes sit at 10% / 90% of the fragment and the vertical ones at 20% / 80%.
-      const fragment = boxes.length > 1 || getComputedStyle(element).display === "inline";
+      const fragment = !stretched && (boxes.length > 1 || getComputedStyle(element).display === "inline");
       const probes = fragment
         ? [["centro", cx, cy], ["borde izquierdo", rect.left + rect.width * 0.1, cy], ["borde derecho", rect.left + rect.width * 0.9, cy], ["borde superior", cx, rect.top + rect.height * 0.2], ["borde inferior", cx, rect.top + rect.height * 0.8]]
         : [["centro", midX, midY], ["borde izquierdo", left, midY], ["borde derecho", right, midY], ["borde superior", midX, top], ["borde inferior", midX, bottom]];

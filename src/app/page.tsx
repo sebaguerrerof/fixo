@@ -6,7 +6,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { EmptyState } from "@/components/shared/empty-state";
 import { SectionHeading } from "@/components/shared/section-heading";
-import { CredentialCard, CredentialSlot } from "@/components/technicians/credential-card";
+import { HeroCredential } from "@/components/technicians/hero-credential";
 import { TechnicianCard } from "@/components/technicians/technician-card";
 import { buttonVariants } from "@/components/ui/button";
 import { TextLink } from "@/components/ui/text-link";
@@ -38,13 +38,7 @@ export default async function HomePage() {
               </form>
             </div>
             <aside aria-label="Un perfil aprobado" className="animate-enter animate-enter-delay lg:pt-2">
-              {featuredTechnicians[0]
-                ? <CredentialCard animateStamp headingLevel={2} technician={featuredTechnicians[0]} />
-                : <CredentialSlot title="Aquí aparecerá el primer perfil aprobado">
-                    <p>Cada técnico publicado pasó antes por la revisión del equipo de {brand.name}. Estamos sumando a los primeros.</p>
-                    <p>La contratación y los pagos todavía no están habilitados.</p>
-                    <TextLink className="underline" href="/registro/tecnico">¿Eres técnico? Postula tu perfil</TextLink>
-                  </CredentialSlot>}
+              <HeroCredential technician={featuredTechnicians[0] ?? null} />
               {featuredTechnicians[0] ? <p className="mt-3 text-sm text-muted-foreground">La contratación y los pagos todavía no están habilitados.</p> : null}
             </aside>
           </div>

@@ -71,11 +71,12 @@ export function CredentialCard({ technician, variant = "card", animateStamp = fa
 }
 
 /** An empty credential slot: what the directory honestly looks like before the first profile is approved. */
-export function CredentialSlot({ title, children }: { readonly title: string; readonly children: React.ReactNode }) {
+export function CredentialSlot({ title, children, headingLevel = 3 }: { readonly title: string; readonly children: React.ReactNode; readonly headingLevel?: 2 | 3 }) {
+  const Heading = headingLevel === 2 ? "h2" : "h3";
   return (
     <div className="rounded-lg border-2 border-dashed border-foreground/50 p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Carné pendiente</p>
-      <h3 className="mt-2 text-2xl leading-tight">{title}</h3>
+      <Heading className="mt-2 text-2xl leading-tight">{title}</Heading>
       <div className="mt-3 space-y-3 text-sm leading-6 text-muted-foreground">{children}</div>
     </div>
   );

@@ -23,7 +23,20 @@ function wrappedLinkPage(which) {
   return page(`${heading}<div id="host" style="position:relative;width:120px"><p style="margin:0;width:120px"><a id="l" href="#a" style="display:inline;height:auto;min-width:0;padding:0;border:0;margin:0">enlace muy largo que ocupa varias lineas del parrafo estrecho</a> y mas texto de la frase.</p><div id="ov" style="position:absolute;background:transparent"></div></div><script>const rects=[...document.getElementById("l").getClientRects()];const host=document.getElementById("host").getBoundingClientRect();const r=rects[${index}];const ov=document.getElementById("ov");ov.style.left=(r.left-host.left)+"px";ov.style.top=(r.top-host.top)+"px";ov.style.width=r.width+"px";ov.style.height=r.height+"px";</script><a href="#b">Uno</a>`);
 }
 
+// A 300 x 120 card with a 2 px border whose link is stretched over the card (::after, inset 0), optionally with a thin transparent strip
+// laid over one edge of the card's padding box: that part of the card does not reach the link.
+function stretchedCardPage(stripStyle) {
+  const strip = stripStyle ? `<div style="position:absolute;background:transparent;${stripStyle}"></div>` : "";
+  return page(`${heading}<article style="position:relative;width:300px;height:120px;border:2px solid #000;box-sizing:border-box"><h3 style="margin:8px"><a href="#a" class="s" style="display:inline;height:auto;min-width:0;padding:0;border:0;margin:0">Camila Rojas</a></h3>${strip}</article><style>.s::after{content:"";position:absolute;inset:0}</style>`);
+}
+
 const pages = {
+  "/stretched-clean": stretchedCardPage(""),
+  "/stretched-bottom-10": stretchedCardPage("left:0;right:0;bottom:0;height:10px"),
+  "/stretched-bottom-2": stretchedCardPage("left:0;right:0;bottom:0;height:2px"),
+  "/stretched-top-10": stretchedCardPage("left:0;right:0;top:0;height:10px"),
+  "/stretched-right-6": stretchedCardPage("top:0;bottom:0;right:0;width:6px"),
+  "/stretched-left-3": stretchedCardPage("top:0;bottom:0;left:0;width:3px"),
   "/healthy": page(`${heading}<a href="#a">Uno</a><br><a href="#b">Dos</a><div class="spacer"></div><button type="button">Abajo</button>`),
   "/empty": page(""),
   // A control far below the fold covered by an overlay: invisible from the top, real for a user who scrolls.
@@ -92,6 +105,9 @@ const pages = {
   // Stretched link: the link text is small but its ::after covers the whole card, which is the real click area.
   "/stretched-link": page(`${heading}<article style="position:relative;width:300px;height:120px;border:1px solid #000;box-sizing:border-box"><h3 style="margin:8px"><a href="#a" style="display:inline;height:auto;min-width:0;padding:0;border:0;margin:0" class="s">Camila Rojas</a></h3></article><style>.s::after{content:"";position:absolute;inset:0}</style>`),
   "/stretched-link-covered": page(`${heading}<article style="position:relative;width:300px;height:120px;border:1px solid #000;box-sizing:border-box"><h3 style="margin:8px"><a href="#a" style="display:inline;height:auto;min-width:0;padding:0;border:0;margin:0" class="s">Camila Rojas</a></h3><div style="position:absolute;left:0;right:0;bottom:0;height:30px;background:transparent"></div></article><style>.s::after{content:"";position:absolute;inset:0}</style>`),
+  // Heading order: no skipped levels. h1 -> h3 is a finding; h1 -> h2 -> h3 and going back up are fine.
+  "/heading-skip": page(`<h1>Pagina de prueba</h1><h3>Salta un nivel</h3><a href="#a">Uno</a>`),
+  "/heading-ok": page(`<h1>Pagina de prueba</h1><h2>Seccion</h2><h3>Sub</h3><h2>Otra seccion</h2><a href="#a">Uno</a>`),
   "/gradient-ok": page(`${heading}<p style="background:linear-gradient(#fff,#eee);color:#000">Negro sobre degradado claro</p><a href="#a">Uno</a>`),
   "/gradient-unparsable": page(`${heading}<p style="background:linear-gradient(in oklch, oklch(0.2 0 0), oklch(0.9 0 0));color:#000">Degradado en espacio oklch</p><a href="#a">Uno</a>`),
   "/redirect-source": null,
@@ -183,7 +199,15 @@ const cases = [
   { name: "un placeholder de bajo contraste es hallazgo (no es un nodo de texto, se mide aparte)", route: { path: "/placeholder-low", identify }, expect: (f) => f.some((x) => /contraste/.test(x) && /placeholder «Correo electronico»/.test(x)) },
   { name: "un placeholder con contraste suficiente pasa", route: { path: "/placeholder-ok", identify }, expect: (f) => !f.some((x) => /placeholder/.test(x)) },
   { name: "un enlace estirado (::after inset 0) se mide por el area real de la tarjeta, no por su texto", route: { path: "/stretched-link", identify, minControls: 1 }, expect: (f) => !f.some((x) => /area tactil/.test(x)) },
+  { name: "tarjeta estirada con borde de 2 px y nada encima pasa (el borde del contenedor no es parte del area del ::after)", route: { path: "/stretched-clean", identify }, expect: (f) => !f.some((x) => /llega a|area tactil/.test(x)) },
+  { name: "franja bloqueadora de 10 px abajo se detecta (borde inferior)", route: { path: "/stretched-bottom-10", identify }, expect: (f) => f.some((x) => /borde inferior/.test(x) && /llega a/.test(x)) },
+  { name: "franja bloqueadora de solo 2 px abajo se detecta", route: { path: "/stretched-bottom-2", identify }, expect: (f) => f.some((x) => /borde inferior/.test(x) && /llega a/.test(x)) },
+  { name: "franja bloqueadora de 10 px arriba se detecta (borde superior)", route: { path: "/stretched-top-10", identify }, expect: (f) => f.some((x) => /borde superior/.test(x) && /llega a/.test(x)) },
+  { name: "franja bloqueadora de 6 px a la derecha se detecta (borde derecho)", route: { path: "/stretched-right-6", identify }, expect: (f) => f.some((x) => /borde derecho/.test(x) && /llega a/.test(x)) },
+  { name: "franja bloqueadora de 3 px a la izquierda se detecta (borde izquierdo)", route: { path: "/stretched-left-3", identify }, expect: (f) => f.some((x) => /borde izquierdo/.test(x) && /llega a/.test(x)) },
   { name: "un enlace estirado cuyo borde inferior esta cubierto se detecta en el hit test", route: { path: "/stretched-link-covered", identify }, expect: (f) => f.some((x) => /llega a/.test(x) && /Camila Rojas/.test(x)) },
+  { name: "un h1 seguido de un h3 es un salto de encabezado", route: { path: "/heading-skip", identify }, expect: (f) => f.some((x) => /salto de encabezado: h3/.test(x)) },
+  { name: "h1, h2, h3 y volver a h2 no es salto", route: { path: "/heading-ok", identify }, expect: (f) => !f.some((x) => /salto de encabezado/.test(x)) },
   { name: "un enlace con caja (inline-flex) junto a texto narrativo NO queda exento", route: { path: "/boxed-link-near-text", identify }, expect: (f) => f.some((x) => /area tactil/.test(x) && /Enlace caja/.test(x)) },
   { name: "un enlace dentro de una frase en un <nav> tampoco se exime (los grupos de navegacion nunca son en linea)", route: { path: "/nav-with-sentence", identify }, expect: (f) => f.some((x) => /area tactil/.test(x) && /enlace en nav/.test(x)) },
   { name: "degradado claro con texto negro pasa", route: { path: "/gradient-ok", identify }, expect: (f) => !f.some((x) => /contraste/.test(x)) },
