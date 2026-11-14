@@ -120,12 +120,12 @@ export function EmergencyWizard({ isDemoMode }: { readonly isDemoMode: boolean }
       <div className="flex items-center justify-between gap-3"><StatusBadge status={emergency.status} />{error ? <span className="text-sm text-destructive">{error}</span> : null}</div>
 
       {assessment ? (
-        <Card className="border-amber-200 bg-amber-50">
-          <CardContent className="space-y-3 p-5 text-amber-950">
+        <Card className="border-warning-border bg-warning-soft">
+          <CardContent className="space-y-3 p-5 text-warning-soft-foreground">
             <p className="inline-flex items-center gap-2 font-semibold"><ShieldAlert className="size-5" />Orientación inicial</p>
             <p className="text-sm leading-6">{assessment.summary}</p>
             {assessment.safetyFlags.length > 0 ? (
-              <div className="flex items-start gap-2 rounded-xl border border-amber-300 bg-amber-100 p-3 text-sm leading-6"><AlertTriangle className="mt-0.5 size-4 shrink-0" /><span>{assessment.safetyFlags.join(" ")}</span></div>
+              <div className="flex items-start gap-2 rounded-xl border border-warning-border bg-warning-soft p-3 text-sm leading-6"><AlertTriangle className="mt-0.5 size-4 shrink-0" /><span>{assessment.safetyFlags.join(" ")}</span></div>
             ) : null}
             {assessment.questions.length > 0 ? (
               <ul className="list-inside list-disc text-sm leading-6">{assessment.questions.map((question) => <li key={question}>{question}</li>)}</ul>
@@ -176,14 +176,14 @@ export function EmergencyWizard({ isDemoMode }: { readonly isDemoMode: boolean }
       ) : null}
 
       {emergency.status === "completed" ? (
-        <Card className="border-emerald-200 bg-emerald-50">
-          <CardContent className="space-y-2 p-5 text-emerald-950"><CheckCircle2 className="size-6" /><p className="font-semibold">Servicio completado</p></CardContent>
+        <Card className="border-success-border bg-success-soft">
+          <CardContent className="space-y-2 p-5 text-success-soft-foreground"><CheckCircle2 className="size-6" /><p className="font-semibold">Servicio completado</p></CardContent>
         </Card>
       ) : null}
 
       {["cancelled", "expired", "disputed"].includes(emergency.status) ? (
-        <Card className="border-rose-200 bg-rose-50">
-          <CardContent className="space-y-2 p-5 text-rose-950"><XCircle className="size-6" /><p className="font-semibold">Esta urgencia ya no está activa.</p></CardContent>
+        <Card className="border-destructive-border bg-destructive-soft">
+          <CardContent className="space-y-2 p-5 text-destructive-soft-foreground"><XCircle className="size-6" /><p className="font-semibold">Esta urgencia ya no está activa.</p></CardContent>
         </Card>
       ) : null}
 

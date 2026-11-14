@@ -1,8 +1,9 @@
 import type { EmergencyRequest, EmergencyStatusEvent } from "@/domain/entities/emergency-request";
 import type { EmergencyStatus } from "@/domain/enums/emergency-status";
 import type { CreateEmergencyInput, EmergencyActor, EmergencyRepository } from "@/repositories/contracts/emergency-repository";
+import { brand } from "@/design-system/brand";
 
-const NOT_IMPLEMENTED = "Esta función todavía no está disponible en Fixo.";
+const NOT_IMPLEMENTED = `Esta función todavía no está disponible en ${brand.name}.`;
 
 /**
  * La adjudicación atómica (`acceptEmergency`) deberá implementarse en Supabase

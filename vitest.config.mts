@@ -7,8 +7,9 @@ export default defineConfig({
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
   },
+  oxc: { jsx: { runtime: "automatic" } },
   test: {
     env: { NEXT_PUBLIC_DEMO_MODE: "true" },
-    include: ["src/**/*.test.ts"],
+    include: ["src/**/*.test.{ts,tsx}"],
   },
 });

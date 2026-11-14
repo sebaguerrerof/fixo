@@ -1,6 +1,7 @@
+import { brand } from "../../design-system/brand";
 export class ConfigurationError extends Error {
   constructor() {
-    super("Fixo no está disponible temporalmente. Inténtalo más tarde.");
+    super(`${brand.name} no está disponible temporalmente. Inténtalo más tarde.`);
     this.name = "ConfigurationError";
   }
 }

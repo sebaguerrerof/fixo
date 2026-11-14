@@ -7,11 +7,12 @@ import { jobDate, jobLabels } from "@/components/jobs/job-labels";
 import { PaymentCheckoutButton } from "./payment-checkout-button";
 import { ExtraChargeResponse } from "./extra-charge-response";
 import { ExtraChargeProposalForm } from "./extra-charge-proposal-form";
+import { brand } from "@/design-system/brand";
 
 type Role = "customer" | "technician" | "admin";
 interface Props { readonly jobId: string; readonly jobStatus: string; readonly role: Role; readonly snapshotPriceClp: number | null }
 
-const toneClass = { ok: "text-green-700 dark:text-green-400", pending: "text-amber-700 dark:text-amber-400", warn: "text-red-700 dark:text-red-400" } as const;
+const toneClass = { ok: "text-success ", pending: "text-warning-soft-foreground ", warn: "text-destructive " } as const;
 
 function Status({ order }: { readonly order: JobPaymentOrderView }) {
   const d = describeOrder(order);
@@ -22,7 +23,7 @@ function Status({ order }: { readonly order: JobPaymentOrderView }) {
 function Amounts({ order, role }: { readonly order: JobPaymentOrderView; readonly role: Role }) {
   return <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-sm">
     <dt>{role === "technician" ? "Importe asignado al profesional (Q)" : "Importe del profesional (Q)"}</dt><dd className="text-right">{formatClp(order.professionalAmountClp)}</dd>
-    {order.platformFeeClp !== null ? <><dt>Comisión Fixo (F)</dt><dd className="text-right">{formatClp(order.platformFeeClp)}</dd></> : null}
+    {order.platformFeeClp !== null ? <><dt>Comisión {brand.name} (F)</dt><dd className="text-right">{formatClp(order.platformFeeClp)}</dd></> : null}
     {order.totalClp !== null ? <><dt className="font-semibold">Total cliente (T)</dt><dd className="text-right font-semibold">{formatClp(order.totalClp)}</dd></> : null}
   </dl>;
 }
@@ -55,8 +56,8 @@ export async function JobPaymentsPanel({ jobId, jobStatus, role, snapshotPriceCl
   return <Card><CardHeader><CardTitle>Pagos (Sandbox)</CardTitle></CardHeader><CardContent className="space-y-4 break-words">
     <p className="rounded-lg bg-muted p-3 text-sm">Entorno de prueba: no se realizan cobros reales. Sólo una verificación autenticada con el proveedor acredita un pago; volver desde el checkout no lo confirma.</p>
     {initial ? <Order order={initial} label="Pago inicial" role={role} jobId={jobId} canPay={canPay} />
-      : <section className="space-y-3 rounded-lg border p-3"><h3 className="font-semibold">Pago inicial</h3><p className="font-semibold text-amber-700 dark:text-amber-400">Pendiente de pago</p>
-        {snapshotPriceClp !== null ? <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-sm"><dt>{role === "technician" ? "Importe asignado al profesional (Q)" : "Importe del profesional (Q)"}</dt><dd className="text-right">{formatClp(snapshotPriceClp)}</dd>{preview && role !== "technician" ? <><dt>Comisión Fixo (F)</dt><dd className="text-right">{formatClp(preview.platformFeeClp)}</dd><dt className="font-semibold">Total cliente (T)</dt><dd className="text-right font-semibold">{formatClp(preview.customerTotalClp)}</dd></> : null}</dl> : null}
+      : <section className="space-y-3 rounded-lg border p-3"><h3 className="font-semibold">Pago inicial</h3><p className="font-semibold text-warning-soft-foreground ">Pendiente de pago</p>
+        {snapshotPriceClp !== null ? <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-sm"><dt>{role === "technician" ? "Importe asignado al profesional (Q)" : "Importe del profesional (Q)"}</dt><dd className="text-right">{formatClp(snapshotPriceClp)}</dd>{preview && role !== "technician" ? <><dt>Comisión {brand.name} (F)</dt><dd className="text-right">{formatClp(preview.platformFeeClp)}</dd><dt className="font-semibold">Total cliente (T)</dt><dd className="text-right font-semibold">{formatClp(preview.customerTotalClp)}</dd></> : null}</dl> : null}
         {role === "customer" && canPay && preview && view.policy ? <PaymentCheckoutButton jobId={jobId} extraChargeId={null} policyVersion={view.policy.version} professionalAmountClp={preview.professionalAmountClp} platformFeeClp={preview.platformFeeClp} totalClp={preview.customerTotalClp} /> : null}
         {role === "customer" && !preview ? <p className="text-sm text-muted-foreground">No pudimos calcular el desglose. Actualiza la página.</p> : null}</section>}
     {view.extras.length ? <div className="space-y-3"><h3 className="font-semibold">Adicionales</h3>{view.extras.map((x) => {

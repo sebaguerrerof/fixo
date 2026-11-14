@@ -5,6 +5,7 @@ import { getSupabaseServerClient } from "@/integrations/supabase/server-client";
 import type { TechnicianRepository, TechnicianSearchFilters } from "@/repositories/contracts/technician-repository";
 import { matchesClientFilters, sortTechnicians } from "@/repositories/shared/technician-search";
 import { asNumber, asRecord, asRecords, asString, asStringArray, throwIfSupabaseError } from "@/repositories/supabase/supabase-helpers";
+import { brand } from "@/design-system/brand";
 
 const publicStatuses: readonly TechnicianStatus[] = ["verified", "active"];
 const categoryIcons = new Set<CategoryIcon>(["bolt", "droplets", "key-round", "snowflake", "monitor-cog", "wrench", "paint-roller", "sprout"]);
@@ -29,7 +30,7 @@ function mapTechnician(value: unknown): Technician {
   return {
     id: asString(row.user_id),
     slug: asString(row.slug),
-    displayName: asString(profile.full_name, "Técnico Fixo"),
+    displayName: asString(profile.full_name, `Técnico ${brand.name}`),
     avatarUrl: typeof profile.avatar_url === "string" ? profile.avatar_url : null,
     city: asString(row.city),
     coverageAreas: asStringArray(row.coverage_areas),

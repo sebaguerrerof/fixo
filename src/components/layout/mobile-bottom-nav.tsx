@@ -13,13 +13,21 @@ interface MobileNavigationItem {
   readonly href: string;
   readonly label: string;
   readonly icon: LucideIcon;
-  readonly emergency?: boolean;
 }
 
 const navigation: readonly MobileNavigationItem[] = [
   { href: "/", label: "Inicio", icon: House },
   { href: "/tecnicos", label: "Buscar", icon: Search },
 ] as const;
+
+function NavLink({ href, label, icon: Icon, active }: MobileNavigationItem & { readonly active: boolean }) {
+  return (
+    <Link aria-current={active ? "page" : undefined} className={cn("press flex min-h-12 min-w-16 flex-col items-center justify-center gap-0.5 rounded-xl px-3 text-[11px] font-semibold transition-colors duration-fast", active ? "bg-inverse-foreground/15 text-inverse-foreground" : "text-inverse-muted")} href={href}>
+      <Icon aria-hidden="true" className="size-5" />
+      <span>{label}</span>
+    </Link>
+  );
+}
 
 export function MobileBottomNav() {
   const pathname = usePathname();
@@ -30,8 +38,13 @@ export function MobileBottomNav() {
     void new AuthenticationService().getCurrentSession().then((nextSession) => { if (isMounted) setSession(nextSession); }).catch(() => { if (isMounted) setSession(null); });
     return () => { isMounted = false; };
   }, []);
-  const accountHref = session ? dashboardForRole(session.user.role) : "/login";
-  const accountActive = pathname === accountHref;
 
-  return <nav aria-label="Navegación móvil" className="fixed inset-x-3 bottom-3 z-50 flex h-16 items-center justify-around rounded-2xl border border-white/30 bg-slate-950/90 px-2 text-white shadow-lift backdrop-blur md:hidden">{navigation.map((item) => { const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href); const Icon = item.icon; return <Link key={item.href} className={cn("flex min-w-14 flex-col items-center gap-1 rounded-xl px-2 py-2 text-[10px] font-semibold transition", active ? "bg-white/15 text-white" : "text-slate-300", item.emergency && "text-rose-200")} href={item.href}><Icon className={cn("size-4", item.emergency && "fill-current")} /><span>{item.label}</span></Link>; })}<Link className={cn("flex min-w-14 flex-col items-center gap-1 rounded-xl px-2 py-2 text-[10px] font-semibold transition", accountActive ? "bg-white/15 text-white" : "text-slate-300")} href={accountHref}><UserRound className="size-4" /><span>Cuenta</span></Link></nav>;
+  const accountHref = session ? dashboardForRole(session.user.role) : "/login";
+
+  return (
+    <nav aria-label="Navegación móvil" className="safe-bottom fixed inset-x-3 bottom-3 z-50 flex items-center justify-around rounded-2xl border border-inverse-border bg-inverse/90 p-1.5 shadow-lift backdrop-blur-xl md:hidden">
+      {navigation.map((item) => <NavLink key={item.href} {...item} active={item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)} />)}
+      <NavLink href={accountHref} icon={UserRound} label="Cuenta" active={pathname === accountHref} />
+    </nav>
+  );
 }

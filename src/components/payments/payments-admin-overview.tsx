@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { jobDate } from "@/components/jobs/job-labels";
 import { FeePolicyForm } from "./fee-policy-form";
 import { ReconcileButton } from "./reconcile-button";
+import { brand } from "@/design-system/brand";
 
 const attemptLabels: Record<string, string> = { creating: "Creando en el proveedor", pending: "Pendiente de pago", reconciliation_required: "Requiere conciliación", quarantined: "En cuarentena", paid: "Pagado (coste Flow pendiente)" };
 const reviewLabels: Record<string, string> = { provider_mismatch: "Discrepancia con el proveedor", duplicate_payment: "Pago duplicado", late_payment: "Pago tardío", job_cancelled: "Trabajo cancelado con pago", participant_suspended: "Participante suspendido", cancellation_pending: "Cancelación pendiente", manual_review: "Revisión manual" };
@@ -18,9 +19,9 @@ export async function PaymentsAdminOverview({ superadmin }: { readonly superadmi
   if (!data) return <Card><CardHeader><CardTitle>Pagos (Sandbox)</CardTitle></CardHeader><CardContent className="space-y-2"><p className="font-semibold">Resumen de pagos no disponible</p><p className="text-sm text-muted-foreground">No pudimos cargarlo. Esto no significa que no existan pendientes ni discrepancias.</p></CardContent></Card>;
   const { policy, history, pending, reviews, quarantinedInbox, sandboxAccounts } = data;
   return <div className="grid min-w-0 gap-5 xl:grid-cols-2">
-    <Card><CardHeader><CardTitle>Comisión de Fixo</CardTitle></CardHeader><CardContent className="space-y-4 break-words">
+    <Card><CardHeader><CardTitle>Comisión de {brand.name}</CardTitle></CardHeader><CardContent className="space-y-4 break-words">
       {policy ? <><p className="text-2xl font-bold">{formatBasisPoints(policy.feeBasisPoints)} <span className="text-base font-normal text-muted-foreground">· versión {policy.version}</span></p>
-        <p className="text-sm">El cliente paga el importe del profesional (Q) más esta comisión (F). El coste de Flow lo absorbe Fixo dentro de F y no se descuenta al profesional.</p>
+        <p className="text-sm">El cliente paga el importe del profesional (Q) más esta comisión (F). El coste de Flow lo absorbe {brand.name} dentro de F y no se descuenta al profesional.</p>
         {superadmin ? <FeePolicyForm version={policy.version} basisPoints={policy.feeBasisPoints} /> : <p className="text-sm text-muted-foreground">Sólo un superadministrador puede modificarla.</p>}</> : <p>Política no disponible.</p>}
       <h3 className="font-semibold">Historial</h3>
       <ol className="space-y-2 text-sm">{history.map((h) => <li key={h.version} className="rounded-lg border p-2"><p className="font-semibold">Versión {h.version} · {formatBasisPoints(h.feeBasisPoints)}</p><p>{jobDate(h.createdAt)} · {h.authorName ?? "Política inicial"}</p><p className="break-words">{h.reason}</p></li>)}</ol>
