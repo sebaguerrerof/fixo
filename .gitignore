@@ -24,3 +24,7 @@ Thumbs.db
 # Local audit backups and historical execution logs
 /.audit-backups/
 /.execution-*.log
+
+# Impeccable: the engine binary is downloaded and checksum-verified by the launcher; local Claude settings stay local
+.claude/skills/impeccable/scripts/bin/
+.claude/settings.local.json

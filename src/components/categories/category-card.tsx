@@ -1,21 +1,14 @@
-import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
-import { CategoryIcon } from "@/components/categories/category-icon";
-import { Card, CardContent } from "@/components/ui/card";
 import type { Category } from "@/domain/entities/category";
 
+/** A trade as a line of text: name, what it covers, how many profiles are published. No icon tile, no card chrome. */
 export function CategoryCard({ category }: { readonly category: Category }) {
   return (
-    <Link className="block" href={`/tecnicos?categoria=${category.id}`}>
-      <Card className="group h-full transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-soft">
-        <CardContent className="p-5">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary"><CategoryIcon name={category.icon} /></div>
-          <h3 className="mt-4 font-bold text-foreground">{category.name}</h3>
-          <p className="mt-1 text-sm leading-5 text-muted-foreground">{category.description}</p>
-          <div className="mt-4 flex items-center justify-between text-sm font-semibold text-primary"><span>{category.technicianCount} disponibles</span><ArrowRight className="size-4 transition group-hover:translate-x-1" /></div>
-        </CardContent>
-      </Card>
+    <Link className="motion-card group block h-full rounded-lg border border-border bg-card p-5" href={`/tecnicos?categoria=${category.id}`}>
+      <h3 className="text-xl">{category.name}</h3>
+      <p className="mt-1 text-sm leading-5 text-muted-foreground">{category.description}</p>
+      <p className="tabular mt-4 text-sm font-semibold text-primary group-hover:underline">{category.technicianCount === 1 ? "1 perfil publicado" : `${category.technicianCount} perfiles publicados`}</p>
     </Link>
   );
 }

@@ -23,7 +23,38 @@ function wrappedLinkPage(which) {
   return page(`${heading}<div id="host" style="position:relative;width:120px"><p style="margin:0;width:120px"><a id="l" href="#a" style="display:inline;height:auto;min-width:0;padding:0;border:0;margin:0">enlace muy largo que ocupa varias lineas del parrafo estrecho</a> y mas texto de la frase.</p><div id="ov" style="position:absolute;background:transparent"></div></div><script>const rects=[...document.getElementById("l").getClientRects()];const host=document.getElementById("host").getBoundingClientRect();const r=rects[${index}];const ov=document.getElementById("ov");ov.style.left=(r.left-host.left)+"px";ov.style.top=(r.top-host.top)+"px";ov.style.width=r.width+"px";ov.style.height=r.height+"px";</script><a href="#b">Uno</a>`);
 }
 
+// A 300 x 120 card with a 2 px border whose link is stretched over the card (::after, inset 0), optionally with a thin transparent strip
+// laid over one edge of the card's padding box: that part of the card does not reach the link.
+function stretchedCardPage(stripStyle) {
+  const strip = stripStyle ? `<div style="position:absolute;background:transparent;${stripStyle}"></div>` : "";
+  return page(`${heading}<article style="position:relative;width:300px;height:120px;border:2px solid #000;box-sizing:border-box"><h3 style="margin:8px"><a href="#a" class="s" style="display:inline;height:auto;min-width:0;padding:0;border:0;margin:0">Camila Rojas</a></h3>${strip}</article><style>.s::after{content:"";position:absolute;inset:0}</style>`);
+}
+
+// The same card under CSS transforms. Layout pixels (client*/offset*) and viewport pixels (getBoundingClientRect) differ under scale, so
+// the audit must convert; rotation, skew, 3D and the individual `rotate` property are reported as NOT VERIFIED instead of guessed.
+function transformedCardPage({ cardStyle = "", wrapperStyle = "", strip = "" }) {
+  const blocker = strip ? `<div style="position:absolute;background:transparent;${strip}"></div>` : "";
+  return page(`${heading}<div style="margin:40px 0 160px 0;${wrapperStyle}"><article style="position:relative;width:300px;height:120px;border:2px solid #000;box-sizing:border-box;${cardStyle}"><h3 style="margin:8px"><a href="#a" class="s" style="display:inline;height:auto;min-width:0;padding:0;border:0;margin:0">Camila Rojas</a></h3>${blocker}</article></div><style>.s::after{content:"";position:absolute;inset:0}</style>`);
+}
+
 const pages = {
+  "/scaled-card": transformedCardPage({ cardStyle: "transform:scale(.8);transform-origin:top left" }),
+  "/scaled-ancestor": transformedCardPage({ wrapperStyle: "transform:scale(.8);transform-origin:top left" }),
+  "/scaled-nonuniform": transformedCardPage({ cardStyle: "transform:scale(.5,1);transform-origin:top left" }),
+  "/scaled-translated": transformedCardPage({ cardStyle: "transform:translate(30px,10px) scale(.9);transform-origin:top left" }),
+  "/scaled-property": transformedCardPage({ cardStyle: "scale:.8;transform-origin:top left" }),
+  "/scaled-strip-bottom": transformedCardPage({ cardStyle: "transform:scale(.8);transform-origin:top left", strip: "left:0;right:0;bottom:0;height:10px" }),
+  "/scaled-ancestor-strip-right": transformedCardPage({ wrapperStyle: "transform:scale(.8);transform-origin:top left", strip: "top:0;bottom:0;right:0;width:6px" }),
+  "/rotated-card": transformedCardPage({ cardStyle: "transform:rotate(5deg)" }),
+  "/skewed-card": transformedCardPage({ cardStyle: "transform:skewX(8deg)" }),
+  "/rotate-property": transformedCardPage({ cardStyle: "rotate:5deg" }),
+  "/rotated-ancestor": transformedCardPage({ wrapperStyle: "transform:rotate(3deg)" }),
+  "/stretched-clean": stretchedCardPage(""),
+  "/stretched-bottom-10": stretchedCardPage("left:0;right:0;bottom:0;height:10px"),
+  "/stretched-bottom-2": stretchedCardPage("left:0;right:0;bottom:0;height:2px"),
+  "/stretched-top-10": stretchedCardPage("left:0;right:0;top:0;height:10px"),
+  "/stretched-right-6": stretchedCardPage("top:0;bottom:0;right:0;width:6px"),
+  "/stretched-left-3": stretchedCardPage("top:0;bottom:0;left:0;width:3px"),
   "/healthy": page(`${heading}<a href="#a">Uno</a><br><a href="#b">Dos</a><div class="spacer"></div><button type="button">Abajo</button>`),
   "/empty": page(""),
   // A control far below the fold covered by an overlay: invisible from the top, real for a user who scrolls.
@@ -79,6 +110,22 @@ const pages = {
   // Infinite animations (shimmer, pulse) must not block the audit.
   "/infinite-animation": page(`${heading}<style>@keyframes pulse{50%{opacity:.9}}#p{animation:pulse 1s infinite}</style><p id="p" style="margin:0">Texto con animacion infinita</p><a href="#a">Uno</a>`),
   "/nav-with-sentence": page(`${heading}<nav aria-label="Pie"><p>Este texto largo describe el menu de la pagina <a href="#1" style="display:inline;height:auto;min-width:0;padding:0;border:0;margin:0">enlace en nav</a> y sigue.</p></nav>`),
+  // Fixed bars overlay scrolling content by design: a fixed bar over a flow control is not a static overlap (reachability is proven by the
+  // scroll-and-click hit test). A full-screen fixed layer that swallows clicks is still caught by that hit test.
+  "/fixed-bar": page(`${heading}<div style="height:600px"></div><button type="button" style="margin:0">Control</button><div style="height:900px"></div><nav style="position:fixed;left:0;right:0;bottom:0;height:60px;background:#eee"><a href="#n" style="margin:0 8px">Fijo</a></nav>`),
+  "/fixed-bar-over-control": page(`${heading}<div style="height:500px"></div><button type="button" style="margin:0">Cubierto</button><div style="height:900px"></div><div style="position:fixed;inset:0;background:transparent"></div>`),
+  // WCAG 1.4.3 exempts inactive components: low-contrast text in a disabled button is not a finding, the same text enabled is.
+  "/disabled-low-contrast": page(`${heading}<button type="button" disabled style="color:#bbb;margin:0">Guardar cambio</button><a href="#a">Uno</a>`),
+  "/enabled-low-contrast": page(`${heading}<button type="button" style="color:#bbb;margin:0">Guardar cambio</button><a href="#a">Uno</a>`),
+  // Placeholders are measured too (they are not text nodes): the browser default grey on white is 2.5:1.
+  "/placeholder-low": page(`${heading}<input aria-label="q" placeholder="Busca un tecnico" style="color:#000;background:#fff;height:44px;box-sizing:border-box"><style>#low::placeholder{color:#aaa}</style><input id="low" aria-label="r" placeholder="Correo electronico" style="height:44px;box-sizing:border-box"><a href="#a">Uno</a>`),
+  "/placeholder-ok": page(`${heading}<style>input::placeholder{color:#595959}</style><input aria-label="q" placeholder="Busca un tecnico" style="height:44px;box-sizing:border-box"><a href="#a">Uno</a>`),
+  // Stretched link: the link text is small but its ::after covers the whole card, which is the real click area.
+  "/stretched-link": page(`${heading}<article style="position:relative;width:300px;height:120px;border:1px solid #000;box-sizing:border-box"><h3 style="margin:8px"><a href="#a" style="display:inline;height:auto;min-width:0;padding:0;border:0;margin:0" class="s">Camila Rojas</a></h3></article><style>.s::after{content:"";position:absolute;inset:0}</style>`),
+  "/stretched-link-covered": page(`${heading}<article style="position:relative;width:300px;height:120px;border:1px solid #000;box-sizing:border-box"><h3 style="margin:8px"><a href="#a" style="display:inline;height:auto;min-width:0;padding:0;border:0;margin:0" class="s">Camila Rojas</a></h3><div style="position:absolute;left:0;right:0;bottom:0;height:30px;background:transparent"></div></article><style>.s::after{content:"";position:absolute;inset:0}</style>`),
+  // Heading order: no skipped levels. h1 -> h3 is a finding; h1 -> h2 -> h3 and going back up are fine.
+  "/heading-skip": page(`<h1>Pagina de prueba</h1><h3>Salta un nivel</h3><a href="#a">Uno</a>`),
+  "/heading-ok": page(`<h1>Pagina de prueba</h1><h2>Seccion</h2><h3>Sub</h3><h2>Otra seccion</h2><a href="#a">Uno</a>`),
   "/gradient-ok": page(`${heading}<p style="background:linear-gradient(#fff,#eee);color:#000">Negro sobre degradado claro</p><a href="#a">Uno</a>`),
   "/gradient-unparsable": page(`${heading}<p style="background:linear-gradient(in oklch, oklch(0.2 0 0), oklch(0.9 0 0));color:#000">Degradado en espacio oklch</p><a href="#a">Uno</a>`),
   "/redirect-source": null,
@@ -95,6 +142,15 @@ pages["/space-default"] = page(`${heading}<p style="background-image:linear-grad
 
 const server = createServer((request, response) => {
   const path = new URL(request.url, "http://x").pathname;
+  // Session fixtures: /demo-login has a demo account button that sets a cookie; /private needs that cookie, else redirects to the login.
+  if (path === "/demo-login") { response.writeHead(200, { "content-type": "text/html" }); response.end(page(`<h1>Ingresar</h1><button type="button" onclick="document.cookie='sid=1; path=/';location.href='/private'">Cliente · Prueba</button>`)); return; }
+  if (path === "/demo-login-broken") { response.writeHead(200, { "content-type": "text/html" }); response.end(page(`<h1>Ingresar</h1><button type="button">Cliente · Prueba</button>`)); return; }
+  if (path === "/demo-login-nobuttons") { response.writeHead(200, { "content-type": "text/html" }); response.end(page(`<h1>Ingresar</h1><a href="#a">Uno</a>`)); return; }
+  if (path === "/private") {
+    if (!(request.headers.cookie ?? "").includes("sid=1")) { response.writeHead(302, { location: "/demo-login" }); response.end(); return; }
+    response.writeHead(200, { "content-type": "text/html" }); response.end(page(`${heading}<a href="#a">Uno</a>`)); return;
+  }
+  if (path === "/hang") return; // never answers: the navigation must time out
   if (path === "/redirect-source") { response.writeHead(302, { location: "/redirect-target" }); response.end(); return; }
   if (path === "/all-404/healthy" || !(path in pages)) { response.writeHead(404, { "content-type": "text/html" }); response.end(page(`${heading}<a href="#a">Uno</a>`)); return; }
   response.writeHead(200, { "content-type": "text/html" });
@@ -147,6 +203,40 @@ const cases = [
   { name: "varios enlaces pequenos en el mismo contenedor, sin frase, NO quedan exentos", route: { path: "/bare-small-links", identify }, expect: (f) => ["Primero", "Segundo", "Tercero"].every((name) => f.some((x) => /area tactil/.test(x) && x.includes(`«${name}»`))) },
   { name: "una transicion larga se espera a que termine: no se mide a media opacidad", route: { path: "/settling-transition", identify }, expect: (f) => f.length === 0 },
   { name: "una animacion infinita no bloquea ni invalida la auditoria", route: { path: "/infinite-animation", identify }, expect: (f) => f.length === 0 },
+  { name: "pagina protegida sin sesion redirige al login y falla (URL final)", route: { path: "/private", identify }, expect: (f) => f.some((x) => /redireccion inesperada/.test(x)) },
+  { name: "con sesion demo (as: customer) la pagina protegida se audita y pasa", route: { path: "/private", identify, as: "customer", loginPath: "/demo-login" }, expect: (f) => f.length === 0 },
+  { name: "si el boton demo no inicia sesion, se informa (no se audita la pagina de login por error)", route: { path: "/private", identify, as: "customer", loginPath: "/demo-login-broken" }, expect: (f) => f.some((x) => /no salio de/.test(x)) },
+  { name: "sin boton de cuenta demo se explica la causa (falta NEXT_PUBLIC_DEMO_MODE)", route: { path: "/private", identify, as: "customer", loginPath: "/demo-login-nobuttons" }, expect: (f) => f.some((x) => /NEXT_PUBLIC_DEMO_MODE/.test(x)) },
+  { name: "si el login no responde se informa como fallo de la ruta (no aborta la corrida)", route: { path: "/private", identify, as: "customer", loginPath: "/hang", timeout: 1500, attempts: 1 }, expect: (f) => f.some((x) => /no se pudo iniciar sesion/.test(x)) },
+  { name: "rol de sesion desconocido falla", route: { path: "/private", identify, as: "invitado", loginPath: "/demo-login" }, expect: (f) => f.some((x) => /rol de sesion desconocido/.test(x)) },
+  { name: "una navegacion que no responde se informa como fallo de esa ruta (no aborta la corrida)", route: { path: "/hang", identify, timeout: 1500, attempts: 1 }, expect: (f) => f.some((x) => /no se pudo cargar la ruta/.test(x)) },
+  { name: "una barra fija sobre contenido que hace scroll no cuenta como solape (y los controles siguen alcanzables)", route: { path: "/fixed-bar", identify }, expect: (f) => !f.some((x) => /solapadas|llega a/.test(x)) },
+  { name: "una capa fija a pantalla completa que traga clics SI se detecta (hit test)", route: { path: "/fixed-bar-over-control", identify }, expect: (f) => f.some((x) => /llega a/.test(x)) },
+  { name: "texto de bajo contraste en un boton deshabilitado no es hallazgo (WCAG 1.4.3, inactivo)", route: { path: "/disabled-low-contrast", identify }, expect: (f) => !f.some((x) => /contraste/.test(x)) },
+  { name: "el mismo texto en un boton habilitado SI es hallazgo", route: { path: "/enabled-low-contrast", identify }, expect: (f) => f.some((x) => /contraste/.test(x) && /Guardar cambio/.test(x)) },
+  { name: "un placeholder de bajo contraste es hallazgo (no es un nodo de texto, se mide aparte)", route: { path: "/placeholder-low", identify }, expect: (f) => f.some((x) => /contraste/.test(x) && /placeholder «Correo electronico»/.test(x)) },
+  { name: "un placeholder con contraste suficiente pasa", route: { path: "/placeholder-ok", identify }, expect: (f) => !f.some((x) => /placeholder/.test(x)) },
+  { name: "un enlace estirado (::after inset 0) se mide por el area real de la tarjeta, no por su texto", route: { path: "/stretched-link", identify, minControls: 1 }, expect: (f) => !f.some((x) => /area tactil/.test(x)) },
+  { name: "tarjeta estirada con borde de 2 px y nada encima pasa (el borde del contenedor no es parte del area del ::after)", route: { path: "/stretched-clean", identify }, expect: (f) => !f.some((x) => /llega a|area tactil/.test(x)) },
+  { name: "franja bloqueadora de 10 px abajo se detecta (borde inferior)", route: { path: "/stretched-bottom-10", identify }, expect: (f) => f.some((x) => /borde inferior/.test(x) && /llega a/.test(x)) },
+  { name: "franja bloqueadora de solo 2 px abajo se detecta", route: { path: "/stretched-bottom-2", identify }, expect: (f) => f.some((x) => /borde inferior/.test(x) && /llega a/.test(x)) },
+  { name: "franja bloqueadora de 10 px arriba se detecta (borde superior)", route: { path: "/stretched-top-10", identify }, expect: (f) => f.some((x) => /borde superior/.test(x) && /llega a/.test(x)) },
+  { name: "franja bloqueadora de 6 px a la derecha se detecta (borde derecho)", route: { path: "/stretched-right-6", identify }, expect: (f) => f.some((x) => /borde derecho/.test(x) && /llega a/.test(x)) },
+  { name: "franja bloqueadora de 3 px a la izquierda se detecta (borde izquierdo)", route: { path: "/stretched-left-3", identify }, expect: (f) => f.some((x) => /borde izquierdo/.test(x) && /llega a/.test(x)) },
+  { name: "tarjeta sana escalada (scale .8) pasa: el area del ::after se convierte a coordenadas del viewport", route: { path: "/scaled-card", identify }, expect: (f) => !f.some((x) => /llega a|area tactil/.test(x)) },
+  { name: "tarjeta sana con un ANCESTRO escalado (.8) pasa", route: { path: "/scaled-ancestor", identify }, expect: (f) => !f.some((x) => /llega a|area tactil/.test(x)) },
+  { name: "escala no uniforme (.5, 1) pasa", route: { path: "/scaled-nonuniform", identify }, expect: (f) => !f.some((x) => /llega a|area tactil/.test(x)) },
+  { name: "traslacion mas escala pasa", route: { path: "/scaled-translated", identify }, expect: (f) => !f.some((x) => /llega a|area tactil/.test(x)) },
+  { name: "la propiedad individual `scale` pasa (se mide por la razon entre caja renderizada y de layout)", route: { path: "/scaled-property", identify }, expect: (f) => !f.some((x) => /llega a|area tactil/.test(x)) },
+  { name: "franja de 10 px bloqueando el borde inferior de una tarjeta ESCALADA se detecta", route: { path: "/scaled-strip-bottom", identify }, expect: (f) => f.some((x) => /borde inferior/.test(x) && /llega a/.test(x)) },
+  { name: "franja de 6 px a la derecha con un ANCESTRO escalado se detecta", route: { path: "/scaled-ancestor-strip-right", identify }, expect: (f) => f.some((x) => /borde derecho/.test(x) && /llega a/.test(x)) },
+  { name: "rotacion se informa como NO VERIFICADO (no se adivina)", route: { path: "/rotated-card", identify }, expect: (f) => f.some((x) => /NO VERIFICADO/.test(x) && /rotacion/.test(x)) && !f.some((x) => /llega a/.test(x)) },
+  { name: "sesgo se informa como NO VERIFICADO", route: { path: "/skewed-card", identify }, expect: (f) => f.some((x) => /NO VERIFICADO/.test(x)) },
+  { name: "la propiedad individual `rotate` se informa como NO VERIFICADO", route: { path: "/rotate-property", identify }, expect: (f) => f.some((x) => /NO VERIFICADO/.test(x)) },
+  { name: "un ancestro rotado tambien lo marca como NO VERIFICADO", route: { path: "/rotated-ancestor", identify }, expect: (f) => f.some((x) => /NO VERIFICADO/.test(x)) },
+  { name: "un enlace estirado cuyo borde inferior esta cubierto se detecta en el hit test", route: { path: "/stretched-link-covered", identify }, expect: (f) => f.some((x) => /llega a/.test(x) && /Camila Rojas/.test(x)) },
+  { name: "un h1 seguido de un h3 es un salto de encabezado", route: { path: "/heading-skip", identify }, expect: (f) => f.some((x) => /salto de encabezado: h3/.test(x)) },
+  { name: "h1, h2, h3 y volver a h2 no es salto", route: { path: "/heading-ok", identify }, expect: (f) => !f.some((x) => /salto de encabezado/.test(x)) },
   { name: "un enlace con caja (inline-flex) junto a texto narrativo NO queda exento", route: { path: "/boxed-link-near-text", identify }, expect: (f) => f.some((x) => /area tactil/.test(x) && /Enlace caja/.test(x)) },
   { name: "un enlace dentro de una frase en un <nav> tampoco se exime (los grupos de navegacion nunca son en linea)", route: { path: "/nav-with-sentence", identify }, expect: (f) => f.some((x) => /area tactil/.test(x) && /enlace en nav/.test(x)) },
   { name: "degradado claro con texto negro pasa", route: { path: "/gradient-ok", identify }, expect: (f) => !f.some((x) => /contraste/.test(x)) },

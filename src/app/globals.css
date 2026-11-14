@@ -129,11 +129,17 @@
 
   body {
     @apply min-h-screen bg-background font-sans text-foreground antialiased;
-    font-feature-settings: "cv11", "ss01";
+    font-feature-settings: "kern", "liga";
+    caret-color: hsl(var(--primary));
+    scrollbar-color: hsl(var(--border)) transparent;
     text-rendering: optimizeLegibility;
   }
 
-  h1, h2, h3, h4 { @apply font-semibold tracking-tight; text-wrap: balance; }
+  h1, h2, h3, h4 { @apply font-display font-bold; letter-spacing: -0.005em; text-wrap: balance; }
+  p, li, dd, figcaption, blockquote { text-wrap: pretty; }
+  input, textarea { accent-color: hsl(var(--primary)); }
+  /* Same specificity as Tailwind preflight (input::placeholder) so the token wins and placeholders meet 4.5:1. */
+  input::placeholder, textarea::placeholder { color: hsl(var(--muted-foreground)); opacity: 1; }
 
   button, input, select, textarea { font: inherit; }
   button, [role="button"], a { -webkit-tap-highlight-color: transparent; }
@@ -152,53 +158,14 @@
 
   .text-balance { text-wrap: balance; }
 
-  .text-gradient { @apply bg-gradient-to-r from-primary to-info bg-clip-text text-transparent; }
-
   .section-space { @apply py-14 sm:py-16 lg:py-24; }
 
-  .surface-grid {
-    background-image:
-      linear-gradient(hsl(var(--foreground) / 0.07) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(var(--foreground) / 0.07) 1px, transparent 1px);
-    background-size: 32px 32px;
-    mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
-  }
+  .search-command { @apply rounded-xl border border-input bg-card; }
 
-  .hero-shell {
-    background:
-      radial-gradient(circle at 82% 8%, hsl(var(--primary) / 0.16), transparent 26rem),
-      radial-gradient(circle at 8% 96%, hsl(var(--info) / 0.10), transparent 24rem),
-      hsl(var(--background));
-  }
+  .motion-card { transition: border-color var(--duration-base) var(--ease-out), background-color var(--duration-base) var(--ease-out); }
+  @media (hover: hover) { .motion-card:hover { @apply border-primary/50 bg-card; } }
 
-  .login-showcase {
-    background-color: hsl(var(--inverse));
-    background-image:
-      radial-gradient(circle at 20% 15%, hsl(var(--primary) / 0.14), transparent 32%),
-      radial-gradient(circle at 80% 85%, hsl(var(--info) / 0.12), transparent 32%);
-  }
-
-  .hero-orb { @apply pointer-events-none absolute rounded-full blur-3xl; animation: drift 16s ease-in-out infinite alternate; }
-  .hero-orb-one { @apply -right-20 top-10 size-72 bg-primary/20; }
-  .hero-orb-two { @apply -bottom-28 left-[42%] size-80 bg-info/15; animation-delay: -8s; }
-
-  .eyebrow { @apply inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1.5 text-sm font-semibold text-secondary-foreground; }
-
-  .glass { @apply border border-border/70 bg-card/80 backdrop-blur-xl; }
-
-  .search-command { @apply rounded-2xl border border-border bg-card/90 backdrop-blur; box-shadow: var(--shadow-soft); }
-
-  .work-card { @apply rounded-[1.75rem] border border-border/70 bg-card/90 backdrop-blur; box-shadow: var(--shadow-lift); }
-
-  .live-indicator { @apply inline-flex items-center gap-1.5 rounded-full border border-success-border bg-success-soft px-2.5 py-1 text-xs font-bold text-success-soft-foreground; }
-  .live-indicator::before { content: ""; @apply size-1.5 rounded-full bg-success; animation: pulse-dot 1.8s ease-in-out infinite; }
-
-  .timeline-step { @apply flex items-center gap-3 rounded-xl px-2 py-2.5 text-sm font-medium transition-colors hover:bg-muted/70; }
-  .timeline-number { @apply flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-secondary-foreground; }
-
-  .motion-card { transition: transform var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out), border-color var(--duration-base) var(--ease-out); }
-  @media (hover: hover) { .motion-card:hover { @apply -translate-y-1 border-primary/30; box-shadow: var(--shadow-lift); } }
-
+  .stamp-in { animation: stamp-in 420ms var(--ease-out) 350ms both; }
   .press { transition: transform var(--duration-fast) var(--ease-out); }
   .press:active { transform: scale(0.97); }
 
@@ -239,8 +206,7 @@
 
 @keyframes enter { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes reveal { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes drift { from { transform: translate3d(-1rem, -0.5rem, 0) scale(0.95); } to { transform: translate3d(1rem, 0.75rem, 0) scale(1.05); } }
-@keyframes pulse-dot { 50% { opacity: 0.35; transform: scale(0.7); } }
 @keyframes shimmer { to { transform: translateX(100%); } }
 @keyframes pop-in { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: none; } }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes stamp-in { from { opacity: 0; transform: rotate(-6deg) scale(1.35); } to { opacity: 1; transform: rotate(-6deg) scale(1); } }

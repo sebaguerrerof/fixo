@@ -1,11 +1,34 @@
 // Core of the browser UI audit. Used by audit-ui.mjs (real pages) and test-audit-ui.mjs (negative self-tests).
 // Everything here is read-only: it only loads pages and inspects them.
 
+const DEMO_LABELS = { customer: /Cliente/, technician: /Técnico|Tecnico/, admin: /Admin/ };
+
+/**
+ * Signs in through the real login page with one of the demo accounts (the app must run with NEXT_PUBLIC_DEMO_MODE=true).
+ * Returns an error message, or null when the session is established (the URL left the login page).
+ */
+export async function signInDemo(page, base, role, loginPath = "/login", timeout = 60000) {
+  const pattern = DEMO_LABELS[role];
+  if (!pattern) return `rol de sesion desconocido: ${role}`;
+  try {
+    await page.goto(base + loginPath, { waitUntil: "networkidle", timeout });
+    const button = page.getByRole("button", { name: pattern });
+    if ((await button.count()) === 0) return `no hay boton de cuenta demo para "${role}" en ${loginPath} (se necesita NEXT_PUBLIC_DEMO_MODE=true)`;
+    await button.first().click();
+    const left = await page.waitForURL((url) => !url.pathname.startsWith(loginPath), { timeout: 15000 }).then(() => true, () => false);
+    return left ? null : `el inicio de sesion demo como "${role}" no salio de ${loginPath}`;
+  } catch (error) {
+    return `no se pudo iniciar sesion como "${role}": ${String(error.message ?? error).split("\n")[0]}`;
+  }
+}
+
 /**
  * Route contract. An audit only counts if the page is really the one we meant to audit:
  *  - HTTP status equals `status` (default 200),
  *  - the final pathname equals `finalPath` (default: the requested path, so unexpected redirects fail),
  *  - an identifying element (`identify.selector` whose text matches `identify.text`) is present and visible.
+ * `as` ("customer" | "technician" | "admin") signs in through the demo accounts first; without it the page is audited anonymously,
+ * so a protected page that redirects to the login fails the final-URL check.
  */
 export async function auditRoute({ browser, base, route, scheme, viewport }) {
   const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, colorScheme: scheme });
@@ -15,7 +38,18 @@ export async function auditRoute({ browser, base, route, scheme, viewport }) {
   let controls = 0;
   const notes = [];
   try {
-    const response = await page.goto(base + route.path, { waitUntil: "networkidle" });
+    if (route.as) {
+      const problem = await signInDemo(page, base, route.as, route.loginPath, route.timeout);
+      if (problem) { failures.push(problem); return { failures, checked, controls, notes: [] }; }
+    }
+    // A slow or failing navigation (cold dev-server compile, network error) is a finding for that route, never a crash of the run.
+    let response = null;
+    let navigationError = null;
+    for (let attempt = 1; attempt <= (route.attempts ?? 2); attempt++) {
+      try { response = await page.goto(base + route.path, { waitUntil: "networkidle", timeout: route.timeout ?? 60000 }); navigationError = null; break; }
+      catch (error) { navigationError = String(error.message ?? error).split(/\r?\n/)[0]; }
+    }
+    if (navigationError) { failures.push(`no se pudo cargar la ruta: ${navigationError}`); return { failures: [...new Set(failures)], checked, controls, notes: [] }; }
     const expectedStatus = route.status ?? 200;
     if (!response) failures.push("sin respuesta HTTP");
     else if (response.status() !== expectedStatus) failures.push(`estado HTTP ${response.status()}, se esperaba ${expectedStatus}`);
@@ -26,8 +60,9 @@ export async function auditRoute({ browser, base, route, scheme, viewport }) {
     const identify = route.identify;
     if (!identify) failures.push("la ruta no declara elemento identificador");
     else {
-      // Entrance animations start transparent, so give the identifier a short window to become effectively visible.
-      const found = await page.waitForFunction(({ selector, text }) => [...document.querySelectorAll(selector)].some((element) => window.__auditOpacity(element) >= window.__auditMinOpacity && new RegExp(text, "i").test(element.textContent ?? "")), { selector: identify.selector, text: identify.text }, { timeout: 3000 }).then(() => true, () => false);
+      // Entrance animations start transparent (and a cold dev-server compile can be slow), so give the identifier a window to become
+      // effectively visible: 3 s by default, `identifyTimeout` per route.
+      const found = await page.waitForFunction(({ selector, text }) => [...document.querySelectorAll(selector)].some((element) => window.__auditOpacity(element) >= window.__auditMinOpacity && new RegExp(text, "i").test(element.textContent ?? "")), { selector: identify.selector, text: identify.text }, { timeout: route.identifyTimeout ?? 3000 }).then(() => true, () => false);
       if (!found) failures.push(`no aparece el elemento identificador ${identify.selector} /${identify.text}/ visible (pagina vacia, distinta u oculta por visibility/display/opacity)`);
     }
     if (failures.length === 0) {
@@ -228,6 +263,8 @@ export function staticAudit(minTarget) {
     const style = getComputedStyle(element);
     if (window.__auditOpacity(element) < window.__auditMinOpacity) continue;
     if (element.closest("nextjs-portal, [aria-hidden='true']")) continue;
+    // WCAG 1.4.3 exempts inactive components: text inside a disabled control is not measured (and is declared in the notes).
+    if (element.closest("button:disabled, input:disabled, select:disabled, textarea:disabled, fieldset:disabled, [aria-disabled='true']")) { skipped.push(`texto de control deshabilitado, contraste no medido (WCAG 1.4.3): «${text.slice(0, 30)}»`); continue; }
     if (style.webkitTextFillColor === "rgba(0, 0, 0, 0)" || style.webkitTextFillColor === "transparent") { skipped.push(`texto con degradado, contraste no medido: «${text.slice(0, 40)}»`); continue; }
     const fg = parse(style.color);
     const where = `«${text.slice(0, 40)}»  <${element.tagName.toLowerCase()} class="${String(element.className).slice(0, 70)}">`;
@@ -241,15 +278,56 @@ export function staticAudit(minTarget) {
     if (ratio < need) failures.push(`contraste ${ratio.toFixed(2)}:1 < ${need}:1  ${where}`);
   }
 
+  // Placeholders are not text nodes, so they need their own pass: ::placeholder colour against the field's own background (4.5:1).
+  for (const field of document.querySelectorAll("input[placeholder], textarea[placeholder]")) {
+    if (!field.getAttribute("placeholder")?.trim() || window.__auditOpacity(field) < window.__auditMinOpacity || field.disabled) continue;
+    const fg = parse(getComputedStyle(field, "::placeholder").color);
+    const where = `placeholder «${field.getAttribute("placeholder").slice(0, 40)}»  <${field.tagName.toLowerCase()} name="${field.getAttribute("name") ?? ""}">`;
+    if (!fg) { failures.push(`contraste NO VERIFICADO (color de placeholder ilegible)  ${where}`); continue; }
+    const ratio = worstContrast(field, fg);
+    if (ratio === null) { failures.push(`contraste NO VERIFICADO (fondo no interpretable)  ${where}`); continue; }
+    checked++;
+    if (ratio < 4.5) failures.push(`contraste ${ratio.toFixed(2)}:1 < 4.5:1  ${where}`);
+  }
+
+  // Heading order: a visible heading must not skip a level below the previous one (h1 -> h3). Screen-reader users navigate by heading.
+  let previousLevel = 0;
+  for (const heading of document.querySelectorAll("h1, h2, h3, h4, h5, h6")) {
+    if (window.__auditOpacity(heading) < window.__auditMinOpacity || heading.closest("nextjs-portal")) continue;
+    const level = Number(heading.tagName.slice(1));
+    if (previousLevel > 0 && level > previousLevel + 1) failures.push(`salto de encabezado: h${level} «${heading.textContent.trim().slice(0, 30)}» despues de h${previousLevel}`);
+    previousLevel = level;
+  }
+
   const interactive = [...document.querySelectorAll("a[href], button, input:not([type=hidden]), select, textarea, [role=button]")].filter((e) => {
     return window.__auditOpacity(e) >= window.__auditMinOpacity && !e.disabled && !e.closest("nextjs-portal");
   });
-  const boxes = interactive.map((element) => {
+  // A "stretched link" (a link whose ::after is absolutely positioned with all insets 0) is clickable over the whole of its
+  // nearest positioned ancestor's PADDING box (inside its border), which is the interactive area users actually have; measure and probe that, not the link text.
+  // Transforms: getBoundingClientRect is in VIEWPORT coordinates (transforms applied) while client*/offset* are layout pixels, so
+  // every layout length is scaled by the rendered/layout ratio. Rotation, skew, 3D and the individual rotate property cannot be
+  // reduced to a scale, so a control under them is NOT VERIFIED instead of guessed.
+  const unsupportedTransform = (element) => { for (let node = element; node; node = node.parentElement) { const style = getComputedStyle(node); if (style.rotate !== "none" && style.rotate !== undefined) return true; if (style.transform !== "none") { const m = new DOMMatrix(style.transform); if (!m.is2D || Math.abs(m.b) > 1e-6 || Math.abs(m.c) > 1e-6) return true; } } return false; };
+  const layoutScale = (node) => { const r = node.getBoundingClientRect(); return { sx: node.offsetWidth ? r.width / node.offsetWidth : 1, sy: node.offsetHeight ? r.height / node.offsetHeight : 1 }; };
+  const paddingBox = (node) => { const r = node.getBoundingClientRect(); const { sx, sy } = layoutScale(node); const left = r.left + node.clientLeft * sx, top = r.top + node.clientTop * sy, width = node.clientWidth * sx, height = node.clientHeight * sy; return { left, top, width, height, right: left + width, bottom: top + height }; };
+  const stretchedRect = (element) => {
+    const after = getComputedStyle(element, "::after");
+    if (after.content === "none" || after.position !== "absolute") return null;
+    if (![after.top, after.right, after.bottom, after.left].every((value) => value === "0px")) return null;
+    for (let node = element.parentElement; node; node = node.parentElement) if (getComputedStyle(node).position !== "static") return paddingBox(node);
+    return null;
+  };
+  const untransformed = [];
+  for (const control of interactive) if (unsupportedTransform(control)) failures.push(`area tactil NO VERIFICADO (rotacion, sesgo o 3D no soportados)  <${control.tagName.toLowerCase()}> «${(control.textContent || control.getAttribute("aria-label") || "").trim().slice(0, 28)}»`);
+  const boxes = interactive.filter((control) => !unsupportedTransform(control)).map((element) => {
+    const stretched = stretchedRect(element);
+    if (stretched) return { element, left: stretched.left, right: stretched.right, top: stretched.top, bottom: stretched.bottom, w: stretched.width, h: stretched.height };
     const rect = element.getBoundingClientRect();
     const before = getComputedStyle(element, "::before");
     const extra = before.content !== "none" && before.position === "absolute";
-    const w = extra ? Math.max(rect.width, parseFloat(before.width) || 0) : rect.width;
-    const h = extra ? Math.max(rect.height, parseFloat(before.height) || 0) : rect.height;
+    const scale = layoutScale(element);
+    const w = extra ? Math.max(rect.width, (parseFloat(before.width) || 0) * scale.sx) : rect.width;
+    const h = extra ? Math.max(rect.height, (parseFloat(before.height) || 0) * scale.sy) : rect.height;
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
     return { element, left: cx - w / 2, right: cx + w / 2, top: cy - h / 2, bottom: cy + h / 2, w, h };
@@ -289,6 +367,10 @@ export function staticAudit(minTarget) {
       const b = boxes[j];
       if (a.element.contains(b.element) || b.element.contains(a.element)) continue;
       if (isInlineLink(a.element) || isInlineLink(b.element)) continue; // inline links share lines by nature
+      // Fixed/sticky bars (header, bottom navigation) overlay scrolling content at any given scroll position by design. Whether a
+      // control stays reachable is what the scroll-and-click hit test below proves, so a fixed-vs-flow pair is not an overlap.
+      const pinned = (element) => { for (let node = element; node; node = node.parentElement) { const position = getComputedStyle(node).position; if (position === "fixed" || position === "sticky") return true; } return false; };
+      if (pinned(a.element) !== pinned(b.element)) continue;
       // A control declared as a field adornment (data-field-adornment, e.g. show/hide password) sits over the field it belongs to.
       const adorned = (adornment, field) => adornment.closest("[data-field-adornment]")?.parentElement?.contains(field) && !field.closest("[data-field-adornment]");
       if (adorned(a.element, b.element) || adorned(b.element, a.element)) continue;
@@ -308,30 +390,47 @@ export function staticAudit(minTarget) {
  */
 export async function hitTestAudit() {
   const failures = [];
+  const layoutScale = (node) => { const r = node.getBoundingClientRect(); return { sx: node.offsetWidth ? r.width / node.offsetWidth : 1, sy: node.offsetHeight ? r.height / node.offsetHeight : 1 }; };
   const label = (e) => `<${e.tagName.toLowerCase()}> «${(e.textContent || e.getAttribute("aria-label") || e.getAttribute("name") || "").trim().slice(0, 28)}»`;
   const controls = [...document.querySelectorAll("a[href], button, input:not([type=hidden]), select, textarea, [role=button]")].filter((e) => !e.disabled && !e.closest("nextjs-portal"));
   for (const element of controls) {
     if (window.__auditOpacity(element) < window.__auditMinOpacity) continue;
+    // (the unsupported-transform helper lives inside the static audit scope; recompute the same condition here)
+    { let unsupported = false; for (let node = element; node; node = node.parentElement) { const style = getComputedStyle(node); if (style.rotate !== "none" && style.rotate !== undefined) unsupported = true; else if (style.transform !== "none") { const m = new DOMMatrix(style.transform); if (!m.is2D || Math.abs(m.b) > 1e-6 || Math.abs(m.c) > 1e-6) unsupported = true; } } if (unsupported) continue; }
     element.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
     await new Promise((resolve) => requestAnimationFrame(() => resolve()));
     // An inline element that wraps over several lines has one box per line: probe EVERY line box (a block over the second or last
     // line must be found), each at its centre and four edges. The enlarged ::before area only exists for single-box controls.
-    const boxes = [...element.getClientRects()].filter((r) => r.width > 0 && r.height > 0);
+    const stretched = (() => {
+      // Transforms: getBoundingClientRect is in VIEWPORT coordinates (transforms applied) while client*/offset* are layout pixels, so
+      // every layout length is scaled by the rendered/layout ratio. Rotation, skew, 3D and the individual rotate property cannot be
+      // reduced to a scale, so a control under them is NOT VERIFIED instead of guessed.
+      const unsupportedTransform = (element) => { for (let node = element; node; node = node.parentElement) { const style = getComputedStyle(node); if (style.rotate !== "none" && style.rotate !== undefined) return true; if (style.transform !== "none") { const m = new DOMMatrix(style.transform); if (!m.is2D || Math.abs(m.b) > 1e-6 || Math.abs(m.c) > 1e-6) return true; } } return false; };
+      const layoutScale = (node) => { const r = node.getBoundingClientRect(); return { sx: node.offsetWidth ? r.width / node.offsetWidth : 1, sy: node.offsetHeight ? r.height / node.offsetHeight : 1 }; };
+      const paddingBox = (node) => { const r = node.getBoundingClientRect(); const { sx, sy } = layoutScale(node); const left = r.left + node.clientLeft * sx, top = r.top + node.clientTop * sy, width = node.clientWidth * sx, height = node.clientHeight * sy; return { left, top, width, height, right: left + width, bottom: top + height }; };
+      const after = getComputedStyle(element, "::after");
+      if (after.content === "none" || after.position !== "absolute") return null;
+      if (![after.top, after.right, after.bottom, after.left].every((value) => value === "0px")) return null;
+      for (let node = element.parentElement; node; node = node.parentElement) if (getComputedStyle(node).position !== "static") return paddingBox(node);
+      return null;
+    })();
+    const boxes = stretched ? [stretched] : [...element.getClientRects()].filter((r) => r.width > 0 && r.height > 0);
     if (boxes.length === 0) boxes.push(element.getBoundingClientRect());
     const before = getComputedStyle(element, "::before");
-    const extra = boxes.length === 1 && before.content !== "none" && before.position === "absolute";
+    const extra = !stretched && boxes.length === 1 && before.content !== "none" && before.position === "absolute";
     let blocked = false;
     for (const [lineIndex, rect] of boxes.entries()) {
-      const w = extra ? Math.max(rect.width, parseFloat(before.width) || 0) : rect.width;
-      const h = extra ? Math.max(rect.height, parseFloat(before.height) || 0) : rect.height;
+      const scale = layoutScale(element);
+      const w = extra ? Math.max(rect.width, (parseFloat(before.width) || 0) * scale.sx) : rect.width;
+      const h = extra ? Math.max(rect.height, (parseFloat(before.height) || 0) * scale.sy) : rect.height;
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
       const left = Math.max(cx - w / 2 + 1, 1), right = Math.min(cx + w / 2 - 1, innerWidth - 1);
       const top = Math.max(cy - h / 2 + 1, 1), bottom = Math.min(cy + h / 2 - 1, innerHeight - 1);
       const midX = Math.min(Math.max(cx, left), right), midY = Math.min(Math.max(cy, top), bottom);
       // Boxed controls are probed at their real edges (1 px inside). The line fragments of a wrapped inline element have ragged ends
-      // (trailing space, sub-pixel advances), so there the side probes sit at 10% / 90% of the fragment and the vertical ones at 20% / 80%.
-      const fragment = boxes.length > 1;
+      // (trailing space, sub-pixel advances; the same holds for a single-line inline link), so there the side probes sit at 10% / 90% of the fragment and the vertical ones at 20% / 80%.
+      const fragment = !stretched && (boxes.length > 1 || getComputedStyle(element).display === "inline");
       const probes = fragment
         ? [["centro", cx, cy], ["borde izquierdo", rect.left + rect.width * 0.1, cy], ["borde derecho", rect.left + rect.width * 0.9, cy], ["borde superior", cx, rect.top + rect.height * 0.2], ["borde inferior", cx, rect.top + rect.height * 0.8]]
         : [["centro", midX, midY], ["borde izquierdo", left, midY], ["borde derecho", right, midY], ["borde superior", midX, top], ["borde inferior", midX, bottom]];

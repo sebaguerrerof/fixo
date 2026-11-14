@@ -1,10 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { GeistMono } from "geist/font/mono";
-import { GeistSans } from "geist/font/sans";
+import { Barlow, Barlow_Semi_Condensed } from "next/font/google";
 
 import "@/app/globals.css";
 import { brand, brandTitle } from "@/design-system/brand";
 import { themeInitScript } from "@/design-system/theme";
+
+// Body and display are two widths of the same family (Barlow, a signage/labelling design): self-hosted by next/font at build time.
+const body = Barlow({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-body", display: "swap" });
+const display = Barlow_Semi_Condensed({ subsets: ["latin"], weight: ["600", "700"], variable: "--font-display", display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL(brand.url),
@@ -22,7 +25,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html className={`${GeistSans.variable} ${GeistMono.variable}`} lang={brand.locale} suppressHydrationWarning>
+    <html className={`${body.variable} ${display.variable}`} lang={brand.locale} suppressHydrationWarning>
       <head><script dangerouslySetInnerHTML={{ __html: themeInitScript }} /></head>
       <body>{children}</body>
     </html>

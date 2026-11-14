@@ -18,7 +18,7 @@ const navigation = [
 export function SiteHeader() {
   return (
     <>
-      <header className="glass sticky top-0 z-40 border-x-0 border-t-0">
+      <header className="sticky top-0 z-40 border-b border-border bg-background">
         {isDemoModeEnabled() ? <p className="border-b border-warning-border bg-warning-soft px-4 py-2 text-center text-sm font-medium text-warning-soft-foreground">Modo demostración: datos de ejemplo, nada se guarda de verdad.</p> : null}
         <div className="container flex h-header items-center justify-between gap-4">
           <Logo />
