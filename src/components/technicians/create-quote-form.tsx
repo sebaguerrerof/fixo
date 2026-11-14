@@ -1,14 +1,16 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckCircle2, LoaderCircle, Save, Send } from "lucide-react";
+import { Save, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { Quote } from "@/domain/entities/quote";
 import { useForm } from "react-hook-form";
 
 import { createAndSubmitQuote, saveQuoteDraft } from "@/app/tecnico/oportunidades/[id]/cotizar/actions";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Checkbox, CheckboxRow, Field, Input, Textarea } from "@/components/ui/field";
 import { quoteInputSchema, type QuoteInput, type QuoteFormInput } from "@/domain/validation/quote-input";
 
 export function CreateQuoteForm({ serviceRequestId, draft }: { readonly serviceRequestId: string; readonly draft?: Quote }) {
@@ -81,41 +83,51 @@ export function CreateQuoteForm({ serviceRequestId, draft }: { readonly serviceR
   }
 
   if (feedback === "success") {
-    return <div className="rounded-2xl border border-success-border bg-success-soft p-6 text-success-soft-foreground"><CheckCircle2 className="size-6" /><h2 className="mt-3 text-lg font-bold">Cotización enviada</h2><p className="mt-2 text-sm leading-6">El cliente ya puede revisar tu propuesta y compararla con otras.</p><Button className="mt-5" onClick={() => router.push("/tecnico/oportunidades")} type="button" variant="outline">Volver a oportunidades</Button></div>;
+    return (
+      <Alert tone="success" title="Cotización enviada">
+        El cliente ya puede revisar tu propuesta y compararla con otras.
+        <div className="mt-4"><Button onClick={() => router.push("/tecnico/oportunidades")} type="button" variant="outline">Volver a oportunidades</Button></div>
+      </Alert>
+    );
   }
 
   if (feedback === "draft") {
-    return <div role="status" className="rounded-2xl border border-info-border bg-info-soft p-6 text-info-soft-foreground"><CheckCircle2 className="size-6" /><h2 className="mt-3 text-lg font-bold">Borrador guardado</h2><p className="mt-2 text-sm">Todavía no es visible para el cliente.</p><Button className="mt-5" onClick={() => setFeedback(null)} type="button" variant="outline">Continuar editando</Button></div>;
+    return (
+      <Alert tone="info" title="Borrador guardado">
+        Todavía no es visible para el cliente.
+        <div className="mt-4"><Button onClick={() => setFeedback(null)} type="button" variant="outline">Continuar editando</Button></div>
+      </Alert>
+    );
   }
 
-  return <form className="space-y-5" noValidate onSubmit={form.handleSubmit(onSubmit)}>
-    <input type="hidden" {...form.register("serviceRequestId")} />
-    <div className="grid gap-5 sm:grid-cols-2">
-      <label className="block space-y-2"><span className="text-sm font-semibold">Mano de obra (CLP)</span><input className="h-12 w-full rounded-xl border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" type="number" step="1" min="0" {...form.register("laborClp")} /><FieldError message={form.formState.errors.laborClp?.message} /></label>
-      <label className="block space-y-2"><span className="text-sm font-semibold">Materiales (CLP)</span><input className="h-12 w-full rounded-xl border bg-background px-3 text-sm" type="number" step="1" min="0" {...form.register("materialsClp")} /><FieldError message={form.formState.errors.materialsClp?.message} /></label>
-      <label className="block space-y-2"><span className="text-sm font-semibold">Diagnóstico (CLP)</span><input className="h-12 w-full rounded-xl border bg-background px-3 text-sm" type="number" step="1" min="0" {...form.register("diagnosticClp")} /><FieldError message={form.formState.errors.diagnosticClp?.message} /></label>
-      <p className="py-3 font-bold">Total: {Number(form.watch("priceClp") || 0).toLocaleString("es-CL")} CLP<FieldError message={form.formState.errors.priceClp?.message} /></p>
-      <label className="block space-y-2"><span className="text-sm font-semibold">Tiempo estimado</span><input className="h-12 w-full rounded-xl border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="Ej. 2 horas" {...form.register("estimatedDuration")} /><FieldError message={form.formState.errors.estimatedDuration?.message} /></label>
-      <label className="block space-y-2"><span className="text-sm font-semibold">Disponible desde</span><input className="h-12 w-full rounded-xl border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" type="datetime-local" {...form.register("availableDate")} /><FieldError message={form.formState.errors.availableDate?.message} /></label>
-      <label className="block space-y-2"><span className="text-sm font-semibold">Cotización válida hasta</span><input className="h-12 w-full rounded-xl border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" type="datetime-local" {...form.register("expiresAt")} /><FieldError message={form.formState.errors.expiresAt?.message} /></label>
-    </div>
-    <label className="block space-y-2"><span className="text-sm font-semibold">Descripción del trabajo</span><textarea className="min-h-32 w-full rounded-xl border bg-background p-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="Explica el alcance del trabajo, pasos y cualquier detalle relevante." {...form.register("description")} /><FieldError message={form.formState.errors.description?.message} /></label>
-    <div className="grid gap-5 sm:grid-cols-2">
-      <label className="block space-y-2"><span className="text-sm font-semibold">Materiales incluidos</span><textarea className="min-h-20 w-full rounded-xl border bg-background p-3 text-sm outline-none focus:ring-2 focus:ring-ring" {...form.register("materialsIncluded")} /></label>
-      <label className="block space-y-2"><span className="text-sm font-semibold">Materiales no incluidos</span><textarea className="min-h-20 w-full rounded-xl border bg-background p-3 text-sm outline-none focus:ring-2 focus:ring-ring" {...form.register("materialsNotIncluded")} /></label>
-    </div>
-    <label className="block space-y-2"><span className="text-sm font-semibold">Condiciones</span><textarea className="min-h-20 w-full rounded-xl border bg-background p-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="Ej. Forma de pago, garantía, etc." {...form.register("conditions")} /></label>
-    <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" {...form.register("diagnosticVisit")} />Requiere visita de diagnóstico previa</label>
-    {feedback ? <p role="alert" className="text-sm text-destructive">{feedback}</p> : null}
-    <div className="flex flex-wrap gap-2">
-      <Button disabled={pending} type="submit">{pending ? <LoaderCircle className="size-4 animate-spin" /> : <Send className="size-4" />}Enviar cotización</Button>
-      <Button disabled={pending} onClick={onSaveDraft} type="button" variant="outline"><Save className="size-4" />Guardar borrador</Button>
-    </div>
-  </form>;
+  const errors = form.formState.errors;
+  const invalid = (name: keyof QuoteFormInput) => (errors[name] ? true : undefined);
+  return (
+    <form className="space-y-5" noValidate onSubmit={form.handleSubmit(onSubmit)}>
+      <input type="hidden" {...form.register("serviceRequestId")} />
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Field error={errors.laborClp?.message} htmlFor="laborClp" label="Mano de obra (CLP)"><Input aria-describedby="laborClp-msg" aria-invalid={invalid("laborClp")} id="laborClp" inputMode="numeric" min="0" step="1" type="number" {...form.register("laborClp")} /></Field>
+        <Field error={errors.materialsClp?.message} htmlFor="materialsClp" label="Materiales (CLP)"><Input aria-describedby="materialsClp-msg" aria-invalid={invalid("materialsClp")} id="materialsClp" inputMode="numeric" min="0" step="1" type="number" {...form.register("materialsClp")} /></Field>
+        <Field error={errors.diagnosticClp?.message} htmlFor="diagnosticClp" label="Diagnóstico (CLP)"><Input aria-describedby="diagnosticClp-msg" aria-invalid={invalid("diagnosticClp")} id="diagnosticClp" inputMode="numeric" min="0" step="1" type="number" {...form.register("diagnosticClp")} /></Field>
+        <div aria-live="polite" className="flex flex-col justify-end pb-2"><p className="text-sm font-medium text-muted-foreground">Total</p><p className="tabular font-display text-3xl font-bold">{Number(form.watch("priceClp") || 0).toLocaleString("es-CL")} CLP</p>{errors.priceClp?.message ? <p className="text-sm text-destructive-soft-foreground" role="alert">{errors.priceClp.message}</p> : null}</div>
+        <Field error={errors.estimatedDuration?.message} htmlFor="estimatedDuration" label="Tiempo estimado"><Input aria-describedby="estimatedDuration-msg" aria-invalid={invalid("estimatedDuration")} id="estimatedDuration" placeholder="Ej. 2 horas" {...form.register("estimatedDuration")} /></Field>
+        <Field error={errors.availableDate?.message} htmlFor="availableDate" label="Disponible desde"><Input aria-describedby="availableDate-msg" aria-invalid={invalid("availableDate")} id="availableDate" type="datetime-local" {...form.register("availableDate")} /></Field>
+        <Field error={errors.expiresAt?.message} htmlFor="expiresAt" label="Cotización válida hasta"><Input aria-describedby="expiresAt-msg" aria-invalid={invalid("expiresAt")} id="expiresAt" type="datetime-local" {...form.register("expiresAt")} /></Field>
+      </div>
+      <Field error={errors.description?.message} htmlFor="description" label="Descripción del trabajo"><Textarea aria-describedby="description-msg" aria-invalid={invalid("description")} className="min-h-32" id="description" placeholder="Explica el alcance del trabajo, pasos y cualquier detalle relevante." {...form.register("description")} /></Field>
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Field htmlFor="materialsIncluded" label="Materiales incluidos"><Textarea className="min-h-20" id="materialsIncluded" {...form.register("materialsIncluded")} /></Field>
+        <Field htmlFor="materialsNotIncluded" label="Materiales no incluidos"><Textarea className="min-h-20" id="materialsNotIncluded" {...form.register("materialsNotIncluded")} /></Field>
+      </div>
+      <Field htmlFor="conditions" label="Condiciones"><Textarea className="min-h-20" id="conditions" placeholder="Ej. Forma de pago, garantía, etc." {...form.register("conditions")} /></Field>
+      <CheckboxRow className="font-medium"><Checkbox {...form.register("diagnosticVisit")} />Requiere visita de diagnóstico previa</CheckboxRow>
+      {feedback ? <Alert tone="danger">{feedback}</Alert> : null}
+      <div className="flex flex-wrap gap-2">
+        <Button disabled={pending} loading={pending} type="submit"><Send aria-hidden="true" className="size-4" />Enviar cotización</Button>
+        <Button disabled={pending} onClick={onSaveDraft} type="button" variant="outline"><Save aria-hidden="true" className="size-4" />Guardar borrador</Button>
+      </div>
+    </form>
+  );
 }
 
 function localDate(value?: string): string { if (!value) return ""; const date = new Date(value); return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16); }
-
-function FieldError({ message }: { readonly message?: string }) {
-  return message ? <span className="text-sm text-destructive">{message}</span> : null;
-}

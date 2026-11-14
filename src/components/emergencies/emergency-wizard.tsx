@@ -16,7 +16,9 @@ import {
   startMatchingAction,
 } from "@/app/urgencia/actions";
 import { StatusBadge } from "@/components/shared/status-badge";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Field, Input, Textarea } from "@/components/ui/field";
 import { Card, CardContent } from "@/components/ui/card";
 import type { EmergencyRequest } from "@/domain/entities/emergency-request";
 import type { Technician } from "@/domain/entities/technician";
@@ -24,10 +26,6 @@ import { emergencyInputSchema, type EmergencyInput } from "@/domain/validation/e
 
 const LIVE_STATUSES = new Set(["created", "matching", "broadcasting", "accepted", "technician_en_route", "arrived", "in_progress"]);
 const CANCELLABLE_STATUSES = new Set(["created", "matching", "broadcasting", "accepted"]);
-
-function FieldError({ message }: { readonly message?: string }) {
-  return message ? <span className="text-sm text-destructive">{message}</span> : null;
-}
 
 export function EmergencyWizard({ isDemoMode }: { readonly isDemoMode: boolean }) {
   const router = useRouter();
@@ -95,19 +93,15 @@ export function EmergencyWizard({ isDemoMode }: { readonly isDemoMode: boolean }
   if (!emergency) {
     return (
       <form className="space-y-5" noValidate onSubmit={form.handleSubmit(onDescribe)}>
-        <label className="block space-y-2">
-          <span className="text-sm font-semibold">¿Qué está pasando?</span>
-          <textarea className="min-h-32 w-full rounded-xl border bg-background p-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="Ej. Siento olor a gas en la cocina desde hace unos minutos." {...form.register("description")} />
-          <FieldError message={form.formState.errors.description?.message} />
-        </label>
-        <label className="block space-y-2">
-          <span className="text-sm font-semibold">¿Dónde te encuentras?</span>
-          <input className="h-12 w-full rounded-xl border bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" placeholder="Ej. Ñuñoa" {...form.register("locationLabel")} />
-          <FieldError message={form.formState.errors.locationLabel?.message} />
-        </label>
-        {error ? <p className="text-sm text-destructive">{error}</p> : null}
-        <Button className="w-full" disabled={pending} type="submit" variant="emergency">
-          {pending ? <LoaderCircle className="size-4 animate-spin" /> : <Siren className="size-4" />}Pedir ayuda ahora
+        <Field error={form.formState.errors.description?.message} htmlFor="description" label="¿Qué está pasando?">
+          <Textarea aria-describedby="description-msg" aria-invalid={form.formState.errors.description ? true : undefined} className="min-h-32" id="description" placeholder="Ej. Siento olor a gas en la cocina desde hace unos minutos." {...form.register("description")} />
+        </Field>
+        <Field error={form.formState.errors.locationLabel?.message} htmlFor="locationLabel" label="¿Dónde te encuentras?">
+          <Input aria-describedby="locationLabel-msg" aria-invalid={form.formState.errors.locationLabel ? true : undefined} id="locationLabel" placeholder="Ej. Ñuñoa" {...form.register("locationLabel")} />
+        </Field>
+        {error ? <Alert tone="danger">{error}</Alert> : null}
+        <Button className="w-full" loading={pending} size="lg" type="submit" variant="emergency">
+          <Siren aria-hidden="true" className="size-4" />Pedir ayuda ahora
         </Button>
       </form>
     );
