@@ -1,11 +1,34 @@
 // Core of the browser UI audit. Used by audit-ui.mjs (real pages) and test-audit-ui.mjs (negative self-tests).
 // Everything here is read-only: it only loads pages and inspects them.
 
+const DEMO_LABELS = { customer: /Cliente/, technician: /Técnico|Tecnico/, admin: /Admin/ };
+
+/**
+ * Signs in through the real login page with one of the demo accounts (the app must run with NEXT_PUBLIC_DEMO_MODE=true).
+ * Returns an error message, or null when the session is established (the URL left the login page).
+ */
+export async function signInDemo(page, base, role, loginPath = "/login", timeout = 60000) {
+  const pattern = DEMO_LABELS[role];
+  if (!pattern) return `rol de sesion desconocido: ${role}`;
+  try {
+    await page.goto(base + loginPath, { waitUntil: "networkidle", timeout });
+    const button = page.getByRole("button", { name: pattern });
+    if ((await button.count()) === 0) return `no hay boton de cuenta demo para "${role}" en ${loginPath} (se necesita NEXT_PUBLIC_DEMO_MODE=true)`;
+    await button.first().click();
+    const left = await page.waitForURL((url) => !url.pathname.startsWith(loginPath), { timeout: 15000 }).then(() => true, () => false);
+    return left ? null : `el inicio de sesion demo como "${role}" no salio de ${loginPath}`;
+  } catch (error) {
+    return `no se pudo iniciar sesion como "${role}": ${String(error.message ?? error).split("\n")[0]}`;
+  }
+}
+
 /**
  * Route contract. An audit only counts if the page is really the one we meant to audit:
  *  - HTTP status equals `status` (default 200),
  *  - the final pathname equals `finalPath` (default: the requested path, so unexpected redirects fail),
  *  - an identifying element (`identify.selector` whose text matches `identify.text`) is present and visible.
+ * `as` ("customer" | "technician" | "admin") signs in through the demo accounts first; without it the page is audited anonymously,
+ * so a protected page that redirects to the login fails the final-URL check.
  */
 export async function auditRoute({ browser, base, route, scheme, viewport }) {
   const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, colorScheme: scheme });
@@ -15,7 +38,18 @@ export async function auditRoute({ browser, base, route, scheme, viewport }) {
   let controls = 0;
   const notes = [];
   try {
-    const response = await page.goto(base + route.path, { waitUntil: "networkidle" });
+    if (route.as) {
+      const problem = await signInDemo(page, base, route.as, route.loginPath, route.timeout);
+      if (problem) { failures.push(problem); return { failures, checked, controls, notes: [] }; }
+    }
+    // A slow or failing navigation (cold dev-server compile, network error) is a finding for that route, never a crash of the run.
+    let response = null;
+    let navigationError = null;
+    for (let attempt = 1; attempt <= (route.attempts ?? 2); attempt++) {
+      try { response = await page.goto(base + route.path, { waitUntil: "networkidle", timeout: route.timeout ?? 60000 }); navigationError = null; break; }
+      catch (error) { navigationError = String(error.message ?? error).split(/\r?\n/)[0]; }
+    }
+    if (navigationError) { failures.push(`no se pudo cargar la ruta: ${navigationError}`); return { failures: [...new Set(failures)], checked, controls, notes: [] }; }
     const expectedStatus = route.status ?? 200;
     if (!response) failures.push("sin respuesta HTTP");
     else if (response.status() !== expectedStatus) failures.push(`estado HTTP ${response.status()}, se esperaba ${expectedStatus}`);
@@ -228,6 +262,8 @@ export function staticAudit(minTarget) {
     const style = getComputedStyle(element);
     if (window.__auditOpacity(element) < window.__auditMinOpacity) continue;
     if (element.closest("nextjs-portal, [aria-hidden='true']")) continue;
+    // WCAG 1.4.3 exempts inactive components: text inside a disabled control is not measured (and is declared in the notes).
+    if (element.closest("button:disabled, input:disabled, select:disabled, textarea:disabled, fieldset:disabled, [aria-disabled='true']")) { skipped.push(`texto de control deshabilitado, contraste no medido (WCAG 1.4.3): «${text.slice(0, 30)}»`); continue; }
     if (style.webkitTextFillColor === "rgba(0, 0, 0, 0)" || style.webkitTextFillColor === "transparent") { skipped.push(`texto con degradado, contraste no medido: «${text.slice(0, 40)}»`); continue; }
     const fg = parse(style.color);
     const where = `«${text.slice(0, 40)}»  <${element.tagName.toLowerCase()} class="${String(element.className).slice(0, 70)}">`;
@@ -289,6 +325,10 @@ export function staticAudit(minTarget) {
       const b = boxes[j];
       if (a.element.contains(b.element) || b.element.contains(a.element)) continue;
       if (isInlineLink(a.element) || isInlineLink(b.element)) continue; // inline links share lines by nature
+      // Fixed/sticky bars (header, bottom navigation) overlay scrolling content at any given scroll position by design. Whether a
+      // control stays reachable is what the scroll-and-click hit test below proves, so a fixed-vs-flow pair is not an overlap.
+      const pinned = (element) => { for (let node = element; node; node = node.parentElement) { const position = getComputedStyle(node).position; if (position === "fixed" || position === "sticky") return true; } return false; };
+      if (pinned(a.element) !== pinned(b.element)) continue;
       // A control declared as a field adornment (data-field-adornment, e.g. show/hide password) sits over the field it belongs to.
       const adorned = (adornment, field) => adornment.closest("[data-field-adornment]")?.parentElement?.contains(field) && !field.closest("[data-field-adornment]");
       if (adorned(a.element, b.element) || adorned(b.element, a.element)) continue;

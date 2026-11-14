@@ -79,6 +79,13 @@ const pages = {
   // Infinite animations (shimmer, pulse) must not block the audit.
   "/infinite-animation": page(`${heading}<style>@keyframes pulse{50%{opacity:.9}}#p{animation:pulse 1s infinite}</style><p id="p" style="margin:0">Texto con animacion infinita</p><a href="#a">Uno</a>`),
   "/nav-with-sentence": page(`${heading}<nav aria-label="Pie"><p>Este texto largo describe el menu de la pagina <a href="#1" style="display:inline;height:auto;min-width:0;padding:0;border:0;margin:0">enlace en nav</a> y sigue.</p></nav>`),
+  // Fixed bars overlay scrolling content by design: a fixed bar over a flow control is not a static overlap (reachability is proven by the
+  // scroll-and-click hit test). A full-screen fixed layer that swallows clicks is still caught by that hit test.
+  "/fixed-bar": page(`${heading}<div style="height:600px"></div><button type="button" style="margin:0">Control</button><div style="height:900px"></div><nav style="position:fixed;left:0;right:0;bottom:0;height:60px;background:#eee"><a href="#n" style="margin:0 8px">Fijo</a></nav>`),
+  "/fixed-bar-over-control": page(`${heading}<div style="height:500px"></div><button type="button" style="margin:0">Cubierto</button><div style="height:900px"></div><div style="position:fixed;inset:0;background:transparent"></div>`),
+  // WCAG 1.4.3 exempts inactive components: low-contrast text in a disabled button is not a finding, the same text enabled is.
+  "/disabled-low-contrast": page(`${heading}<button type="button" disabled style="color:#bbb;margin:0">Guardar cambio</button><a href="#a">Uno</a>`),
+  "/enabled-low-contrast": page(`${heading}<button type="button" style="color:#bbb;margin:0">Guardar cambio</button><a href="#a">Uno</a>`),
   "/gradient-ok": page(`${heading}<p style="background:linear-gradient(#fff,#eee);color:#000">Negro sobre degradado claro</p><a href="#a">Uno</a>`),
   "/gradient-unparsable": page(`${heading}<p style="background:linear-gradient(in oklch, oklch(0.2 0 0), oklch(0.9 0 0));color:#000">Degradado en espacio oklch</p><a href="#a">Uno</a>`),
   "/redirect-source": null,
@@ -95,6 +102,15 @@ pages["/space-default"] = page(`${heading}<p style="background-image:linear-grad
 
 const server = createServer((request, response) => {
   const path = new URL(request.url, "http://x").pathname;
+  // Session fixtures: /demo-login has a demo account button that sets a cookie; /private needs that cookie, else redirects to the login.
+  if (path === "/demo-login") { response.writeHead(200, { "content-type": "text/html" }); response.end(page(`<h1>Ingresar</h1><button type="button" onclick="document.cookie='sid=1; path=/';location.href='/private'">Cliente · Prueba</button>`)); return; }
+  if (path === "/demo-login-broken") { response.writeHead(200, { "content-type": "text/html" }); response.end(page(`<h1>Ingresar</h1><button type="button">Cliente · Prueba</button>`)); return; }
+  if (path === "/demo-login-nobuttons") { response.writeHead(200, { "content-type": "text/html" }); response.end(page(`<h1>Ingresar</h1><a href="#a">Uno</a>`)); return; }
+  if (path === "/private") {
+    if (!(request.headers.cookie ?? "").includes("sid=1")) { response.writeHead(302, { location: "/demo-login" }); response.end(); return; }
+    response.writeHead(200, { "content-type": "text/html" }); response.end(page(`${heading}<a href="#a">Uno</a>`)); return;
+  }
+  if (path === "/hang") return; // never answers: the navigation must time out
   if (path === "/redirect-source") { response.writeHead(302, { location: "/redirect-target" }); response.end(); return; }
   if (path === "/all-404/healthy" || !(path in pages)) { response.writeHead(404, { "content-type": "text/html" }); response.end(page(`${heading}<a href="#a">Uno</a>`)); return; }
   response.writeHead(200, { "content-type": "text/html" });
@@ -147,6 +163,17 @@ const cases = [
   { name: "varios enlaces pequenos en el mismo contenedor, sin frase, NO quedan exentos", route: { path: "/bare-small-links", identify }, expect: (f) => ["Primero", "Segundo", "Tercero"].every((name) => f.some((x) => /area tactil/.test(x) && x.includes(`«${name}»`))) },
   { name: "una transicion larga se espera a que termine: no se mide a media opacidad", route: { path: "/settling-transition", identify }, expect: (f) => f.length === 0 },
   { name: "una animacion infinita no bloquea ni invalida la auditoria", route: { path: "/infinite-animation", identify }, expect: (f) => f.length === 0 },
+  { name: "pagina protegida sin sesion redirige al login y falla (URL final)", route: { path: "/private", identify }, expect: (f) => f.some((x) => /redireccion inesperada/.test(x)) },
+  { name: "con sesion demo (as: customer) la pagina protegida se audita y pasa", route: { path: "/private", identify, as: "customer", loginPath: "/demo-login" }, expect: (f) => f.length === 0 },
+  { name: "si el boton demo no inicia sesion, se informa (no se audita la pagina de login por error)", route: { path: "/private", identify, as: "customer", loginPath: "/demo-login-broken" }, expect: (f) => f.some((x) => /no salio de/.test(x)) },
+  { name: "sin boton de cuenta demo se explica la causa (falta NEXT_PUBLIC_DEMO_MODE)", route: { path: "/private", identify, as: "customer", loginPath: "/demo-login-nobuttons" }, expect: (f) => f.some((x) => /NEXT_PUBLIC_DEMO_MODE/.test(x)) },
+  { name: "si el login no responde se informa como fallo de la ruta (no aborta la corrida)", route: { path: "/private", identify, as: "customer", loginPath: "/hang", timeout: 1500, attempts: 1 }, expect: (f) => f.some((x) => /no se pudo iniciar sesion/.test(x)) },
+  { name: "rol de sesion desconocido falla", route: { path: "/private", identify, as: "invitado", loginPath: "/demo-login" }, expect: (f) => f.some((x) => /rol de sesion desconocido/.test(x)) },
+  { name: "una navegacion que no responde se informa como fallo de esa ruta (no aborta la corrida)", route: { path: "/hang", identify, timeout: 1500, attempts: 1 }, expect: (f) => f.some((x) => /no se pudo cargar la ruta/.test(x)) },
+  { name: "una barra fija sobre contenido que hace scroll no cuenta como solape (y los controles siguen alcanzables)", route: { path: "/fixed-bar", identify }, expect: (f) => !f.some((x) => /solapadas|llega a/.test(x)) },
+  { name: "una capa fija a pantalla completa que traga clics SI se detecta (hit test)", route: { path: "/fixed-bar-over-control", identify }, expect: (f) => f.some((x) => /llega a/.test(x)) },
+  { name: "texto de bajo contraste en un boton deshabilitado no es hallazgo (WCAG 1.4.3, inactivo)", route: { path: "/disabled-low-contrast", identify }, expect: (f) => !f.some((x) => /contraste/.test(x)) },
+  { name: "el mismo texto en un boton habilitado SI es hallazgo", route: { path: "/enabled-low-contrast", identify }, expect: (f) => f.some((x) => /contraste/.test(x) && /Guardar cambio/.test(x)) },
   { name: "un enlace con caja (inline-flex) junto a texto narrativo NO queda exento", route: { path: "/boxed-link-near-text", identify }, expect: (f) => f.some((x) => /area tactil/.test(x) && /Enlace caja/.test(x)) },
   { name: "un enlace dentro de una frase en un <nav> tampoco se exime (los grupos de navegacion nunca son en linea)", route: { path: "/nav-with-sentence", identify }, expect: (f) => f.some((x) => /area tactil/.test(x) && /enlace en nav/.test(x)) },
   { name: "degradado claro con texto negro pasa", route: { path: "/gradient-ok", identify }, expect: (f) => !f.some((x) => /contraste/.test(x)) },
