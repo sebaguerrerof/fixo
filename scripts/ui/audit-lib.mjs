@@ -33,7 +33,11 @@ export async function auditRoute({ browser, base, route, scheme, viewport }) {
     if (failures.length === 0) {
       // Reveal everything that animates in on scroll, then measure from the top.
       await page.evaluate(async () => { for (let y = 0; y < document.body.scrollHeight; y += 350) { window.scrollTo(0, y); await new Promise((resolve) => setTimeout(resolve, 60)); } window.scrollTo(0, 0); });
-      await page.waitForTimeout(700);
+      await page.waitForTimeout(300);
+      // Measure only a settled page: wait until no finite animation or transition is running (infinite ones, like a skeleton shimmer,
+      // are ignored). Measuring mid-transition would report contrast at partial opacity, so if it never settles the audit fails.
+      const settled = await page.waitForFunction(() => document.getAnimations().every((animation) => animation.effect?.getComputedTiming().endTime === Infinity || animation.playState !== "running"), null, { timeout: 6000 }).then(() => true, () => false);
+      if (!settled) failures.push("la pagina no termino sus animaciones o transiciones en 6 s: medicion no fiable");
       const staticResult = await page.evaluate(staticAudit, viewport.min);
       checked = staticResult.checked;
       notes.push(...staticResult.skipped);
@@ -251,24 +255,56 @@ export function staticAudit(minTarget) {
     return { element, left: cx - w / 2, right: cx + w / 2, top: cy - h / 2, bottom: cy + h / 2, w, h };
   });
   const label = (e) => `<${e.tagName.toLowerCase()}> «${(e.textContent || e.getAttribute("aria-label") || e.getAttribute("name") || "").trim().slice(0, 28)}»`;
-  for (const box of boxes) if (box.w < minTarget - 0.5 || box.h < minTarget - 0.5) failures.push(`area tactil ${Math.round(box.w)}x${Math.round(box.h)} < ${minTarget}x${minTarget}  ${label(box.element)}`);
+  // WCAG 2.5.8 "inline" exception: a link inside a sentence is exempt from the minimum size. It must be laid out inline
+  // (display: inline) within a sentence, which means visible NARRATIVE
+  // text (>= 12 characters) in the link's own block, outside any link, button or form control; links inside navigation groups
+  // (<nav>, role=navigation/menu/tablist/toolbar) are never "inline". The exemption is declared in the report notes and the
+  // link is still hit-tested.
+  const INTERACTIVE = "a, button, input, select, textarea, [role=button], [role=link]";
+  const blockOf = (element) => {
+    let node = element.parentElement;
+    while (node && node !== document.body && getComputedStyle(node).display.startsWith("inline")) node = node.parentElement;
+    return node ?? document.body;
+  };
+  const narrativeLength = (block) => {
+    let length = 0;
+    const textWalker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+    for (let node = textWalker.nextNode(); node; node = textWalker.nextNode()) {
+      const owner = node.parentElement;
+      if (!owner || owner.closest(INTERACTIVE) || ["SCRIPT", "STYLE", "NOSCRIPT"].includes(owner.tagName)) continue;
+      if (window.__auditOpacity(owner) < window.__auditMinOpacity) continue;
+      length += node.textContent.replace(/\s+/g, " ").trim().length;
+    }
+    return length;
+  };
+  const isInlineLink = (element) => element.tagName === "A"
+    && getComputedStyle(element).display === "inline" // a link laid out as a box (inline-flex, block...) is not part of a sentence
+    && !element.closest("nav, [role=navigation], [role=menu], [role=menubar], [role=tablist], [role=toolbar]")
+    && narrativeLength(blockOf(element)) >= 12;
+  const inlineLinks = boxes.filter((box) => isInlineLink(box.element));
+  for (const box of boxes) if (!isInlineLink(box.element) && (box.w < minTarget - 0.5 || box.h < minTarget - 0.5)) failures.push(`area tactil ${Math.round(box.w)}x${Math.round(box.h)} < ${minTarget}x${minTarget}  ${label(box.element)}`);
   for (let i = 0; i < boxes.length; i++) {
     for (let j = i + 1; j < boxes.length; j++) {
       const a = boxes[i];
       const b = boxes[j];
       if (a.element.contains(b.element) || b.element.contains(a.element)) continue;
+      if (isInlineLink(a.element) || isInlineLink(b.element)) continue; // inline links share lines by nature
+      // A control declared as a field adornment (data-field-adornment, e.g. show/hide password) sits over the field it belongs to.
+      const adorned = (adornment, field) => adornment.closest("[data-field-adornment]")?.parentElement?.contains(field) && !field.closest("[data-field-adornment]");
+      if (adorned(a.element, b.element) || adorned(b.element, a.element)) continue;
       const overlapX = Math.min(a.right, b.right) - Math.max(a.left, b.left);
       const overlapY = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
       if (overlapX > 1 && overlapY > 1) failures.push(`areas tactiles solapadas (${Math.round(overlapY)}px)  ${label(a.element)}  <->  ${label(b.element)}`);
     }
   }
+  if (inlineLinks.length > 0) skipped.push(`${inlineLinks.length} enlace(s) dentro de texto exentos del tamano minimo (WCAG 2.5.8, excepcion inline), p. ej. «${inlineLinks[0].element.textContent.trim().slice(0, 30)}»`);
   return { checked, controls: boxes.length, failures, skipped };
 }
 
 /**
  * Hit testing for EVERY control, wherever it is on the page: each one is scrolled into the middle of the viewport first,
  * then the centre and the four edges of its interactive area (rectangle plus any enlarged ::before area, clipped to the
- * viewport) are probed with elementFromPoint. A click at any of those points must reach the control or a descendant of it (a <label> that activates it is the only exception); an ancestor does not count, so pointer-events:none controls fail. Runs in the browser.
+ * viewport) are probed with elementFromPoint. A click at any of those points must reach the control or a descendant of it (a <label> that activates it, or a declared data-field-adornment inside its wrapper, are the only exceptions); an ancestor does not count, so pointer-events:none controls fail. Runs in the browser.
  */
 export async function hitTestAudit() {
   const failures = [];
@@ -278,24 +314,39 @@ export async function hitTestAudit() {
     if (window.__auditOpacity(element) < window.__auditMinOpacity) continue;
     element.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
     await new Promise((resolve) => requestAnimationFrame(() => resolve()));
-    const rect = element.getBoundingClientRect();
+    // An inline element that wraps over several lines has one box per line: probe EVERY line box (a block over the second or last
+    // line must be found), each at its centre and four edges. The enlarged ::before area only exists for single-box controls.
+    const boxes = [...element.getClientRects()].filter((r) => r.width > 0 && r.height > 0);
+    if (boxes.length === 0) boxes.push(element.getBoundingClientRect());
     const before = getComputedStyle(element, "::before");
-    const extra = before.content !== "none" && before.position === "absolute";
-    const w = extra ? Math.max(rect.width, parseFloat(before.width) || 0) : rect.width;
-    const h = extra ? Math.max(rect.height, parseFloat(before.height) || 0) : rect.height;
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const left = Math.max(cx - w / 2 + 1, 1), right = Math.min(cx + w / 2 - 1, innerWidth - 1);
-    const top = Math.max(cy - h / 2 + 1, 1), bottom = Math.min(cy + h / 2 - 1, innerHeight - 1);
-    const midX = Math.min(Math.max(cx, left), right), midY = Math.min(Math.max(cy, top), bottom);
-    const probes = [["centro", midX, midY], ["borde izquierdo", left, midY], ["borde derecho", right, midY], ["borde superior", midX, top], ["borde inferior", midX, bottom]];
-    for (const [name, x, y] of probes) {
-      const hit = document.elementFromPoint(x, y);
-      if (!hit) { failures.push(`el punto del ${name} de ${label(element)} cae fuera de la pantalla`); break; }
-      if (hit.closest("nextjs-portal")) continue;
-      // The click must reach the control itself or one of its descendants. Only explicit exception: the <label> that activates it.
-      const reaches = element.contains(hit) || (hit.tagName === "LABEL" && hit.control === element);
-      if (!reaches) { failures.push(`el clic en el ${name} (${Math.round(x)},${Math.round(y)}) de ${label(element)} llega a ${label(hit)}`); break; }
+    const extra = boxes.length === 1 && before.content !== "none" && before.position === "absolute";
+    let blocked = false;
+    for (const [lineIndex, rect] of boxes.entries()) {
+      const w = extra ? Math.max(rect.width, parseFloat(before.width) || 0) : rect.width;
+      const h = extra ? Math.max(rect.height, parseFloat(before.height) || 0) : rect.height;
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const left = Math.max(cx - w / 2 + 1, 1), right = Math.min(cx + w / 2 - 1, innerWidth - 1);
+      const top = Math.max(cy - h / 2 + 1, 1), bottom = Math.min(cy + h / 2 - 1, innerHeight - 1);
+      const midX = Math.min(Math.max(cx, left), right), midY = Math.min(Math.max(cy, top), bottom);
+      // Boxed controls are probed at their real edges (1 px inside). The line fragments of a wrapped inline element have ragged ends
+      // (trailing space, sub-pixel advances), so there the side probes sit at 10% / 90% of the fragment and the vertical ones at 20% / 80%.
+      const fragment = boxes.length > 1;
+      const probes = fragment
+        ? [["centro", cx, cy], ["borde izquierdo", rect.left + rect.width * 0.1, cy], ["borde derecho", rect.left + rect.width * 0.9, cy], ["borde superior", cx, rect.top + rect.height * 0.2], ["borde inferior", cx, rect.top + rect.height * 0.8]]
+        : [["centro", midX, midY], ["borde izquierdo", left, midY], ["borde derecho", right, midY], ["borde superior", midX, top], ["borde inferior", midX, bottom]];
+      const where = boxes.length > 1 ? ` (renglon ${lineIndex + 1} de ${boxes.length})` : "";
+      for (const [name, x, y] of probes) {
+        const hit = document.elementFromPoint(x, y);
+        if (!hit) { failures.push(`el punto del ${name}${where} de ${label(element)} cae fuera de la pantalla`); blocked = true; break; }
+        if (hit.closest("nextjs-portal")) continue;
+        // The click must reach the control itself or one of its descendants. Exceptions, both explicit: the <label> that activates
+        // it, and an adornment declared with data-field-adornment inside the field's own wrapper.
+        const adornment = hit.closest("[data-field-adornment]");
+        const reaches = element.contains(hit) || (hit.tagName === "LABEL" && hit.control === element) || (adornment !== null && adornment.parentElement?.contains(element));
+        if (!reaches) { failures.push(`el clic en el ${name}${where} (${Math.round(x)},${Math.round(y)}) de ${label(element)} llega a ${label(hit)}`); blocked = true; break; }
+      }
+      if (blocked) break;
     }
   }
   window.scrollTo(0, 0);

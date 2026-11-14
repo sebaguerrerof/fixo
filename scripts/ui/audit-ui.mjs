@@ -22,9 +22,10 @@ const routes = [
   { path: "/como-funciona", migrated: true, identify: { selector: "h1, h2", text: "Más claridad para cada servicio" } },
   { path: "/terminos", migrated: true, identify: { selector: "h1", text: "Términos de uso" } },
   { path: "/privacidad", migrated: true, identify: { selector: "h1", text: "Privacidad" } },
-  { path: "/tecnicos", migrated: false, identify: { selector: "h1", text: "Encuentra al técnico indicado" } },
-  { path: "/login", migrated: false, identify: { selector: "h1", text: "siempre bajo control" } },
-  { path: "/registro", migrated: false, identify: { selector: "h1", text: "Resuelve lo que necesitas" } },
+  { path: "/tecnicos", migrated: true, identify: { selector: "h1, h2", text: "Encuentra al técnico indicado" } },
+  { path: "/login", migrated: true, identify: { selector: "h1", text: "siempre bajo control|Bienvenido de vuelta" } },
+  { path: "/registro", migrated: true, identify: { selector: "h1", text: "Resuelve lo que necesitas" } },
+  { path: "/registro/tecnico", migrated: true, identify: { selector: "h1", text: "Haz crecer tu trabajo" } },
   { path: "/recuperar-contrasena", migrated: true, identify: { selector: "h1", text: "Recupera tu acceso" } },
 ];
 // Touch minimum: 44 px on mobile (our own target); 24 px on desktop (WCAG 2.5.8 AA).
@@ -40,7 +41,7 @@ for (const scheme of ["light", "dark"]) {
       if (counts) total += failures.length;
       console.log(`${failures.length === 0 ? "OK  " : counts ? "FAIL" : "PEND"} ${scheme}/${viewport.name} ${route.path}  (${checked} textos, ${controls} controles)`);
       for (const line of failures.slice(0, 8)) console.log("      " + line);
-      if (notes.length > 0) console.log(`      (nota: ${notes.length} texto(s) con degradado sin medir de contraste, p. ej. ${notes[0]})`);
+      for (const note of notes) console.log(`      (nota: ${note})`);
     }
   }
 }

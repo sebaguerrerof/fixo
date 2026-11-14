@@ -42,3 +42,13 @@ export function Field({ label, htmlFor, hint, error, children, className }: Fiel
     </div>
   );
 }
+
+export const Checkbox = React.forwardRef<HTMLInputElement, Omit<React.InputHTMLAttributes<HTMLInputElement>, "type">>(({ className, ...props }, ref) => (
+  <input className={cn("checkbox", className)} ref={ref} type="checkbox" {...props} />
+));
+Checkbox.displayName = "Checkbox";
+
+/** A checkbox row: the whole row is the click target (min 44 px high). Use for lists of options and consent lines. */
+export function CheckboxRow({ children, className }: { readonly children: React.ReactNode; readonly className?: string }) {
+  return <label className={cn("flex min-h-11 cursor-pointer items-center gap-4 text-sm leading-6", className)}>{children}</label>;
+}
