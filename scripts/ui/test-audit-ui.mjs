@@ -17,6 +17,12 @@ const css = `
 const page = (body) => `<!doctype html><html lang="es"><head><meta charset="utf-8"><title>fixture</title><style>${css}</style></head><body>${body}</body></html>`;
 const heading = '<h1>Pagina de prueba</h1>';
 
+// A narrow paragraph whose link wraps over several lines, with a transparent layer placed over one of its line boxes.
+function wrappedLinkPage(which) {
+  const index = which === "last" ? "rects.length - 1" : "1";
+  return page(`${heading}<div id="host" style="position:relative;width:120px"><p style="margin:0;width:120px"><a id="l" href="#a" style="display:inline;height:auto;min-width:0;padding:0;border:0;margin:0">enlace muy largo que ocupa varias lineas del parrafo estrecho</a> y mas texto de la frase.</p><div id="ov" style="position:absolute;background:transparent"></div></div><script>const rects=[...document.getElementById("l").getClientRects()];const host=document.getElementById("host").getBoundingClientRect();const r=rects[${index}];const ov=document.getElementById("ov");ov.style.left=(r.left-host.left)+"px";ov.style.top=(r.top-host.top)+"px";ov.style.width=r.width+"px";ov.style.height=r.height+"px";</script><a href="#b">Uno</a>`);
+}
+
 const pages = {
   "/healthy": page(`${heading}<a href="#a">Uno</a><br><a href="#b">Dos</a><div class="spacer"></div><button type="button">Abajo</button>`),
   "/empty": page(""),
@@ -60,6 +66,19 @@ const pages = {
   "/adornment-undeclared": page(`${heading}<div style="position:relative;width:260px"><input aria-label="clave" style="width:100%;height:44px;box-sizing:border-box"><div style="position:absolute;top:0;right:0"><button type="button" style="margin:0">Ver</button></div></div><a href="#a">Uno</a>`),
   // An inline link that wraps over two lines must be probed on its line boxes, not at the centre of the union.
   "/wrapped-inline-link": page(`${heading}<p style="width:170px;margin:0">Acepto los <a href="#a" style="display:inline;height:auto;min-width:0;padding:0;border:0;margin:0">politica de privacidad completa</a> y mas texto.</p><a href="#b">Uno</a>`),
+  // Multi-line link: a transparent layer over ONE line box (second, or last) leaves that part unclickable; the first line alone is fine.
+  "/wrapped-second-line-blocked": wrappedLinkPage("second"),
+  "/wrapped-last-line-blocked": wrappedLinkPage("last"),
+  // Inline exception: only for links inside a sentence. Navigation groups and bare link lists are not sentences.
+  "/nav-small-links": page(`${heading}<nav aria-label="Principal"><a href="#1" style="height:20px;min-width:0;padding:0;border:0;margin:0 8px 8px 0">Inicio</a><a href="#2" style="height:20px;min-width:0;padding:0;border:0;margin:0 8px 8px 0">Tecnicos</a><a href="#3" style="height:20px;min-width:0;padding:0;border:0;margin:0 8px 8px 0">Contacto</a></nav>`),
+  "/bare-small-links": page(`${heading}<div><a href="#1" style="height:20px;min-width:0;padding:0;border:0;margin:0 8px 8px 0">Primero</a> <a href="#2" style="height:20px;min-width:0;padding:0;border:0;margin:0 8px 8px 0">Segundo</a> <a href="#3" style="height:20px;min-width:0;padding:0;border:0;margin:0 8px 8px 0">Tercero</a></div>`),
+  // A link laid out as a box (inline-flex, like a button-styled link) is not part of a sentence even if the block has text elsewhere.
+  "/boxed-link-near-text": page(`${heading}<div><p>Un parrafo largo con texto narrativo en el mismo bloque que el enlace.</p><a href="#1" style="display:inline-flex;height:20px;min-width:0;padding:0;border:0;margin:0">Enlace caja</a></div>`),
+  // Text that fades in over 1.5 s: grey #595959 is ~7:1 when settled but ~3:1 at 60% opacity. The audit must wait for it to settle.
+  "/settling-transition": page(`${heading}<p id="t" style="color:#595959;opacity:0;transition:opacity 1500ms linear;margin:0">Texto que aparece con una transicion larga</p><a href="#a">Uno</a><script>setTimeout(function(){document.getElementById("t").style.opacity="1"},100)</script>`),
+  // Infinite animations (shimmer, pulse) must not block the audit.
+  "/infinite-animation": page(`${heading}<style>@keyframes pulse{50%{opacity:.9}}#p{animation:pulse 1s infinite}</style><p id="p" style="margin:0">Texto con animacion infinita</p><a href="#a">Uno</a>`),
+  "/nav-with-sentence": page(`${heading}<nav aria-label="Pie"><p>Este texto largo describe el menu de la pagina <a href="#1" style="display:inline;height:auto;min-width:0;padding:0;border:0;margin:0">enlace en nav</a> y sigue.</p></nav>`),
   "/gradient-ok": page(`${heading}<p style="background:linear-gradient(#fff,#eee);color:#000">Negro sobre degradado claro</p><a href="#a">Uno</a>`),
   "/gradient-unparsable": page(`${heading}<p style="background:linear-gradient(in oklch, oklch(0.2 0 0), oklch(0.9 0 0));color:#000">Degradado en espacio oklch</p><a href="#a">Uno</a>`),
   "/redirect-source": null,
@@ -122,6 +141,14 @@ const cases = [
   { name: "un adorno de campo declarado (data-field-adornment) puede cubrir el input", route: { path: "/adornment-declared", identify }, expect: (f) => !f.some((x) => /solapadas|llega a/.test(x)) },
   { name: "el mismo boton sobre el input SIN declararlo es un solape y un clic desviado", route: { path: "/adornment-undeclared", identify }, expect: (f) => f.some((x) => /solapadas/.test(x)) && f.some((x) => /llega a/.test(x)) },
   { name: "un enlace en linea partido en dos renglones se sondea por renglon (sin falso positivo)", route: { path: "/wrapped-inline-link", identify }, expect: (f) => !f.some((x) => /llega a/.test(x)) },
+  { name: "enlace multilinea con el SEGUNDO renglon bloqueado falla (indica el renglon)", route: { path: "/wrapped-second-line-blocked", identify }, expect: (f) => f.some((x) => /renglon 2 de/.test(x) && /llega a/.test(x)) },
+  { name: "enlace multilinea con el ULTIMO renglon bloqueado falla (indica el renglon)", route: { path: "/wrapped-last-line-blocked", identify }, expect: (f) => f.some((x) => /renglon \d+ de (\d+)/.test(x) && /llega a/.test(x)) },
+  { name: "varios enlaces pequenos dentro de un <nav> NO quedan exentos", route: { path: "/nav-small-links", identify }, expect: (f) => ["Inicio", "Tecnicos", "Contacto"].every((name) => f.some((x) => /area tactil/.test(x) && x.includes(`«${name}»`))) },
+  { name: "varios enlaces pequenos en el mismo contenedor, sin frase, NO quedan exentos", route: { path: "/bare-small-links", identify }, expect: (f) => ["Primero", "Segundo", "Tercero"].every((name) => f.some((x) => /area tactil/.test(x) && x.includes(`«${name}»`))) },
+  { name: "una transicion larga se espera a que termine: no se mide a media opacidad", route: { path: "/settling-transition", identify }, expect: (f) => f.length === 0 },
+  { name: "una animacion infinita no bloquea ni invalida la auditoria", route: { path: "/infinite-animation", identify }, expect: (f) => f.length === 0 },
+  { name: "un enlace con caja (inline-flex) junto a texto narrativo NO queda exento", route: { path: "/boxed-link-near-text", identify }, expect: (f) => f.some((x) => /area tactil/.test(x) && /Enlace caja/.test(x)) },
+  { name: "un enlace dentro de una frase en un <nav> tampoco se exime (los grupos de navegacion nunca son en linea)", route: { path: "/nav-with-sentence", identify }, expect: (f) => f.some((x) => /area tactil/.test(x) && /enlace en nav/.test(x)) },
   { name: "degradado claro con texto negro pasa", route: { path: "/gradient-ok", identify }, expect: (f) => !f.some((x) => /contraste/.test(x)) },
   { name: "degradado no interpretable se informa como NO VERIFICADO", route: { path: "/gradient-unparsable", identify }, expect: (f) => f.some((x) => /NO VERIFICADO/.test(x)) },
   { name: "cobertura solo del borde superior del area ampliada falla", route: { path: "/covered-edge", identify }, expect: (f) => f.some((x) => /borde superior/.test(x) && /«Compacto»/.test(x)) },
