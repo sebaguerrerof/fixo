@@ -52,6 +52,14 @@ const pages = {
   "/half-gradient-black-base": page(`${heading}<p style="background-color:#000;background-image:linear-gradient(rgba(0,0,0,.5),rgba(0,0,0,.5));color:#fff">Blanco sobre degradado negro al 50 por ciento, base negra</p><a href="#a">Uno</a>`),
   // A layer that does not cover the whole box (explicit size, no-repeat) leaves the base colour visible.
   "/partial-gradient-white-base": page(`${heading}<p style="background-color:#fff;background-image:linear-gradient(#000,#000);background-size:10px 10px;background-repeat:no-repeat;color:#fff">Blanco sobre degradado parcial, base blanca</p><a href="#a">Uno</a>`),
+  // WCAG 2.5.8 inline exception: a link inside a sentence is exempt from the minimum size; a stand-alone small link is not.
+  "/inline-link": page(`${heading}<p>Texto largo antes del enlace <a href="#a" style="display:inline;height:auto;min-width:0;padding:0;border:0;margin:0">enlace en frase</a> y mas texto despues del enlace.</p><a href="#b">Uno</a>`),
+  "/small-standalone-link": page(`${heading}<div><a href="#a" style="height:20px;min-width:0;padding:0;border:0;margin:0">Solo</a></div><a href="#b">Uno</a>`),
+  // A button declared as a field adornment may sit over its input; the same layout without the declaration is an overlap.
+  "/adornment-declared": page(`${heading}<div style="position:relative;width:260px"><input aria-label="clave" style="width:100%;height:44px;box-sizing:border-box"><div data-field-adornment style="position:absolute;top:0;right:0"><button type="button" style="margin:0">Ver</button></div></div><a href="#a">Uno</a>`),
+  "/adornment-undeclared": page(`${heading}<div style="position:relative;width:260px"><input aria-label="clave" style="width:100%;height:44px;box-sizing:border-box"><div style="position:absolute;top:0;right:0"><button type="button" style="margin:0">Ver</button></div></div><a href="#a">Uno</a>`),
+  // An inline link that wraps over two lines must be probed on its line boxes, not at the centre of the union.
+  "/wrapped-inline-link": page(`${heading}<p style="width:170px;margin:0">Acepto los <a href="#a" style="display:inline;height:auto;min-width:0;padding:0;border:0;margin:0">politica de privacidad completa</a> y mas texto.</p><a href="#b">Uno</a>`),
   "/gradient-ok": page(`${heading}<p style="background:linear-gradient(#fff,#eee);color:#000">Negro sobre degradado claro</p><a href="#a">Uno</a>`),
   "/gradient-unparsable": page(`${heading}<p style="background:linear-gradient(in oklch, oklch(0.2 0 0), oklch(0.9 0 0));color:#000">Degradado en espacio oklch</p><a href="#a">Uno</a>`),
   "/redirect-source": null,
@@ -109,6 +117,11 @@ const cases = [
   { name: "degradado negro al 50% sobre base blanca (gris) falla", route: { path: "/half-gradient-white-base", identify }, expect: (f) => f.some((x) => /contraste 3\.\d\d:1/.test(x)) },
   { name: "degradado negro al 50% sobre base negra pasa", route: { path: "/half-gradient-black-base", identify }, expect: (f) => !f.some((x) => /contraste/.test(x)) },
   { name: "capa de degradado que no cubre toda la caja deja ver la base: falla", route: { path: "/partial-gradient-white-base", identify }, expect: (f) => f.some((x) => /contraste 1\.00:1/.test(x)) },
+  { name: "un enlace dentro de una frase queda exento del tamano minimo (y se declara en notas)", route: { path: "/inline-link", identify }, expect: (f) => !f.some((x) => /area tactil/.test(x)) },
+  { name: "un enlace pequeno que esta solo NO queda exento", route: { path: "/small-standalone-link", identify }, expect: (f) => f.some((x) => /area tactil/.test(x) && /«Solo»/.test(x)) },
+  { name: "un adorno de campo declarado (data-field-adornment) puede cubrir el input", route: { path: "/adornment-declared", identify }, expect: (f) => !f.some((x) => /solapadas|llega a/.test(x)) },
+  { name: "el mismo boton sobre el input SIN declararlo es un solape y un clic desviado", route: { path: "/adornment-undeclared", identify }, expect: (f) => f.some((x) => /solapadas/.test(x)) && f.some((x) => /llega a/.test(x)) },
+  { name: "un enlace en linea partido en dos renglones se sondea por renglon (sin falso positivo)", route: { path: "/wrapped-inline-link", identify }, expect: (f) => !f.some((x) => /llega a/.test(x)) },
   { name: "degradado claro con texto negro pasa", route: { path: "/gradient-ok", identify }, expect: (f) => !f.some((x) => /contraste/.test(x)) },
   { name: "degradado no interpretable se informa como NO VERIFICADO", route: { path: "/gradient-unparsable", identify }, expect: (f) => f.some((x) => /NO VERIFICADO/.test(x)) },
   { name: "cobertura solo del borde superior del area ampliada falla", route: { path: "/covered-edge", identify }, expect: (f) => f.some((x) => /borde superior/.test(x) && /«Compacto»/.test(x)) },

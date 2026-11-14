@@ -251,24 +251,33 @@ export function staticAudit(minTarget) {
     return { element, left: cx - w / 2, right: cx + w / 2, top: cy - h / 2, bottom: cy + h / 2, w, h };
   });
   const label = (e) => `<${e.tagName.toLowerCase()}> «${(e.textContent || e.getAttribute("aria-label") || e.getAttribute("name") || "").trim().slice(0, 28)}»`;
-  for (const box of boxes) if (box.w < minTarget - 0.5 || box.h < minTarget - 0.5) failures.push(`area tactil ${Math.round(box.w)}x${Math.round(box.h)} < ${minTarget}x${minTarget}  ${label(box.element)}`);
+  // WCAG 2.5.8 "inline" exception: a link inside a sentence (the surrounding text around it is substantial) is exempt from the
+  // minimum size. It is still hit-tested, and the exemption is declared in the report notes.
+  const isInlineLink = (element) => element.tagName === "A" && (element.parentElement?.textContent ?? "").replace(element.textContent ?? "", "").replace(/\s+/g, " ").trim().length >= 12;
+  const inlineLinks = boxes.filter((box) => isInlineLink(box.element));
+  for (const box of boxes) if (!isInlineLink(box.element) && (box.w < minTarget - 0.5 || box.h < minTarget - 0.5)) failures.push(`area tactil ${Math.round(box.w)}x${Math.round(box.h)} < ${minTarget}x${minTarget}  ${label(box.element)}`);
   for (let i = 0; i < boxes.length; i++) {
     for (let j = i + 1; j < boxes.length; j++) {
       const a = boxes[i];
       const b = boxes[j];
       if (a.element.contains(b.element) || b.element.contains(a.element)) continue;
+      if (isInlineLink(a.element) || isInlineLink(b.element)) continue; // inline links share lines by nature
+      // A control declared as a field adornment (data-field-adornment, e.g. show/hide password) sits over the field it belongs to.
+      const adorned = (adornment, field) => adornment.closest("[data-field-adornment]")?.parentElement?.contains(field) && !field.closest("[data-field-adornment]");
+      if (adorned(a.element, b.element) || adorned(b.element, a.element)) continue;
       const overlapX = Math.min(a.right, b.right) - Math.max(a.left, b.left);
       const overlapY = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
       if (overlapX > 1 && overlapY > 1) failures.push(`areas tactiles solapadas (${Math.round(overlapY)}px)  ${label(a.element)}  <->  ${label(b.element)}`);
     }
   }
+  if (inlineLinks.length > 0) skipped.push(`${inlineLinks.length} enlace(s) dentro de texto exentos del tamano minimo (WCAG 2.5.8, excepcion inline), p. ej. «${inlineLinks[0].element.textContent.trim().slice(0, 30)}»`);
   return { checked, controls: boxes.length, failures, skipped };
 }
 
 /**
  * Hit testing for EVERY control, wherever it is on the page: each one is scrolled into the middle of the viewport first,
  * then the centre and the four edges of its interactive area (rectangle plus any enlarged ::before area, clipped to the
- * viewport) are probed with elementFromPoint. A click at any of those points must reach the control or a descendant of it (a <label> that activates it is the only exception); an ancestor does not count, so pointer-events:none controls fail. Runs in the browser.
+ * viewport) are probed with elementFromPoint. A click at any of those points must reach the control or a descendant of it (a <label> that activates it, or a declared data-field-adornment inside its wrapper, are the only exceptions); an ancestor does not count, so pointer-events:none controls fail. Runs in the browser.
  */
 export async function hitTestAudit() {
   const failures = [];
@@ -278,7 +287,9 @@ export async function hitTestAudit() {
     if (window.__auditOpacity(element) < window.__auditMinOpacity) continue;
     element.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
     await new Promise((resolve) => requestAnimationFrame(() => resolve()));
-    const rect = element.getBoundingClientRect();
+    // An inline element that wraps over several lines has one box per line; probe its first line box, not the union (whose
+    // centre can fall on other text).
+    const rect = element.getClientRects()[0] ?? element.getBoundingClientRect();
     const before = getComputedStyle(element, "::before");
     const extra = before.content !== "none" && before.position === "absolute";
     const w = extra ? Math.max(rect.width, parseFloat(before.width) || 0) : rect.width;
@@ -294,7 +305,9 @@ export async function hitTestAudit() {
       if (!hit) { failures.push(`el punto del ${name} de ${label(element)} cae fuera de la pantalla`); break; }
       if (hit.closest("nextjs-portal")) continue;
       // The click must reach the control itself or one of its descendants. Only explicit exception: the <label> that activates it.
-      const reaches = element.contains(hit) || (hit.tagName === "LABEL" && hit.control === element);
+      // Second explicit exception: an adornment declared with data-field-adornment inside the field's own wrapper.
+      const adornment = hit.closest("[data-field-adornment]");
+      const reaches = element.contains(hit) || (hit.tagName === "LABEL" && hit.control === element) || (adornment !== null && adornment.parentElement?.contains(element));
       if (!reaches) { failures.push(`el clic en el ${name} (${Math.round(x)},${Math.round(y)}) de ${label(element)} llega a ${label(hit)}`); break; }
     }
   }

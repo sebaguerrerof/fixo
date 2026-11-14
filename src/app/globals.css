@@ -174,8 +174,8 @@
   .login-showcase {
     background-color: hsl(var(--inverse));
     background-image:
-      radial-gradient(circle at 20% 15%, hsl(var(--primary) / 0.32), transparent 32%),
-      radial-gradient(circle at 80% 85%, hsl(var(--info) / 0.30), transparent 32%);
+      radial-gradient(circle at 20% 15%, hsl(var(--primary) / 0.14), transparent 32%),
+      radial-gradient(circle at 80% 85%, hsl(var(--info) / 0.12), transparent 32%);
   }
 
   .hero-orb { @apply pointer-events-none absolute rounded-full blur-3xl; animation: drift 16s ease-in-out infinite alternate; }
@@ -214,6 +214,13 @@
   /* Skeleton shimmer: shape comes from the component, motion from here. */
   .skeleton { @apply relative overflow-hidden rounded-md bg-muted; }
   .skeleton::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, hsl(var(--foreground) / 0.06), transparent); animation: shimmer 1.6s var(--ease-out) infinite; }
+
+  /* Custom checkbox: 20px box with a 44px interactive area (touch-area) and a check drawn with tokens only. */
+  .checkbox { @apply touch-area size-5 shrink-0 cursor-pointer appearance-none rounded-md border border-input bg-card shadow-sm transition-colors duration-fast; }
+  .checkbox:hover { @apply border-ring/70; }
+  .checkbox:checked { @apply border-primary bg-primary; }
+  .checkbox:checked::after { content: ""; position: absolute; left: 6px; top: 2px; width: 5px; height: 10px; border: solid hsl(var(--primary-foreground)); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .checkbox:disabled { @apply cursor-not-allowed opacity-60; }
 
   .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
   .touch-target { @apply min-h-11 min-w-11; }
