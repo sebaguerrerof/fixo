@@ -59,6 +59,9 @@ const routes = [
 // Touch minimum: 44 px on mobile (our own target); 24 px on desktop (WCAG 2.5.8 AA).
 const viewports = [{ name: "movil", width: 390, height: 844, min: 44 }, { name: "escritorio", width: 1280, height: 800, min: 24 }];
 
+// Real pages run against a dev server that compiles on first hit (slow when the machine is short of memory): allow 10 s for the identifier.
+for (const route of routes) route.identifyTimeout = 10000;
+
 // --only=/admin,/tecnico audits just the routes whose path starts with one of the given prefixes (handy while iterating).
 const onlyArg = process.argv.find((arg) => arg.startsWith("--only="));
 const only = onlyArg ? onlyArg.slice("--only=".length).split(",").filter(Boolean) : null;

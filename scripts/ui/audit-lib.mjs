@@ -60,8 +60,9 @@ export async function auditRoute({ browser, base, route, scheme, viewport }) {
     const identify = route.identify;
     if (!identify) failures.push("la ruta no declara elemento identificador");
     else {
-      // Entrance animations start transparent, so give the identifier a short window to become effectively visible.
-      const found = await page.waitForFunction(({ selector, text }) => [...document.querySelectorAll(selector)].some((element) => window.__auditOpacity(element) >= window.__auditMinOpacity && new RegExp(text, "i").test(element.textContent ?? "")), { selector: identify.selector, text: identify.text }, { timeout: 3000 }).then(() => true, () => false);
+      // Entrance animations start transparent (and a cold dev-server compile can be slow), so give the identifier a window to become
+      // effectively visible: 3 s by default, `identifyTimeout` per route.
+      const found = await page.waitForFunction(({ selector, text }) => [...document.querySelectorAll(selector)].some((element) => window.__auditOpacity(element) >= window.__auditMinOpacity && new RegExp(text, "i").test(element.textContent ?? "")), { selector: identify.selector, text: identify.text }, { timeout: route.identifyTimeout ?? 3000 }).then(() => true, () => false);
       if (!found) failures.push(`no aparece el elemento identificador ${identify.selector} /${identify.text}/ visible (pagina vacia, distinta u oculta por visibility/display/opacity)`);
     }
     if (failures.length === 0) {
