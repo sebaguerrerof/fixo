@@ -1,40 +1,61 @@
 import type { Config } from "tailwindcss";
 
+const channel = (name: string) => `hsl(var(--${name}) / <alpha-value>)`;
+
+const status = (name: string) => ({
+  DEFAULT: channel(name),
+  foreground: channel(`${name}-foreground`),
+  soft: channel(`${name}-soft`),
+  "soft-foreground": channel(`${name}-soft-foreground`),
+  border: channel(`${name}-border`),
+});
+
+// Tailwind only exposes semantic names backed by the CSS tokens in src/app/globals.css.
 const config: Config = {
   darkMode: ["class"],
   content: ["./src/**/*.{ts,tsx}"],
   theme: {
     container: {
       center: true,
-      padding: "1.25rem",
+      padding: { DEFAULT: "1rem", sm: "1.25rem", lg: "2rem" },
       screens: { "2xl": "1280px" },
     },
     extend: {
+      fontFamily: {
+        sans: ["var(--font-geist-sans)", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
+        mono: ["var(--font-geist-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
+      },
       borderRadius: {
         xl: "var(--radius)",
         lg: "calc(var(--radius) - 2px)",
         md: "calc(var(--radius) - 4px)",
       },
-      boxShadow: {
-        soft: "0 14px 36px -20px hsl(215 31% 25% / 0.30)",
-        lift: "0 20px 50px -24px hsl(215 31% 25% / 0.38)",
-      },
+      boxShadow: { soft: "var(--shadow-soft)", lift: "var(--shadow-lift)" },
+      transitionTimingFunction: { out: "var(--ease-out)" },
+      transitionDuration: { fast: "var(--duration-fast)", base: "var(--duration-base)", slow: "var(--duration-slow)" },
+      height: { header: "var(--header-height)" },
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: { DEFAULT: "hsl(var(--primary))", foreground: "hsl(var(--primary-foreground))" },
-        secondary: { DEFAULT: "hsl(var(--secondary))", foreground: "hsl(var(--secondary-foreground))" },
-        muted: { DEFAULT: "hsl(var(--muted))", foreground: "hsl(var(--muted-foreground))" },
-        accent: { DEFAULT: "hsl(var(--accent))", foreground: "hsl(var(--accent-foreground))" },
-        destructive: { DEFAULT: "hsl(var(--destructive))", foreground: "hsl(var(--destructive-foreground))" },
-        card: { DEFAULT: "hsl(var(--card))", foreground: "hsl(var(--card-foreground))" },
-        success: { DEFAULT: "hsl(var(--success))", foreground: "hsl(var(--success-foreground))" },
-        warning: { DEFAULT: "hsl(var(--warning))", foreground: "hsl(var(--warning-foreground))" },
-        info: { DEFAULT: "hsl(var(--info))", foreground: "hsl(var(--info-foreground))" },
+        border: channel("border"),
+        input: channel("input"),
+        ring: channel("ring"),
+        background: channel("background"),
+        foreground: channel("foreground"),
+        primary: { DEFAULT: channel("primary"), foreground: channel("primary-foreground") },
+        secondary: { DEFAULT: channel("secondary"), foreground: channel("secondary-foreground") },
+        muted: { DEFAULT: channel("muted"), foreground: channel("muted-foreground") },
+        accent: { DEFAULT: channel("accent"), foreground: channel("accent-foreground") },
+        card: { DEFAULT: channel("card"), foreground: channel("card-foreground") },
+        destructive: status("destructive"),
+        success: status("success"),
+        warning: status("warning"),
+        info: status("info"),
+        inverse: { DEFAULT: channel("inverse"), foreground: channel("inverse-foreground"), muted: channel("inverse-muted"), accent: channel("inverse-accent"), border: channel("inverse-border") },
       },
+      keyframes: {
+        "pop-in": { from: { opacity: "0", transform: "translateY(8px) scale(0.97)" }, to: { opacity: "1", transform: "none" } },
+        spin: { to: { transform: "rotate(360deg)" } },
+      },
+      animation: { "pop-in": "pop-in var(--duration-base) var(--ease-out) both" },
     },
   },
   plugins: [],

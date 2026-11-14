@@ -22,7 +22,7 @@ export function TechnicianCard({ technician }: { readonly technician: Technician
               <p className="mt-0.5 truncate text-sm text-muted-foreground">{technician.headline}</p>
             </div>
           </div>
-          <Link aria-label={`Ver perfil de ${technician.displayName}`} className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" href={`/tecnicos/${technician.slug}`}>
+          <Link aria-label={`Ver perfil de ${technician.displayName}`} className="touch-area rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" href={`/tecnicos/${technician.slug}`}>
             <ArrowUpRight className="size-4" />
           </Link>
         </div>
@@ -38,7 +38,7 @@ export function TechnicianCard({ technician }: { readonly technician: Technician
         </div>
         <div className="mt-5 flex items-center justify-between border-t border-border/70 pt-4">
           <p className="text-sm text-muted-foreground">Referencia <span className="font-semibold text-foreground">{technician.startingPriceClp > 0 ? formatClp(technician.startingPriceClp) : "A convenir"}</span></p>
-          <Link className="text-sm font-semibold text-primary hover:underline" href={`/tecnicos/${technician.slug}`}>Ver perfil</Link>
+          <Link className="touch-area text-sm font-semibold text-primary hover:underline" href={`/tecnicos/${technician.slug}`}>Ver perfil</Link>
         </div>
       </CardContent>
     </Card>

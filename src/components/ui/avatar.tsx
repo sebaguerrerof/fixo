@@ -11,7 +11,7 @@ function initials(name: string): string {
 
 export function Avatar({ name, className }: AvatarProps) {
   return (
-    <div aria-label={name} className={cn("flex size-11 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary", className)}>
+    <div aria-label={name} className={cn("flex size-11 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-bold text-secondary-foreground", className)}>
       {initials(name)}
     </div>
   );

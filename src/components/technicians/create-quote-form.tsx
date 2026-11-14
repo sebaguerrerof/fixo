@@ -81,11 +81,11 @@ export function CreateQuoteForm({ serviceRequestId, draft }: { readonly serviceR
   }
 
   if (feedback === "success") {
-    return <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 text-emerald-950"><CheckCircle2 className="size-6" /><h2 className="mt-3 text-lg font-bold">Cotización enviada</h2><p className="mt-2 text-sm leading-6">El cliente ya puede revisar tu propuesta y compararla con otras.</p><Button className="mt-5" onClick={() => router.push("/tecnico/oportunidades")} type="button" variant="outline">Volver a oportunidades</Button></div>;
+    return <div className="rounded-2xl border border-success-border bg-success-soft p-6 text-success-soft-foreground"><CheckCircle2 className="size-6" /><h2 className="mt-3 text-lg font-bold">Cotización enviada</h2><p className="mt-2 text-sm leading-6">El cliente ya puede revisar tu propuesta y compararla con otras.</p><Button className="mt-5" onClick={() => router.push("/tecnico/oportunidades")} type="button" variant="outline">Volver a oportunidades</Button></div>;
   }
 
   if (feedback === "draft") {
-    return <div role="status" className="rounded-2xl border border-sky-200 bg-sky-50 p-6 text-sky-950"><CheckCircle2 className="size-6" /><h2 className="mt-3 text-lg font-bold">Borrador guardado</h2><p className="mt-2 text-sm">Todavía no es visible para el cliente.</p><Button className="mt-5" onClick={() => setFeedback(null)} type="button" variant="outline">Continuar editando</Button></div>;
+    return <div role="status" className="rounded-2xl border border-info-border bg-info-soft p-6 text-info-soft-foreground"><CheckCircle2 className="size-6" /><h2 className="mt-3 text-lg font-bold">Borrador guardado</h2><p className="mt-2 text-sm">Todavía no es visible para el cliente.</p><Button className="mt-5" onClick={() => setFeedback(null)} type="button" variant="outline">Continuar editando</Button></div>;
   }
 
   return <form className="space-y-5" noValidate onSubmit={form.handleSubmit(onSubmit)}>

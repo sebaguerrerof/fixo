@@ -30,7 +30,7 @@ export async function DashboardShell({ roleLabel, requiredRole, userName, naviga
   await requireServerRole(requiredRole === "superadmin" ? ["moderator", "superadmin"] : [requiredRole]);
   return (
     <div className="min-h-screen bg-muted/40">
-      {isDemoModeEnabled() ? <p className="bg-amber-100 px-4 py-2 text-center text-sm font-semibold text-amber-950">Demostración local: identidades y operaciones de ejemplo, sin persistencia real.</p> : null}
+      {isDemoModeEnabled() ? <p className="bg-warning-soft px-4 py-2 text-center text-sm font-semibold text-warning-soft-foreground">Demostración local: identidades y operaciones de ejemplo, sin persistencia real.</p> : null}
       <header className="border-b bg-background">
         <div className="container flex h-16 items-center justify-between gap-4">
           <div className="flex items-center gap-4"><Logo /><span className="hidden border-l pl-4 text-sm font-medium text-muted-foreground sm:inline">{roleLabel}</span></div>

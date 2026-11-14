@@ -10,6 +10,7 @@ import type { PaymentProcessingRepository, PaymentRateLimiter, PaymentRepository
 import { getPaymentProcessingRepository, getPaymentRateLimiter, getPaymentRepository } from "@/repositories/repository-factory";
 import { loadPaymentSwitches } from "@/integrations/payments/payment-switches";
 import { CHECKOUT_LIMIT, enforceRateLimit } from "./payment-rate-limit";
+import { brand } from "@/design-system/brand";
 
 /** The provider may have created the charge but we could not confirm it. The attempt is left for reconciliation: never recreate. */
 export class PaymentOutcomeUnknownError extends Error {
@@ -71,7 +72,7 @@ export class PaymentService {
 
     let created;
     try {
-      created = await this.deps.provider.createOrder({ orderId: prepared.orderId, attemptId: prepared.attemptId, commerceOrder: prepared.commerceOrder, amountClp: prepared.totalClp, professionalAmountClp: prepared.professionalAmountClp, platformFeeClp: prepared.platformFeeClp, payerEmail, subject: "Servicio a domicilio Fixo" });
+      created = await this.deps.provider.createOrder({ orderId: prepared.orderId, attemptId: prepared.attemptId, commerceOrder: prepared.commerceOrder, amountClp: prepared.totalClp, professionalAmountClp: prepared.professionalAmountClp, platformFeeClp: prepared.platformFeeClp, payerEmail, subject: `Servicio a domicilio ${brand.name}` });
     } catch (error) {
       // Closing as failed (which allows another attempt) is reserved for provably-unsent requests and definitive provider refusals.
       // ANY other failure after the request may have left the provider is ambiguous: reconcile, never recreate.

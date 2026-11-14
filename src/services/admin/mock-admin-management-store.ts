@@ -4,6 +4,7 @@ import type { AdminAuditEntry } from "@/domain/entities/audit-log";
 import type { Technician } from "@/domain/entities/technician";
 import { canTransitionTechnician, type TechnicianStatus } from "@/domain/enums/technician-status";
 import { DEMO_TECHNICIANS } from "@/repositories/mock/fixtures/technicians";
+import { brand } from "@/design-system/brand";
 
 // En memoria durante la sesión del navegador: suficiente para recorrer la demo.
 const auditEntries: AdminAuditEntry[] = [];
@@ -24,7 +25,7 @@ export class MockAdminManagementStore {
     sequence += 1;
     auditEntries.unshift({
       id: `audit-demo-${sequence}`,
-      actorName: "Equipo Fixo (demo)",
+      actorName: `Equipo ${brand.name} (demo)`,
       technicianId: technician.id,
       technicianName: technician.displayName,
       action: "technician_status_changed",

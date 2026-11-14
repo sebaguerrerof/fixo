@@ -1,5 +1,6 @@
 import type { JobPaymentOrderView, JobPaymentState, JobPaymentsView } from "@/domain/entities/job-payment";
 import { calculatePaymentTerms, type PaymentTerms } from "./pricing";
+import { brand } from "@/design-system/brand";
 
 export type PaymentTone = "ok" | "pending" | "warn";
 export interface OrderDisplay { readonly label: string; readonly tone: PaymentTone; readonly hint: string | null }
@@ -10,13 +11,13 @@ export interface OrderDisplay { readonly label: string; readonly tone: PaymentTo
  */
 export function describeOrder(order: Pick<JobPaymentOrderView, "status" | "review" | "latestAttemptState">): OrderDisplay {
   if (order.status === "paid") return order.review
-    ? { label: "Pagado, en revisión", tone: "warn", hint: "Registramos una situación que Fixo debe revisar antes de continuar." }
+    ? { label: "Pagado, en revisión", tone: "warn", hint: `Registramos una situación que ${brand.name} debe revisar antes de continuar.` }
     : { label: "Pagado", tone: "ok", hint: null };
-  if (order.review) return { label: "En revisión", tone: "warn", hint: "Fixo revisa este pago. No se crearán nuevos cobros hasta resolverlo." };
+  if (order.review) return { label: "En revisión", tone: "warn", hint: `${brand.name} revisa este pago. No se crearán nuevos cobros hasta resolverlo.` };
   switch (order.latestAttemptState) {
     case "pending": return { label: "Pago iniciado, pendiente de verificación", tone: "pending", hint: "Puedes retomar el pago o actualizar la página para ver su estado." };
     case "creating": case "reconciliation_required": return { label: "Verificando con el proveedor", tone: "pending", hint: "Estamos confirmando el estado antes de permitir otro intento." };
-    case "quarantined": return { label: "En revisión", tone: "warn", hint: "Fixo revisa este pago." };
+    case "quarantined": return { label: "En revisión", tone: "warn", hint: `${brand.name} revisa este pago.` };
     case "failed": return { label: "Rechazado", tone: "warn", hint: "Puedes intentar el pago nuevamente." };
     case "cancelled": return { label: "Anulado", tone: "warn", hint: "Puedes intentar el pago nuevamente." };
     default: return { label: "Pendiente de pago", tone: "pending", hint: null };

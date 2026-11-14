@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { startPayment } from "@/app/actions/payments";
 import { Button } from "@/components/ui/button";
 import { formatClp } from "@/lib/utils";
+import { brand } from "@/design-system/brand";
 
 interface Props { readonly jobId: string; readonly extraChargeId: string | null; readonly policyVersion: number; readonly professionalAmountClp: number; readonly platformFeeClp: number; readonly totalClp: number }
 
@@ -26,12 +27,12 @@ export function PaymentCheckoutButton({ jobId, extraChargeId, policyVersion, pro
   }}>
     <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-sm">
       <dt>Importe del profesional (Q)</dt><dd className="text-right">{formatClp(professionalAmountClp)}</dd>
-      <dt>Comisión Fixo (F)</dt><dd className="text-right">{formatClp(platformFeeClp)}</dd>
+      <dt>Comisión {brand.name} (F)</dt><dd className="text-right">{formatClp(platformFeeClp)}</dd>
       <dt className="font-semibold">Total a pagar (T = Q + F)</dt><dd className="text-right font-semibold">{formatClp(totalClp)}</dd>
     </dl>
-    <p className="text-xs text-muted-foreground">Pago de prueba (Flow Sandbox): no se realiza ningún cobro real. El profesional tiene asignado el importe Q; Fixo cubre los costes del medio de pago dentro de su comisión.</p>
+    <p className="text-xs text-muted-foreground">Pago de prueba (Flow Sandbox): no se realiza ningún cobro real. El profesional tiene asignado el importe Q; {brand.name} cubre los costes del medio de pago dentro de su comisión.</p>
     <fieldset disabled={pending} className="min-w-0 space-y-3">
-      <label className="flex items-start gap-2 text-sm"><input name="consent" type="checkbox" required className="mt-1" />Acepto pagar el total de {formatClp(totalClp)}, que incluye la comisión de Fixo.</label>
+      <label className="flex items-start gap-2 text-sm"><input name="consent" type="checkbox" required className="mt-1" />Acepto pagar el total de {formatClp(totalClp)}, que incluye la comisión de {brand.name}.</label>
       <Button type="submit" disabled={pending}>{pending ? "Preparando pago…" : `Pagar ${formatClp(totalClp)}`}</Button>
     </fieldset>
     {message ? <p role="alert" className="break-words text-sm">{message} <button type="button" className="underline" onClick={() => window.location.reload()}>Actualizar</button></p> : null}

@@ -4,6 +4,7 @@ import { respondExtraCharge } from "@/app/actions/payments";
 import { Button } from "@/components/ui/button";
 import { formatClp } from "@/lib/utils";
 import { jobInputClass } from "@/components/jobs/job-command-form";
+import { brand } from "@/design-system/brand";
 
 interface Props { readonly jobId: string; readonly extraChargeId: string; readonly policyVersion: number; readonly professionalAmountClp: number; readonly platformFeeClp: number; readonly totalClp: number }
 
@@ -20,11 +21,11 @@ export function ExtraChargeResponse({ jobId, extraChargeId, policyVersion, profe
   return <form className="space-y-3 rounded-lg border p-4" onSubmit={(e) => { e.preventDefault(); void respond("accepted"); }}>
     <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1 text-sm">
       <dt>Importe del profesional (Q)</dt><dd className="text-right">{formatClp(professionalAmountClp)}</dd>
-      <dt>Comisión Fixo (F)</dt><dd className="text-right">{formatClp(platformFeeClp)}</dd>
+      <dt>Comisión {brand.name} (F)</dt><dd className="text-right">{formatClp(platformFeeClp)}</dd>
       <dt className="font-semibold">Total (T = Q + F)</dt><dd className="text-right font-semibold">{formatClp(totalClp)}</dd>
     </dl>
     <fieldset disabled={pending} className="min-w-0 space-y-3">
-      <label className="flex items-start gap-2 text-sm"><input name="consent" type="checkbox" required className="mt-1" />Acepto este adicional y pagar {formatClp(totalClp)}, que incluye la comisión de Fixo.</label>
+      <label className="flex items-start gap-2 text-sm"><input name="consent" type="checkbox" required className="mt-1" />Acepto este adicional y pagar {formatClp(totalClp)}, que incluye la comisión de {brand.name}.</label>
       <label className="grid gap-1 text-sm">Motivo del rechazo (opcional)<textarea value={reason} onChange={(e) => setReason(e.target.value)} maxLength={1000} className={jobInputClass} /></label>
       <div className="flex flex-wrap gap-3"><Button type="submit">{pending ? "Registrando…" : "Aceptar adicional"}</Button><Button type="button" variant="outline" onClick={() => void respond("rejected")}>Rechazar</Button></div>
     </fieldset>

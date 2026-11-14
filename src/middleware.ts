@@ -6,10 +6,11 @@ import { getSupabasePublicConfig } from "@/integrations/supabase/config";
 import { allowedRouteRoles } from "@/domain/auth/protected-routes";
 import type { UserRole } from "@/domain/enums/roles";
 import { accountAccessSchema } from "@/domain/auth/account";
+import { brand } from "@/design-system/brand";
 
 export async function middleware(request: NextRequest) {
   try { assertServerEnvironment(); } catch {
-    return new NextResponse("Fixo no está disponible temporalmente. Inténtalo más tarde.", {
+    return new NextResponse(`${brand.name} no está disponible temporalmente. Inténtalo más tarde.`, {
       status: 503,
       headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store", "Retry-After": "300" },
     });
