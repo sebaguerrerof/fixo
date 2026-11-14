@@ -1,22 +1,22 @@
-import { Inbox, type LucideIcon } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 
 interface EmptyStateProps {
   readonly title: string;
   readonly description: string;
+  /** Optional plain glyph next to the title (no tile behind it). */
   readonly icon?: LucideIcon;
   readonly action?: React.ReactNode;
 }
 
-export function EmptyState({ title, description, icon: Icon = Inbox, action }: EmptyStateProps) {
+export function EmptyState({ title, description, icon: Icon, action }: EmptyStateProps) {
   return (
     <Card className="border-dashed shadow-none">
-      <CardContent className="flex flex-col items-center py-12 text-center">
-        <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary"><Icon aria-hidden="true" className="size-6" /></span>
-        <h2 className="mt-5 text-lg font-semibold">{title}</h2>
-        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">{description}</p>
-        {action ? <div className="mt-6">{action}</div> : null}
+      <CardContent className="py-10">
+        <h2 className="flex items-center gap-2 text-xl">{Icon ? <Icon aria-hidden="true" className="size-5 shrink-0 text-muted-foreground" /> : null}{title}</h2>
+        <p className="mt-2 max-w-prose text-sm leading-6 text-muted-foreground">{description}</p>
+        {action ? <div className="mt-5">{action}</div> : null}
       </CardContent>
     </Card>
   );

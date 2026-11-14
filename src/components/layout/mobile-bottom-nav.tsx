@@ -42,7 +42,7 @@ export function MobileBottomNav() {
   const accountHref = session ? dashboardForRole(session.user.role) : "/login";
 
   return (
-    <nav aria-label="Navegación móvil" className="safe-bottom fixed inset-x-3 bottom-3 z-50 flex items-center justify-around rounded-2xl border border-inverse-border bg-inverse/90 p-1.5 shadow-lift backdrop-blur-xl md:hidden">
+    <nav aria-label="Navegación móvil" className="safe-bottom fixed inset-x-3 bottom-3 z-50 flex items-center justify-around rounded-2xl border border-inverse-border bg-inverse p-1.5 md:hidden">
       {navigation.map((item) => <NavLink key={item.href} {...item} active={item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)} />)}
       <NavLink href={accountHref} icon={UserRound} label="Cuenta" active={pathname === accountHref} />
     </nav>

@@ -7,7 +7,6 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { TechnicianCard } from "@/components/technicians/technician-card";
 import { buttonVariants } from "@/components/ui/button";
-import { Reveal } from "@/components/ui/reveal";
 import { cn } from "@/lib/utils";
 import type { TechnicianSort } from "@/repositories/contracts/technician-repository";
 import { TechnicianDirectoryService } from "@/services/technicians/technician-directory-service";
@@ -46,7 +45,7 @@ export default async function TechniciansPage({ searchParams }: { readonly searc
       <SiteHeader />
       <main className="container pb-14 pt-10 lg:pt-16">
         <div className="animate-enter">
-          <SectionHeading eyebrow="Directorio" title={selectedCategory ? `Técnicos de ${selectedCategory.name}` : "Encuentra al técnico indicado"} description="Explora perfiles publicados, especialidades y zonas de cobertura antes de elegir." />
+          <SectionHeading title={selectedCategory ? `Técnicos de ${selectedCategory.name}` : "Encuentra al técnico indicado"} description="Explora perfiles publicados, especialidades y zonas de cobertura antes de elegir." />
         </div>
 
         <form action="/tecnicos" className="search-command mt-8 flex flex-col gap-2 p-2 md:flex-row md:items-center" role="search">
@@ -75,7 +74,7 @@ export default async function TechniciansPage({ searchParams }: { readonly searc
 
         {technicians.length ? (
           <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {technicians.map((technician, index) => <Reveal delay={Math.min(index, 5) * 70} key={technician.id}><TechnicianCard technician={technician} /></Reveal>)}
+            {technicians.map((technician) => <TechnicianCard key={technician.id} technician={technician} />)}
           </div>
         ) : (
           <div className="mt-6"><EmptyState action={<Link className={buttonVariants({ variant: "outline" })} href="/tecnicos">Limpiar filtros</Link>} description="Prueba con otro rubro o mira todos los técnicos publicados." icon={SearchX} title="No hay resultados para esta búsqueda" /></div>

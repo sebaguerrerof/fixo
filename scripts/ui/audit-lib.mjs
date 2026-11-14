@@ -277,6 +277,18 @@ export function staticAudit(minTarget) {
     if (ratio < need) failures.push(`contraste ${ratio.toFixed(2)}:1 < ${need}:1  ${where}`);
   }
 
+  // Placeholders are not text nodes, so they need their own pass: ::placeholder colour against the field's own background (4.5:1).
+  for (const field of document.querySelectorAll("input[placeholder], textarea[placeholder]")) {
+    if (!field.getAttribute("placeholder")?.trim() || window.__auditOpacity(field) < window.__auditMinOpacity || field.disabled) continue;
+    const fg = parse(getComputedStyle(field, "::placeholder").color);
+    const where = `placeholder «${field.getAttribute("placeholder").slice(0, 40)}»  <${field.tagName.toLowerCase()} name="${field.getAttribute("name") ?? ""}">`;
+    if (!fg) { failures.push(`contraste NO VERIFICADO (color de placeholder ilegible)  ${where}`); continue; }
+    const ratio = worstContrast(field, fg);
+    if (ratio === null) { failures.push(`contraste NO VERIFICADO (fondo no interpretable)  ${where}`); continue; }
+    checked++;
+    if (ratio < 4.5) failures.push(`contraste ${ratio.toFixed(2)}:1 < 4.5:1  ${where}`);
+  }
+
   const interactive = [...document.querySelectorAll("a[href], button, input:not([type=hidden]), select, textarea, [role=button]")].filter((e) => {
     return window.__auditOpacity(e) >= window.__auditMinOpacity && !e.disabled && !e.closest("nextjs-portal");
   });
@@ -370,8 +382,8 @@ export async function hitTestAudit() {
       const top = Math.max(cy - h / 2 + 1, 1), bottom = Math.min(cy + h / 2 - 1, innerHeight - 1);
       const midX = Math.min(Math.max(cx, left), right), midY = Math.min(Math.max(cy, top), bottom);
       // Boxed controls are probed at their real edges (1 px inside). The line fragments of a wrapped inline element have ragged ends
-      // (trailing space, sub-pixel advances), so there the side probes sit at 10% / 90% of the fragment and the vertical ones at 20% / 80%.
-      const fragment = boxes.length > 1;
+      // (trailing space, sub-pixel advances; the same holds for a single-line inline link), so there the side probes sit at 10% / 90% of the fragment and the vertical ones at 20% / 80%.
+      const fragment = boxes.length > 1 || getComputedStyle(element).display === "inline";
       const probes = fragment
         ? [["centro", cx, cy], ["borde izquierdo", rect.left + rect.width * 0.1, cy], ["borde derecho", rect.left + rect.width * 0.9, cy], ["borde superior", cx, rect.top + rect.height * 0.2], ["borde inferior", cx, rect.top + rect.height * 0.8]]
         : [["centro", midX, midY], ["borde izquierdo", left, midY], ["borde derecho", right, midY], ["borde superior", midX, top], ["borde inferior", midX, bottom]];

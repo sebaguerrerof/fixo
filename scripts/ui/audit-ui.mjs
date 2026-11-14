@@ -19,12 +19,12 @@ const all = process.argv.includes("--all");
 // not fail the audit unless --all is passed.
 const routes = [
   { path: "/", migrated: true, identify: { selector: "h1", text: "arreglo del hogar" } },
-  { path: "/como-funciona", migrated: true, identify: { selector: "h1, h2", text: "Más claridad para cada servicio" } },
+  { path: "/como-funciona", migrated: true, identify: { selector: "h1", text: "Cómo funciona SoyFixo" } },
   { path: "/terminos", migrated: true, identify: { selector: "h1", text: "Términos de uso" } },
   { path: "/privacidad", migrated: true, identify: { selector: "h1", text: "Privacidad" } },
   { path: "/tecnicos", migrated: true, identify: { selector: "h1, h2", text: "Encuentra al técnico indicado" } },
-  { path: "/login", migrated: true, identify: { selector: "h1", text: "siempre bajo control|Bienvenido de vuelta" } },
-  { path: "/registro", migrated: true, identify: { selector: "h1", text: "Resuelve lo que necesitas" } },
+  { path: "/login", migrated: true, identify: { selector: "h1", text: "en un solo lugar|Bienvenido de vuelta" } },
+  { path: "/registro", migrated: true, identify: { selector: "h1", text: "Crea tu cuenta de cliente" } },
   { path: "/registro/tecnico", migrated: true, identify: { selector: "h1", text: "Haz crecer tu trabajo" } },
   { path: "/recuperar-contrasena", migrated: true, identify: { selector: "h1", text: "Recupera tu acceso" } },
   // Pages behind a session (demo accounts; the app must run with NEXT_PUBLIC_DEMO_MODE=true). Views that need real persistence

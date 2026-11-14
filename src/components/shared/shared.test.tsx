@@ -17,15 +17,15 @@ beforeEach(() => { container = document.createElement("div"); document.body.appe
 afterEach(() => { act(() => root.unmount()); container.remove(); });
 
 describe("PageHeader", () => {
-  it("renders exactly one h1 with optional eyebrow, description and actions", () => {
-    render(<PageHeader actions={<button type="button">Nuevo</button>} description="Texto" eyebrow="Hola, Ana" title="Mis solicitudes" />);
+  it("renders exactly one h1 with optional description and actions, and no kicker above it", () => {
+    render(<PageHeader actions={<button type="button">Nuevo</button>} description="Hola, Ana. Texto" title="Mis solicitudes" />);
     expect(container.querySelectorAll("h1")).toHaveLength(1);
     expect(container.querySelector("h1")!.textContent).toBe("Mis solicitudes");
-    expect(container.textContent).toContain("Hola, Ana");
+    expect(container.textContent).toContain("Hola, Ana. Texto");
     expect(container.querySelector("button")!.textContent).toBe("Nuevo");
   });
 
-  it("omits eyebrow, description and actions when not given", () => {
+  it("omits description and actions when not given", () => {
     render(<PageHeader title="Solo título" />);
     expect(container.querySelectorAll("p")).toHaveLength(0);
     expect(container.querySelectorAll("button")).toHaveLength(0);

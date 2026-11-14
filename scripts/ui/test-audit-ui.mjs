@@ -86,6 +86,9 @@ const pages = {
   // WCAG 1.4.3 exempts inactive components: low-contrast text in a disabled button is not a finding, the same text enabled is.
   "/disabled-low-contrast": page(`${heading}<button type="button" disabled style="color:#bbb;margin:0">Guardar cambio</button><a href="#a">Uno</a>`),
   "/enabled-low-contrast": page(`${heading}<button type="button" style="color:#bbb;margin:0">Guardar cambio</button><a href="#a">Uno</a>`),
+  // Placeholders are measured too (they are not text nodes): the browser default grey on white is 2.5:1.
+  "/placeholder-low": page(`${heading}<input aria-label="q" placeholder="Busca un tecnico" style="color:#000;background:#fff;height:44px;box-sizing:border-box"><style>#low::placeholder{color:#aaa}</style><input id="low" aria-label="r" placeholder="Correo electronico" style="height:44px;box-sizing:border-box"><a href="#a">Uno</a>`),
+  "/placeholder-ok": page(`${heading}<style>input::placeholder{color:#595959}</style><input aria-label="q" placeholder="Busca un tecnico" style="height:44px;box-sizing:border-box"><a href="#a">Uno</a>`),
   "/gradient-ok": page(`${heading}<p style="background:linear-gradient(#fff,#eee);color:#000">Negro sobre degradado claro</p><a href="#a">Uno</a>`),
   "/gradient-unparsable": page(`${heading}<p style="background:linear-gradient(in oklch, oklch(0.2 0 0), oklch(0.9 0 0));color:#000">Degradado en espacio oklch</p><a href="#a">Uno</a>`),
   "/redirect-source": null,
@@ -174,6 +177,8 @@ const cases = [
   { name: "una capa fija a pantalla completa que traga clics SI se detecta (hit test)", route: { path: "/fixed-bar-over-control", identify }, expect: (f) => f.some((x) => /llega a/.test(x)) },
   { name: "texto de bajo contraste en un boton deshabilitado no es hallazgo (WCAG 1.4.3, inactivo)", route: { path: "/disabled-low-contrast", identify }, expect: (f) => !f.some((x) => /contraste/.test(x)) },
   { name: "el mismo texto en un boton habilitado SI es hallazgo", route: { path: "/enabled-low-contrast", identify }, expect: (f) => f.some((x) => /contraste/.test(x) && /Guardar cambio/.test(x)) },
+  { name: "un placeholder de bajo contraste es hallazgo (no es un nodo de texto, se mide aparte)", route: { path: "/placeholder-low", identify }, expect: (f) => f.some((x) => /contraste/.test(x) && /placeholder «Correo electronico»/.test(x)) },
+  { name: "un placeholder con contraste suficiente pasa", route: { path: "/placeholder-ok", identify }, expect: (f) => !f.some((x) => /placeholder/.test(x)) },
   { name: "un enlace con caja (inline-flex) junto a texto narrativo NO queda exento", route: { path: "/boxed-link-near-text", identify }, expect: (f) => f.some((x) => /area tactil/.test(x) && /Enlace caja/.test(x)) },
   { name: "un enlace dentro de una frase en un <nav> tampoco se exime (los grupos de navegacion nunca son en linea)", route: { path: "/nav-with-sentence", identify }, expect: (f) => f.some((x) => /area tactil/.test(x) && /enlace en nav/.test(x)) },
   { name: "degradado claro con texto negro pasa", route: { path: "/gradient-ok", identify }, expect: (f) => !f.some((x) => /contraste/.test(x)) },

@@ -32,7 +32,7 @@ export async function DashboardShell({ roleLabel, requiredRole, userName, naviga
   return (
     <div className="min-h-screen bg-muted/40">
       {isDemoModeEnabled() ? <p className="border-b border-warning-border bg-warning-soft px-4 py-2 text-center text-sm font-medium text-warning-soft-foreground">Modo demostración: datos de ejemplo, nada se guarda de verdad.</p> : null}
-      <header className="glass sticky top-0 z-30 border-x-0 border-t-0">
+      <header className="sticky top-0 z-30 border-b border-border bg-background">
         <div className="container flex h-header items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-4"><Logo /><span className="hidden border-l border-border pl-4 text-sm font-medium text-muted-foreground sm:inline">{roleLabel}</span></div>
           <div className="flex items-center gap-1 sm:gap-2">

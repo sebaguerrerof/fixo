@@ -1,4 +1,3 @@
-import { ClipboardPenLine } from "lucide-react";
 import { redirect } from "next/navigation";
 
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -23,8 +22,7 @@ export default async function RequestServicePage() {
       <main className="container pb-12 pt-8 sm:pt-12">
         <Card className="mx-auto w-full max-w-2xl animate-enter">
           <CardContent className="p-5 sm:p-10">
-            <span className="flex size-12 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground"><ClipboardPenLine aria-hidden="true" className="size-6" /></span>
-            <h1 className="mt-5 text-balance text-3xl font-semibold tracking-tight">Solicitud de servicio</h1>
+            <h1 className="text-balance text-4xl leading-tight">Solicitud de servicio</h1>
             <p className="mt-3 max-w-xl leading-7 text-muted-foreground">Describe lo que necesitas y recibe propuestas de técnicos habilitados en tu comuna. Los pagos y la ejecución del servicio se habilitarán en una etapa posterior.</p>
             <div className="mt-8"><CreateServiceRequestForm categories={categories} /></div>
             <div className="mt-6"><Link className={buttonVariants({ variant: "outline", size: "lg" })} href="/cliente">Volver a mi panel</Link></div>

@@ -13,8 +13,7 @@ export default async function TechnicianRegistrationPage() {
       <div className="mx-auto w-full max-w-3xl">
         <div className="flex items-center justify-between"><Logo /><TextLink href="/login">Ya tengo cuenta</TextLink></div>
         <section className="mt-6 rounded-3xl border border-border bg-background p-5 shadow-lift sm:mt-10 sm:p-10">
-          <p className="text-sm font-semibold uppercase tracking-wider text-primary">Postulación técnica</p>
-          <h1 className="mt-1 text-balance text-3xl font-semibold tracking-tight">Haz crecer tu trabajo con {brand.name}</h1>
+          <h1 className="text-balance text-4xl leading-tight">Haz crecer tu trabajo con {brand.name}</h1>
           <p className="mt-3 max-w-2xl leading-7 text-muted-foreground">Completa tu perfil para que el equipo lo revise. Solo los perfiles verificados aparecerán en el directorio.</p>
           <div className="mt-8"><TechnicianSignUpForm categories={categories} /></div>
           <p className="mt-6 flex flex-wrap items-center justify-center gap-x-2 text-center text-sm text-muted-foreground">¿Buscas un servicio? <TextLink href="/registro">Crea tu cuenta de cliente</TextLink></p>

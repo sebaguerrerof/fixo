@@ -23,8 +23,7 @@ export default async function CustomerDashboardPage({ searchParams }: { readonly
     <DashboardShell activeHref="/cliente" navigation={navigation} requiredRole="customer" roleLabel="Espacio cliente" userName={user.name}>
       <PageHeader
         actions={<Link className={buttonVariants()} href="/solicitar">Solicitar servicio</Link>}
-        description="Compara propuestas y consulta tus adjudicaciones. Pagos y ejecución pendientes de habilitación."
-        eyebrow={`Hola, ${user.name.split(" ")[0]}`}
+        description={`Hola, ${user.name.split(" ")[0]}. Compara propuestas y consulta tus adjudicaciones. Pagos y ejecución pendientes de habilitación.`}
         title="Mis solicitudes"
       />
       <section className="mt-8" id="solicitudes">
