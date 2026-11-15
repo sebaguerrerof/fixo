@@ -26,6 +26,11 @@ const routes = [
   { path: "/login", migrated: true, identify: { selector: "h1", text: "en un solo lugar|Bienvenido de vuelta" } },
   { path: "/registro", migrated: true, identify: { selector: "h1", text: "Crea tu cuenta de cliente" } },
   { path: "/registro/tecnico", migrated: true, identify: { selector: "h1", text: "Haz crecer tu trabajo" } },
+  // Auth link pages without a valid link: they render their "link not available" state (the valid-link forms need a real token).
+  { path: "/auth/update-password", migrated: true, identify: { selector: "h1", text: "Define tu nueva contraseña" } },
+  { path: "/auth/callback", migrated: true, identify: { selector: "h1", text: "El enlace no está disponible" } },
+  // Component catalog (development + demo mode only): forms that normally sit behind a session or real persistence, with sample data.
+  { path: "/design", migrated: true, identify: { selector: "h1", text: "Catálogo de componentes" } },
   { path: "/recuperar-contrasena", migrated: true, identify: { selector: "h1", text: "Recupera tu acceso" } },
   // Pages behind a session (demo accounts; the app must run with NEXT_PUBLIC_DEMO_MODE=true). Views that need real persistence
   // (jobs, applications, several admin lists) render their error state in demo mode, so that state is what gets audited there;

@@ -53,3 +53,28 @@ describe("protected route boundary",()=>{
     expect((await middleware(new NextRequest('https://app.example.invalid/admin'))).headers.get('location')).toBe('https://app.example.invalid/login');
   });
 });
+
+describe("component catalog route (/design)",()=>{
+  it.each(["/design","/design/","/design/anything"])("answers a real 404 before rendering outside development with demo mode, without touching Auth: %s",async(path)=>{
+    const response=await middleware(new NextRequest('https://app.example.invalid'+path));
+    expect(response.status).toBe(404);
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(mocks.sdk).not.toHaveBeenCalled();
+  });
+  it("is never served on Vercel even if the demo flag is set (the environment guard answers 503 for the whole site before the route is considered)",async()=>{
+    vi.stubEnv("NODE_ENV","development");vi.stubEnv("NEXT_PUBLIC_DEMO_MODE","true");vi.stubEnv("VERCEL_ENV","production");
+    const response=await middleware(new NextRequest('https://app.example.invalid/design'));
+    expect(response.status).toBe(503);
+    expect(response.headers.get('x-middleware-next')).toBeNull();
+  });
+  it("is reachable in development with the demo mode on",async()=>{
+    vi.stubEnv("NODE_ENV","development");vi.stubEnv("NEXT_PUBLIC_DEMO_MODE","true");
+    const response=await middleware(new NextRequest('https://app.example.invalid/design'));
+    expect(response.status).toBe(200);
+    expect(response.headers.get('x-middleware-next')).toBe('1');
+  });
+  it("does not capture similarly named routes",async()=>{
+    mocks.user.mockResolvedValue({data:{user:null}});
+    for(const path of ["/designers","/tecnicos/design"]) expect((await middleware(new NextRequest('https://app.example.invalid'+path))).status,path).not.toBe(404);
+  });
+});

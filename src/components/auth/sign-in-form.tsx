@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -23,6 +23,7 @@ export function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
+  const inFlight = useRef(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const form = useForm<SignInInput>({
     resolver: zodResolver(signInInputSchema),
@@ -47,12 +48,17 @@ export function SignInForm() {
   }
 
   async function onSubmit(input: SignInInput): Promise<void> {
+    // A second submission while one is in flight (Enter pressed twice, programmatic submit) is ignored, like in the other forms.
+    if (inFlight.current) return;
+    inFlight.current = true;
     setSubmitError(null);
     try {
       const session = await new AuthenticationService().signIn(input);
       await enterWithSession(session);
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "No pudimos iniciar sesión. Intenta nuevamente.");
+    } finally {
+      inFlight.current = false;
     }
   }
 

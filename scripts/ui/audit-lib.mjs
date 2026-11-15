@@ -13,9 +13,15 @@ export async function signInDemo(page, base, role, loginPath = "/login", timeout
   try {
     await page.goto(base + loginPath, { waitUntil: "networkidle", timeout });
     const button = page.getByRole("button", { name: pattern });
-    if ((await button.count()) === 0) return `no hay boton de cuenta demo para "${role}" en ${loginPath} (se necesita NEXT_PUBLIC_DEMO_MODE=true)`;
-    await button.first().click();
-    const left = await page.waitForURL((url) => !url.pathname.startsWith(loginPath), { timeout: 15000 }).then(() => true, () => false);
+    // The demo buttons can take a moment to appear (cold compile, hydration): wait for them instead of counting right after load.
+    const appeared = await button.first().waitFor({ state: "visible", timeout: Math.min(timeout, 10000) }).then(() => true, () => false);
+    if (!appeared) return `no hay boton de cuenta demo para "${role}" en ${loginPath} (se necesita NEXT_PUBLIC_DEMO_MODE=true)`;
+    // A click that lands before the page is hydrated does nothing, so retry it: three attempts, each given time to leave the login.
+    let left = false;
+    for (let attempt = 1; attempt <= 3 && !left; attempt++) {
+      await button.first().click();
+      left = await page.waitForURL((url) => !url.pathname.startsWith(loginPath), { timeout: 8000 }).then(() => true, () => false);
+    }
     return left ? null : `el inicio de sesion demo como "${role}" no salio de ${loginPath}`;
   } catch (error) {
     return `no se pudo iniciar sesion como "${role}": ${String(error.message ?? error).split("\n")[0]}`;

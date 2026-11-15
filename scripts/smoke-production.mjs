@@ -28,6 +28,9 @@ try {
     assert.equal(result.status,307,`${path} must reject the forged session`);
     assert.equal(new URL(result.headers.get("location"),origin).pathname,"/login");
   }
+  // The component catalog (sample data, forms behind a session) exists only in development with demo mode: production must not serve it.
+  const catalog=await fetch(origin+"/design");
+  assert.equal(catalog.status,404,"/design must not exist in production");
   const emergency=await fetch(origin+"/urgencia");
   assert((await emergency.text()).includes("Atención de urgencias no disponible"));
   for(const [path,copy] of [["/recuperar-contrasena","Recupera tu acceso"],["/auth/update-password","El enlace no está disponible"],["/auth/callback?error=expired&next=https://evil.invalid","El enlace no está disponible"]]){
@@ -38,7 +41,7 @@ try {
   assert.equal(callback.headers.get("referrer-policy"),"no-referrer");assert((await callback.text()).includes("Continuar de forma segura"));
   const forbidden=await fetch(origin+"/api/auth",{method:"POST",headers:{origin:"https://evil.invalid","Content-Type":"application/json"},body:JSON.stringify({action:"login",input:{}})});
   assert.equal(forbidden.status,403);
-  console.log("PASS production HTTP: forged demo cookie rejected by six protected routes; Auth pages, invalid links, no-store/referrer policy and foreign-origin rejection verified without Auth writes.");
+  console.log("PASS production HTTP: forged demo cookie rejected by six protected routes; the component catalog (/design) is not served; Auth pages, invalid links, no-store/referrer policy and foreign-origin rejection verified without Auth writes.");
 } catch(error) {
   console.error(error.message);
   // Runtime errors are summarized; raw server output may contain sensitive data.

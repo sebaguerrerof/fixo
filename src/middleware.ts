@@ -15,6 +15,11 @@ export async function middleware(request: NextRequest) {
       headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store", "Retry-After": "300" },
     });
   }
+  // The component catalog (sample data, forms normally behind a session) exists only in development with the demo mode. Decide before
+  // rendering: a notFound() inside a streamed page (the root loading.tsx wraps every page in Suspense) would be served as a 200 "soft 404".
+  if (/^\/design(\/|$)/.test(request.nextUrl.pathname) && !isDemoModeEnabled()) {
+    return new NextResponse("Not Found", { status: 404, headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" } });
+  }
   if (isDemoModeEnabled()) return NextResponse.next();
   const { url, publishableKey } = getSupabasePublicConfig();
 
