@@ -15,6 +15,7 @@ export const metadata: Metadata = {
   description: brand.description,
   applicationName: brand.name,
   openGraph: { title: brandTitle(), description: brand.description, siteName: brand.name, locale: "es_CL", type: "website" },
+  twitter: { card: "summary_large_image", title: brandTitle(), description: brand.description },
 };
 
 export const viewport: Viewport = {
