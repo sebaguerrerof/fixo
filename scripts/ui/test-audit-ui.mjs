@@ -144,6 +144,8 @@ const server = createServer((request, response) => {
   const path = new URL(request.url, "http://x").pathname;
   // Session fixtures: /demo-login has a demo account button that sets a cookie; /private needs that cookie, else redirects to the login.
   if (path === "/demo-login") { response.writeHead(200, { "content-type": "text/html" }); response.end(page(`<h1>Ingresar</h1><button type="button" onclick="document.cookie='sid=1; path=/';location.href='/private'">Cliente · Prueba</button>`)); return; }
+  // Late hydration: the handler is attached 1.5 s after load, so the first click(s) do nothing; the audit must retry instead of failing.
+  if (path === "/demo-login-late") { response.writeHead(200, { "content-type": "text/html" }); response.end(page(`<h1>Ingresar</h1><button id="b" type="button">Cliente · Prueba</button><script>setTimeout(function(){document.getElementById("b").onclick=function(){document.cookie="sid=1; path=/";location.href="/private"}},1500)</script>`)); return; }
   if (path === "/demo-login-broken") { response.writeHead(200, { "content-type": "text/html" }); response.end(page(`<h1>Ingresar</h1><button type="button">Cliente · Prueba</button>`)); return; }
   if (path === "/demo-login-nobuttons") { response.writeHead(200, { "content-type": "text/html" }); response.end(page(`<h1>Ingresar</h1><a href="#a">Uno</a>`)); return; }
   if (path === "/private") {
@@ -206,8 +208,9 @@ const cases = [
   { name: "pagina protegida sin sesion redirige al login y falla (URL final)", route: { path: "/private", identify }, expect: (f) => f.some((x) => /redireccion inesperada/.test(x)) },
   { name: "con sesion demo (as: customer) la pagina protegida se audita y pasa", route: { path: "/private", identify, as: "customer", loginPath: "/demo-login" }, expect: (f) => f.length === 0 },
   { name: "si el boton demo no inicia sesion, se informa (no se audita la pagina de login por error)", route: { path: "/private", identify, as: "customer", loginPath: "/demo-login-broken" }, expect: (f) => f.some((x) => /no salio de/.test(x)) },
-  { name: "sin boton de cuenta demo se explica la causa (falta NEXT_PUBLIC_DEMO_MODE)", route: { path: "/private", identify, as: "customer", loginPath: "/demo-login-nobuttons" }, expect: (f) => f.some((x) => /NEXT_PUBLIC_DEMO_MODE/.test(x)) },
+  { name: "sin boton de cuenta demo se explica la causa (falta NEXT_PUBLIC_DEMO_MODE)", route: { path: "/private", identify, as: "customer", loginPath: "/demo-login-nobuttons", timeout: 1500 }, expect: (f) => f.some((x) => /NEXT_PUBLIC_DEMO_MODE/.test(x)) },
   { name: "si el login no responde se informa como fallo de la ruta (no aborta la corrida)", route: { path: "/private", identify, as: "customer", loginPath: "/hang", timeout: 1500, attempts: 1 }, expect: (f) => f.some((x) => /no se pudo iniciar sesion/.test(x)) },
+  { name: "si el boton demo se hidrata tarde (el primer clic no hace nada) el inicio de sesion reintenta y funciona", route: { path: "/private", identify, as: "customer", loginPath: "/demo-login-late" }, expect: (f) => f.length === 0 },
   { name: "rol de sesion desconocido falla", route: { path: "/private", identify, as: "invitado", loginPath: "/demo-login" }, expect: (f) => f.some((x) => /rol de sesion desconocido/.test(x)) },
   { name: "una navegacion que no responde se informa como fallo de esa ruta (no aborta la corrida)", route: { path: "/hang", identify, timeout: 1500, attempts: 1 }, expect: (f) => f.some((x) => /no se pudo cargar la ruta/.test(x)) },
   { name: "una barra fija sobre contenido que hace scroll no cuenta como solape (y los controles siguen alcanzables)", route: { path: "/fixed-bar", identify }, expect: (f) => !f.some((x) => /solapadas|llega a/.test(x)) },

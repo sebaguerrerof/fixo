@@ -55,7 +55,7 @@ export function RequirementVersionForm({ category }: { category: string }) {
     }}>
       <h2 className="text-2xl">Crear requisito o nueva versión</h2>
       <p className="text-sm leading-6 text-muted-foreground">La misma clave crea la siguiente versión. Una fuente enlazada debe ser revisada por {brand.name} antes de declarar un requisito legal confirmado.</p>
-      <Field htmlFor={`${id}-key`} label="Clave del requisito"><Input id={`${id}-key`} maxLength={60} name="key" pattern="[a-z0-9-]{2,60}" placeholder="antecedente-identidad" required /></Field>
+      <Field htmlFor={`${id}-key`} label="Clave del requisito"><Input id={`${id}-key`} maxLength={60} name="key" pattern="(?:[a-z0-9]|-){2,60}" placeholder="antecedente-identidad" required /></Field>
       <Field htmlFor={`${id}-kind`} label="Clasificación">
         <Select id={`${id}-kind`} name="kind"><option value="internal">Criterio interno {brand.name}</option><option value="optional">Información opcional</option><option value="legal">Requisito legal confirmado</option></Select>
       </Field>

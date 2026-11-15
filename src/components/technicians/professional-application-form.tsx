@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 
 import { saveProfessionalDraft, submitProfessionalApplication, uploadProfessionalDocument } from "@/app/tecnico/postulacion/actions";
 import { Alert } from "@/components/ui/alert";
@@ -17,6 +17,8 @@ const fileInput = "h-auto min-h-11 py-2 file:mr-3 file:rounded-md file:border-0 
 const panel = "space-y-5 rounded-lg border border-border bg-card p-5";
 
 export function ProfessionalApplicationForm({ application: a, categories, requirements }: { application: ProfessionalApplication; categories: { id: string; name: string }[]; requirements: ProfessionalRequirement[] }) {
+  const uid = useId();
+  const f = (name: string) => `${uid}-${name}`;
   const [saving, setPending] = useState(false);
   const [message, setMessage] = useState("");
   const [refreshing, startTransition] = useTransition();
@@ -58,28 +60,28 @@ export function ProfessionalApplicationForm({ application: a, categories, requir
           <legend className="mb-4 text-2xl font-bold">Antecedentes profesionales</legend>
           <div className="grid gap-5 sm:grid-cols-2">
             {textFields.map(([name, label, value, max]) => (
-              <Field htmlFor={name} key={name} label={label}><Input defaultValue={value} id={name} maxLength={max} name={name} required={name === "city"} /></Field>
+              <Field htmlFor={f(name)} key={name} label={label}><Input defaultValue={value} id={f(name)} maxLength={max} name={name} required={name === "city"} /></Field>
             ))}
           </div>
-          <Field htmlFor="bio" label="Experiencia y servicios"><Textarea className="min-h-32" defaultValue={a.profile.bio} id="bio" maxLength={2000} name="bio" /></Field>
+          <Field htmlFor={f("bio")} label="Experiencia y servicios"><Textarea className="min-h-32" defaultValue={a.profile.bio} id={f("bio")} maxLength={2000} name="bio" /></Field>
           <fieldset>
             <legend className="mb-1 font-semibold">Rubros de trabajo</legend>
             <div className="grid gap-x-4 sm:grid-cols-2">
               {categories.map((c) => <CheckboxRow key={c.id}><Checkbox defaultChecked={a.categories.includes(c.id)} name="categories" value={c.id} />{c.name}</CheckboxRow>)}
             </div>
           </fieldset>
-          <Field htmlFor="primaryCategory" label="Rubro principal">
-            <Select defaultValue={a.primary_category ?? a.categories[0] ?? ""} id="primaryCategory" name="primaryCategory" required>
+          <Field htmlFor={f("primaryCategory")} label="Rubro principal">
+            <Select defaultValue={a.primary_category ?? a.categories[0] ?? ""} id={f("primaryCategory")} name="primaryCategory" required>
               <option value="">Selecciona un rubro</option>
               {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </Select>
           </Field>
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field htmlFor="years" label="Años de experiencia declarada"><Input defaultValue={a.profile.years_of_experience} id="years" inputMode="numeric" max={80} min={0} name="years" required type="number" /></Field>
-            <Field htmlFor="price" label="Precio referencial en CLP"><Input defaultValue={a.profile.starting_price_clp} id="price" inputMode="numeric" max={10000000} min={0} name="price" required type="number" /></Field>
+            <Field htmlFor={f("years")} label="Años de experiencia declarada"><Input defaultValue={a.profile.years_of_experience} id={f("years")} inputMode="numeric" max={80} min={0} name="years" required type="number" /></Field>
+            <Field htmlFor={f("price")} label="Precio referencial en CLP"><Input defaultValue={a.profile.starting_price_clp} id={f("price")} inputMode="numeric" max={10000000} min={0} name="price" required type="number" /></Field>
           </div>
-          <Field htmlFor="availability" label="Disponibilidad"><Textarea defaultValue={a.availability} id="availability" maxLength={500} name="availability" placeholder="Días y horarios habituales" /></Field>
-          <Field htmlFor="portfolio" label="Portafolio: un enlace HTTPS por línea"><Textarea defaultValue={a.portfolio.join("\n")} id="portfolio" maxLength={5010} name="portfolio" /></Field>
+          <Field htmlFor={f("availability")} label="Disponibilidad"><Textarea defaultValue={a.availability} id={f("availability")} maxLength={500} name="availability" placeholder="Días y horarios habituales" /></Field>
+          <Field htmlFor={f("portfolio")} label="Portafolio: un enlace HTTPS por línea"><Textarea defaultValue={a.portfolio.join("\n")} id={f("portfolio")} maxLength={5010} name="portfolio" /></Field>
           <Button disabled={pending || locked} loading={pending} type="submit">Guardar borrador</Button>
         </fieldset>
       </form>

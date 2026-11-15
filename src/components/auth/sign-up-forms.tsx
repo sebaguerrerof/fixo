@@ -19,6 +19,13 @@ const fields = [
   { name: "confirmPassword", label: "Repite la contraseña", type: "password", auto: "new-password" },
 ] as const;
 
+/** One message per field: the first problem found (e.g. "Usa al menos 12 caracteres" before "Incluye un número"). */
+const firstIssuePerField = (issues: readonly { path: readonly PropertyKey[]; message: string }[]): Record<string, string> => {
+  const errors: Record<string, string> = {};
+  for (const issue of issues) { const key = String(issue.path[0]); if (!(key in errors)) errors[key] = issue.message; }
+  return errors;
+};
+
 const maxLengthFor = (name: string, type: string): number => (type === "password" ? 128 : name === "phone" ? 24 : name === "email" ? 254 : 60);
 
 function RegistrationForm({ technician = false, categories = [] }: { technician?: boolean; categories?: readonly Category[] }) {
@@ -42,7 +49,7 @@ function RegistrationForm({ technician = false, categories = [] }: { technician?
       const data = new FormData(event.currentTarget);
       const raw = { ...Object.fromEntries(data), acceptTerms: data.get("acceptTerms") === "on", categoryIds: data.getAll("categoryIds"), coverageAreas: String(data.get("city") ?? "") };
       const parsed = technician ? technicianRegistrationInputSchema.safeParse(raw) : customerRegistrationInputSchema.safeParse(raw);
-      if (!parsed.success) { setErrors(Object.fromEntries(parsed.error.issues.map((issue) => [String(issue.path[0]), issue.message]))); return; }
+      if (!parsed.success) { setErrors(firstIssuePerField(parsed.error.issues)); return; }
       setErrors({}); setMessage(""); setPending(true);
       try {
         const service = new AuthenticationService();

@@ -20,6 +20,6 @@ describe("account boundaries",()=>{
   it("requires reason and an idempotency key for access changes",()=>{
     expect(accountChangeSchema.safeParse({targetUser:"10000000-0000-4000-8000-000000000001",newStatus:"suspended",newRole:null,reason:"",operationId:"fake"}).success).toBe(false);
   });
-  it.each(["//evil.invalid","/\\evil.invalid","https://evil.invalid","/%2f%2fevil.invalid","/admin?next=evil","/admin/%5cevil","/administracion","/cliente#x"])("rejects unsafe continuation %s",path=>expect(safeContinuation(path,"/cliente")).toBe("/cliente"));
-  it.each(["/admin","/cliente/solicitudes/abc","/tecnico/perfil","/perfil"])("keeps an allowed internal continuation %s",path=>expect(safeContinuation(path,"/cliente")).toBe(path));
+  it.each(["//evil.invalid","/\\evil.invalid","https://evil.invalid","/%2f%2fevil.invalid","/admin?next=evil","/admin/%5cevil","/administracion","/cliente#x","/solicitar-falso","/solicitar?x=1","/urgenciaa","/solicitar//evil.invalid%2f"])("rejects unsafe continuation %s",path=>expect(safeContinuation(path,"/cliente")).toBe("/cliente"));
+  it.each(["/admin","/cliente/solicitudes/abc","/tecnico/perfil","/perfil","/solicitar","/urgencia"])("keeps an allowed internal continuation %s",path=>expect(safeContinuation(path,"/cliente")).toBe(path));
 });

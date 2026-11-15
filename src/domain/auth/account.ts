@@ -32,6 +32,6 @@ export const accountChangeSchema = z.object({
 
 /** Fixed same-origin destinations. Reject protocol-relative paths and encoded separators. */
 export function safeContinuation(value: string | null | undefined, fallback: string): string {
-  if (!value || !/^\/(cliente|tecnico|admin|perfil)(\/[^?#\\%]*)?$/.test(value)) return fallback;
+  if (!value || !/^\/(cliente|tecnico|admin|perfil|solicitar|urgencia)(\/[^?#\\%]*)?$/.test(value)) return fallback;
   return value;
 }

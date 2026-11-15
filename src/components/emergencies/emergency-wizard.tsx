@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertTriangle, CheckCircle2, LoaderCircle, MapPin, ShieldAlert, Siren, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import {
@@ -28,6 +28,8 @@ const LIVE_STATUSES = new Set(["created", "matching", "broadcasting", "accepted"
 const CANCELLABLE_STATUSES = new Set(["created", "matching", "broadcasting", "accepted"]);
 
 export function EmergencyWizard({ isDemoMode }: { readonly isDemoMode: boolean }) {
+  const uid = useId();
+  const f = (name: string) => `${uid}-${name}`;
   const router = useRouter();
   const [emergency, setEmergency] = useState<EmergencyRequest | null>(null);
   const [assignedTechnician, setAssignedTechnician] = useState<Technician | null>(null);
@@ -93,11 +95,11 @@ export function EmergencyWizard({ isDemoMode }: { readonly isDemoMode: boolean }
   if (!emergency) {
     return (
       <form className="space-y-5" noValidate onSubmit={form.handleSubmit(onDescribe)}>
-        <Field error={form.formState.errors.description?.message} htmlFor="description" label="¿Qué está pasando?">
-          <Textarea aria-describedby="description-msg" aria-invalid={form.formState.errors.description ? true : undefined} className="min-h-32" id="description" placeholder="Ej. Siento olor a gas en la cocina desde hace unos minutos." {...form.register("description")} />
+        <Field error={form.formState.errors.description?.message} htmlFor={f("description")} label="¿Qué está pasando?">
+          <Textarea aria-describedby={`${f("description")}-msg`} aria-invalid={form.formState.errors.description ? true : undefined} className="min-h-32" id={f("description")} placeholder="Ej. Siento olor a gas en la cocina desde hace unos minutos." {...form.register("description")} />
         </Field>
-        <Field error={form.formState.errors.locationLabel?.message} htmlFor="locationLabel" label="¿Dónde te encuentras?">
-          <Input aria-describedby="locationLabel-msg" aria-invalid={form.formState.errors.locationLabel ? true : undefined} id="locationLabel" placeholder="Ej. Ñuñoa" {...form.register("locationLabel")} />
+        <Field error={form.formState.errors.locationLabel?.message} htmlFor={f("locationLabel")} label="¿Dónde te encuentras?">
+          <Input aria-describedby={`${f("locationLabel")}-msg`} aria-invalid={form.formState.errors.locationLabel ? true : undefined} id={f("locationLabel")} placeholder="Ej. Ñuñoa" {...form.register("locationLabel")} />
         </Field>
         {error ? <Alert tone="danger">{error}</Alert> : null}
         <Button className="w-full" loading={pending} size="lg" type="submit" variant="emergency">
