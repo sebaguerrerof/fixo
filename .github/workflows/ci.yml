@@ -82,11 +82,13 @@ jobs:
       - run: npm ci --no-fund
       - run: npx playwright install --with-deps chromium
       - run: npm run ui:audit:selftest
-      - run: npm run build
+      # Production builds refuse demo mode on purpose (assertServerEnvironment), so the audit runs against the dev server.
       - name: Audit the running app
         run: |
-          npx next start -p 3101 > "$RUNNER_TEMP/next.log" 2>&1 &
-          for i in $(seq 1 60); do curl -fs -o /dev/null http://localhost:3101/login && break; sleep 1; done
+          npx next dev -p 3101 > "$RUNNER_TEMP/next.log" 2>&1 &
+          for i in $(seq 1 90); do curl -fs -o /dev/null http://localhost:3101/login && break; sleep 1; done
+          # Warm-up: compile every audited route once so the audit does not race on-demand compilation.
+          for r in / /como-funciona /terminos /privacidad /tecnicos /login /registro /registro/tecnico /recuperar-contrasena /design /cliente /cliente/trabajos /solicitar /urgencia /tecnico /tecnico/trabajos /tecnico/postulacion /admin; do curl -s -o /dev/null --max-time 60 "http://localhost:3101$r" || true; done
           npm run ui:audit -- http://localhost:3101
       - if: failure()
         run: tail -n 60 "$RUNNER_TEMP/next.log" || true
