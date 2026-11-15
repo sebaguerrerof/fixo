@@ -64,3 +64,31 @@ jobs:
           npx vitest run src/repositories/supabase/supabase-payment-repository.local.test.ts
       - if: always()
         run: npx --yes supabase@3.1.0 stop
+
+  ui-audit:
+    # Browser audit of the real rendered UI (contrast, touch targets, clickability) on a demo-mode production build. Loopback only; no credentials.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_DEMO_MODE: 'true'
+      NEXT_PUBLIC_SUPABASE_URL: https://ci-build-only.supabase.invalid
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci_build_only
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci --no-fund
+      - run: npx playwright install --with-deps chromium
+      - run: npm run ui:audit:selftest
+      # Production builds refuse demo mode on purpose (assertServerEnvironment), so the audit runs against the dev server.
+      - name: Audit the running app
+        run: |
+          npx next dev -p 3101 > "$RUNNER_TEMP/next.log" 2>&1 &
+          for i in $(seq 1 90); do curl -fs -o /dev/null http://localhost:3101/login && break; sleep 1; done
+          # Warm-up: compile every audited route once so the audit does not race on-demand compilation.
+          for r in / /como-funciona /terminos /privacidad /tecnicos /login /registro /registro/tecnico /recuperar-contrasena /design /cliente /cliente/trabajos /solicitar /urgencia /tecnico /tecnico/trabajos /tecnico/postulacion /admin; do curl -s -o /dev/null --max-time 60 "http://localhost:3101$r" || true; done
+          npm run ui:audit -- http://localhost:3101
+      - if: failure()
+        run: tail -n 60 "$RUNNER_TEMP/next.log" || true
