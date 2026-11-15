@@ -22,8 +22,11 @@ function Field({ label, children }: { readonly label: string; readonly children:
 
 interface CredentialCardProps {
   readonly technician: Technician;
-  /** "card" is a list item whose whole surface links to the profile; "page" is the large header of the profile itself. */
-  readonly variant?: "card" | "page";
+  /**
+   * "card" is a list item whose whole surface links to the profile; "page" is the large header of the profile itself;
+   * "own" is the technician's own credential in their panel: it links nowhere and shows no public address until the profile is approved.
+   */
+  readonly variant?: "card" | "page" | "own";
   /** Plays the stamp once. Use on at most one credential per screen. */
   readonly animateStamp?: boolean;
   /** Heading level of the name in the "card" variant, so it never skips a level under the page or section title. */
@@ -36,9 +39,10 @@ interface CredentialCardProps {
  */
 export function CredentialCard({ technician, variant = "card", animateStamp = false, headingLevel = 3 }: CredentialCardProps) {
   const page = variant === "page";
+  const own = variant === "own";
   const Heading = headingLevel === 2 ? "h2" : "h3";
   const approved = APPROVED.includes(technician.status);
-  const address = `${brand.domain}/tecnicos/${technician.slug}`;
+  const address = own && !approved ? "Sin dirección pública hasta que el perfil sea aprobado" : `${brand.domain}/tecnicos/${technician.slug}`;
   return (
     <article className="relative overflow-hidden rounded-lg border-2 border-foreground bg-card">
       <div className="flex items-center justify-between bg-inverse px-4 py-2 text-inverse-foreground">
@@ -51,7 +55,10 @@ export function CredentialCard({ technician, variant = "card", animateStamp = fa
           <div className="min-w-0">
             {page
               ? <h1 className="text-balance text-3xl leading-tight sm:text-4xl">{technician.displayName}</h1>
-              : <Heading className="text-2xl leading-tight"><Link className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none" href={`/tecnicos/${technician.slug}`}>{technician.displayName}</Link></Heading>}
+              
+              : own
+                ? <Heading className="text-2xl leading-tight">{technician.displayName}</Heading>
+                : <Heading className="text-2xl leading-tight"><Link className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none" href={`/tecnicos/${technician.slug}`}>{technician.displayName}</Link></Heading>}
             <p className={cn("mt-1 text-muted-foreground", page ? "text-base" : "text-sm")}>{technician.headline}</p>
           </div>
         </div>

@@ -22,6 +22,26 @@ const render = (node: React.ReactNode) => act(() => root.render(node));
 beforeEach(() => { container = document.createElement("div"); document.body.appendChild(container); root = createRoot(container); });
 afterEach(() => { act(() => root.unmount()); container.remove(); });
 
+describe("CredentialCard own variant (technician panel)", () => {
+  it("links nowhere: the public profile may not exist yet", () => {
+    render(<CredentialCard headingLevel={2} technician={{ ...technician, status: "pending_verification" }} variant="own" />);
+    expect(container.querySelector("a")).toBeNull();
+    expect(container.querySelector("h2")!.textContent).toBe("Camila Rojas");
+  });
+  it("hides the public address and the stamp until approved", () => {
+    render(<CredentialCard technician={{ ...technician, status: "pending_verification" }} variant="own" />);
+    expect(container.textContent).not.toContain("soyfixo.cl/tecnicos/");
+    expect(container.textContent).toContain("Sin dirección pública hasta que el perfil sea aprobado");
+    expect(container.textContent).not.toContain("Perfil aprobado");
+  });
+  it("shows the address and the stamp once approved, still without a link", () => {
+    render(<CredentialCard technician={technician} variant="own" />);
+    expect(container.textContent).toContain("soyfixo.cl/tecnicos/camila-rojas");
+    expect(container.textContent).toContain("Perfil aprobado");
+    expect(container.querySelector("a")).toBeNull();
+  });
+});
+
 describe("CredentialCard", () => {
   it("shows only real profile data, with the public profile address as its number", () => {
     render(<CredentialCard technician={technician} />);
