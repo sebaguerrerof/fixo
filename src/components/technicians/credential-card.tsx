@@ -69,7 +69,7 @@ export function CredentialCard({ technician, variant = "card", animateStamp = fa
           <Field label="Valor ref."><span className="tabular">{technician.startingPriceClp > 0 ? formatClp(technician.startingPriceClp) : "A convenir"}</span></Field>
         </dl>
       </div>
-      <div className="flex items-end justify-between gap-3 border-t-2 border-foreground px-4 py-3">
+      <div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-2 border-t-2 border-foreground px-4 py-3">
         <p className="tabular min-w-0 break-all text-xs text-muted-foreground">{address}</p>
         {approved ? <span className={cn("shrink-0 -rotate-6 rounded-sm border-2 border-primary px-2 py-0.5 font-display text-sm font-bold uppercase tracking-[0.12em] text-primary", animateStamp && "stamp-in")}>Perfil aprobado</span> : null}
       </div>
