@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { AdminDashboardShell } from "@/components/admin/admin-dashboard-shell";
+import { ChangePasswordForm } from "@/components/auth/change-password-form";
 import { ProfileForm, type OwnProfile } from "@/components/auth/profile-form";
 import { EmptyState } from "@/components/shared/empty-state";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
@@ -31,6 +32,11 @@ export default async function ProfilePage() {
           ? <section className="rounded-lg border border-border bg-card p-5 sm:p-8"><ProfileForm categories={categories} profile={profile} /></section>
           : <EmptyState description="No pudimos consultar tus datos. Inténtalo más tarde." title="Perfil no disponible" />}
       </div>
+      <section className="mt-6 max-w-3xl rounded-lg border border-border bg-card p-5 sm:p-8">
+        <h2 className="text-2xl">Cambiar contraseña</h2>
+        <p className="mb-5 mt-2 text-sm text-muted-foreground">Te pediremos la contraseña actual. Al cambiarla cerramos tus otras sesiones; esta sigue abierta.</p>
+        <ChangePasswordForm />
+      </section>
     </ProfileShell>
   );
 }
