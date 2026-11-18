@@ -1,6 +1,7 @@
 "use client";
 import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
+import { CoverageFields } from "@/components/technicians/coverage-fields";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox, CheckboxRow, Field, Input, Textarea } from "@/components/ui/field";
@@ -12,7 +13,7 @@ export function ProfileForm({profile,categories}:{profile:OwnProfile;categories:
   const f = (name: string) => `${uid}-${name}`;
   const [pending,setPending]=useState(false);const [message,setMessage]=useState("");const router=useRouter();
   const editable=profile.role==="technician"&&profile.technician&&["draft","pending_verification","needs_information"].includes(profile.technician.status);
-  return <form className="space-y-5" onSubmit={async event=>{event.preventDefault();const data=new FormData(event.currentTarget);const raw={...Object.fromEntries(data),professional:editable?{city:data.get("city"),headline:data.get("headline"),bio:data.get("bio"),coverageAreas:data.get("coverageAreas"),categoryIds:data.getAll("categoryIds")}:null};const parsed=profileUpdateSchema.safeParse(raw);if(!parsed.success){setMessage(parsed.error.issues[0]?.message??"Revisa los datos.");return;}setPending(true);try{const result=await updateProfileAction(parsed.data);setMessage(result.message);if(result.ok)router.refresh();}finally{setPending(false);}}}><p className="text-sm text-muted-foreground">{profile.email} · {profile.role} · Cuenta {profile.accountStatus}</p>
+  return <form className="space-y-5" onSubmit={async event=>{event.preventDefault();const data=new FormData(event.currentTarget);const raw={...Object.fromEntries(data),professional:editable?{city:data.get("city"),headline:data.get("headline"),bio:data.get("bio"),coverageAreas:data.getAll("coverageAreas").map(String).join(", "),categoryIds:data.getAll("categoryIds")}:null};const parsed=profileUpdateSchema.safeParse(raw);if(!parsed.success){setMessage(parsed.error.issues[0]?.message??"Revisa los datos.");return;}setPending(true);try{const result=await updateProfileAction(parsed.data);setMessage(result.message);if(result.ok)router.refresh();}finally{setPending(false);}}}><p className="text-sm text-muted-foreground">{profile.email} · {profile.role} · Cuenta {profile.accountStatus}</p>
       <div className="grid gap-5 sm:grid-cols-2">
         {[["firstName", "Nombre", profile.firstName], ["lastName", "Apellido", profile.lastName], ["phone", "Teléfono", profile.phone]].map(([name, label, value]) => (
           <Field htmlFor={f(name)} key={name} label={label}><Input autoComplete={name === "firstName" ? "given-name" : name === "lastName" ? "family-name" : "tel"} defaultValue={value} id={f(name)} inputMode={name === "phone" ? "tel" : undefined} maxLength={name === "phone" ? 24 : 60} name={name} required type={name === "phone" ? "tel" : "text"} /></Field>
@@ -24,8 +25,9 @@ export function ProfileForm({profile,categories}:{profile:OwnProfile;categories:
           <p className="text-sm text-muted-foreground">Estado: {profile.technician.status}. La cuenta y la aprobación profesional se gestionan por separado.</p>
           {editable ? (
             <>
-              {[["city", "Comuna base", profile.technician.city], ["coverageAreas", "Comunas de cobertura (separadas por coma)", profile.technician.coverageAreas], ["headline", "Presentación profesional", profile.technician.headline]].map(([name, label, value]) => (
-                <Field htmlFor={f(name)} key={name} label={label}><Input defaultValue={value} id={f(name)} maxLength={name === "city" ? 80 : name === "headline" ? 180 : 320} name={name} required={name !== "headline"} /></Field>
+              <CoverageFields defaultCity={profile.technician.city} defaultCoverage={profile.technician.coverageAreas.split(",")} idPrefix={f("coverage")} />
+              {[["headline", "Presentación profesional", profile.technician.headline]].map(([name, label, value]) => (
+                <Field htmlFor={f(name)} key={name} label={label}><Input defaultValue={value} id={f(name)} maxLength={180} name={name} /></Field>
               ))}
               <Field htmlFor={f("bio")} label="Experiencia y servicios"><Textarea className="min-h-28" defaultValue={profile.technician.bio} id={f("bio")} maxLength={2000} name="bio" /></Field>
               <fieldset>

@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { communeSchema, coverageListSchema } from "@/domain/geo/commune-schemas";
 const entry = z.string().trim().min(2).max(100);
 export const professionalDraftSchema = z.object({
-  city: z.string().trim().min(2).max(80), headline: z.string().trim().max(180), bio: z.string().trim().max(2000),
-  coverage: z.array(entry).max(20), categories: z.array(z.string().regex(/^[a-z0-9-]+$/)).min(1).max(8),
+  city: communeSchema, headline: z.string().trim().max(180), bio: z.string().trim().max(2000),
+  coverage: coverageListSchema, categories: z.array(z.string().regex(/^[a-z0-9-]+$/)).min(1).max(8),
   primaryCategory: z.string().regex(/^[a-z0-9-]+$/), specialties: z.array(entry).max(20),
   years: z.coerce.number().int().min(0).max(80), price: z.coerce.number().int().min(0).max(10000000),
   availability: z.string().trim().max(500), portfolio: z.array(z.url().max(500).refine(value => { const u=new URL(value); return u.protocol==="https:"&&!u.username&&!u.password; },"Usa enlaces HTTPS sin credenciales.")).max(10),
