@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -H 127.0.0.1",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
@@ -12,6 +12,7 @@
     "secrets:check": "node scripts/check-secrets.mjs",
     "test:smoke": "node scripts/smoke-production.mjs",
     "ui:audit": "node scripts/ui/audit-ui.mjs",
+    "local:create-admin": "node scripts/dev/create-local-admin.mjs",
     "ui:audit:selftest": "node scripts/ui/test-audit-ui.mjs",
     "db:test": "npx --yes supabase@3.1.0 test db",
     "test:integration": "node scripts/test-supabase-integration.mjs"
