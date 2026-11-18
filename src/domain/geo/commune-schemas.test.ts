@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { professionalInputSchema } from "@/domain/auth/account";
 import { professionalDraftSchema } from "@/domain/technicians/application";
 import { technicianRegistrationInputSchema } from "@/integrations/auth/auth-provider";
+import { serviceRequestInputSchema } from "@/domain/validation/service-request-input";
 
 import { communeSchema, coverageCsvSchema, coverageListSchema } from "./commune-schemas";
 
@@ -49,5 +50,12 @@ describe("the three places that take a technician's location use the official li
     expect(professionalDraftSchema.parse(draft).coverage).toEqual(["Providencia", "Ñuñoa"]);
     expect(professionalDraftSchema.safeParse({ ...draft, coverage: ["Providencia", "Zona norte"] }).success).toBe(false);
     expect(professionalDraftSchema.safeParse({ ...draft, city: "Zona norte" }).success).toBe(false);
+  });
+
+  it("a customer's service request", () => {
+    const request = { title: "Revisión de tablero", categoryId: "electricidad", description: "El tablero hace un ruido extraño al usar el microondas.", priority: "standard", scheduledFor: "" };
+    expect(serviceRequestInputSchema.parse({ ...request, locationLabel: "nunoa" }).locationLabel).toBe("Ñuñoa");
+    expect(serviceRequestInputSchema.safeParse({ ...request, locationLabel: "Zona sur" }).success).toBe(false);
+    expect(serviceRequestInputSchema.safeParse({ ...request, locationLabel: "" }).success).toBe(false);
   });
 });
