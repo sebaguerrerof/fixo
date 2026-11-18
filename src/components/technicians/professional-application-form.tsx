@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useId, useState, useTransition } from "react";
 
 import { saveProfessionalDraft, submitProfessionalApplication, uploadProfessionalDocument } from "@/app/tecnico/postulacion/actions";
+import { CoverageFields } from "@/components/technicians/coverage-fields";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox, CheckboxRow, Field, Input, Select, Textarea } from "@/components/ui/field";
@@ -32,9 +33,7 @@ export function ProfessionalApplicationForm({ application: a, categories, requir
     finally { setPending(false); }
   }
   const textFields = [
-    ["city", "Comuna base", a.profile.city, 80],
     ["headline", "Presentación profesional", a.profile.headline, 180],
-    ["coverage", "Comunas de cobertura, separadas por coma", a.profile.coverage_areas.join(", "), 2000],
     ["specialties", "Especialidades, separadas por coma", a.specialties.join(", "), 2000],
   ] as const;
 
@@ -51,7 +50,7 @@ export function ProfessionalApplicationForm({ application: a, categories, requir
       <form className={panel} onSubmit={(event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-        const raw = { city: data.get("city"), headline: data.get("headline"), bio: data.get("bio"), coverage: csv(data.get("coverage")), categories: data.getAll("categories"), primaryCategory: data.get("primaryCategory"), specialties: csv(data.get("specialties")), years: data.get("years"), price: data.get("price"), availability: data.get("availability"), portfolio: String(data.get("portfolio") ?? "").split(/\r?\n/).map((v) => v.trim()).filter(Boolean) };
+        const raw = { city: data.get("city"), headline: data.get("headline"), bio: data.get("bio"), coverage: data.getAll("coverageAreas").map(String), categories: data.getAll("categories"), primaryCategory: data.get("primaryCategory"), specialties: csv(data.get("specialties")), years: data.get("years"), price: data.get("price"), availability: data.get("availability"), portfolio: String(data.get("portfolio") ?? "").split(/\r?\n/).map((v) => v.trim()).filter(Boolean) };
         const parsed = professionalDraftSchema.safeParse(raw);
         if (!parsed.success) { setMessage(parsed.error.issues[0]?.message ?? "Revisa los datos."); return; }
         void execute(() => saveProfessionalDraft(parsed.data, a.revision, crypto.randomUUID()));
@@ -60,9 +59,10 @@ export function ProfessionalApplicationForm({ application: a, categories, requir
           <legend className="mb-4 text-2xl font-bold">Antecedentes profesionales</legend>
           <div className="grid gap-5 sm:grid-cols-2">
             {textFields.map(([name, label, value, max]) => (
-              <Field htmlFor={f(name)} key={name} label={label}><Input defaultValue={value} id={f(name)} maxLength={max} name={name} required={name === "city"} /></Field>
+              <Field htmlFor={f(name)} key={name} label={label}><Input defaultValue={value} id={f(name)} maxLength={max} name={name} /></Field>
             ))}
           </div>
+          <CoverageFields defaultCity={a.profile.city} defaultCoverage={a.profile.coverage_areas} idPrefix={f("coverage")} />
           <Field htmlFor={f("bio")} label="Experiencia y servicios"><Textarea className="min-h-32" defaultValue={a.profile.bio} id={f("bio")} maxLength={2000} name="bio" /></Field>
           <fieldset>
             <legend className="mb-1 font-semibold">Rubros de trabajo</legend>

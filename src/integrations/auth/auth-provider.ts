@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type { UserRole } from "@/domain/enums/roles";
+import { communeSchema, coverageCsvSchema } from "@/domain/geo/commune-schemas";
 import { nameSchema, phoneSchema, newPasswordSchema } from "@/domain/auth/account";
 
 export const signInInputSchema = z.object({
@@ -19,8 +20,8 @@ export const customerRegistrationInputSchema = z.object({
   .refine(value => value.firstName.length + value.lastName.length + 1 <= 120, { path: ["lastName"], message: "El nombre completo admite hasta 120 caracteres." });
 
 export const technicianRegistrationInputSchema = customerRegistrationInputSchema.safeExtend({
-  city: z.string().trim().min(2, "Indica tu comuna o ciudad.").max(80),
-  coverageAreas: z.string().trim().min(2, "Indica al menos una zona de cobertura.").max(320),
+  city: communeSchema,
+  coverageAreas: coverageCsvSchema,
   headline: z.string().trim().max(180).default(""),
   bio: z.string().trim().max(2000).default(""),
   categoryIds: z.array(z.string().regex(/^[a-z0-9-]+$/)).min(1, "Selecciona al menos un rubro.").max(8),
