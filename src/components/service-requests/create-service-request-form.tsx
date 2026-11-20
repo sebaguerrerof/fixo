@@ -6,6 +6,7 @@ import { useEffect, useId, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { submitServiceRequest } from "@/app/solicitar/actions";
+import { CommuneSelect } from "@/components/shared/commune-select";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
@@ -59,10 +60,14 @@ export function CreateServiceRequestForm({ categories }: { readonly categories: 
             {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
           </Select>
         </Field>
-        <Field error={errors.locationLabel?.message} htmlFor={f("locationLabel")} label="Comuna">
-          <Input aria-describedby={`${f("locationLabel")}-msg`} aria-invalid={invalid("locationLabel")} id={f("locationLabel")} placeholder="Ej. Ñuñoa" {...form.register("locationLabel")} />
-        </Field>
       </div>
+      <CommuneSelect
+        error={errors.locationLabel?.message}
+        idPrefix={f("location")}
+        onBlur={() => void form.trigger("locationLabel")}
+        onChange={(commune) => form.setValue("locationLabel", commune, { shouldDirty: true, shouldValidate: form.formState.isSubmitted })}
+        value={form.watch("locationLabel")}
+      />
       <Field error={errors.description?.message} htmlFor={f("description")} label="Detalles del problema">
         <Textarea aria-describedby={`${f("description")}-msg`} aria-invalid={invalid("description")} className="min-h-32" id={f("description")} placeholder="Describe el problema sin publicar dirección exacta, teléfono ni datos personales." {...form.register("description")} />
       </Field>
