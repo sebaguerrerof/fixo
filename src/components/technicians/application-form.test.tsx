@@ -44,7 +44,7 @@ describe("ProfessionalApplicationForm: saving the draft", () => {
 
   it("an empty required field never reaches the action (HTML validation), and so does a missing primary category", async () => {
     view = mount(<ProfessionalApplicationForm application={application()} categories={categories} requirements={requirements} />);
-    setValue(field(view.container, "Comuna base") as HTMLInputElement, "");
+    setValue(field(view.container, "Comuna base") as HTMLSelectElement, "");
     submit(draftForm()); await flush();
     expect(actions.saveProfessionalDraft).not.toHaveBeenCalled();
   });
@@ -77,7 +77,7 @@ describe("ProfessionalApplicationForm: saving the draft", () => {
   it("every field keeps the name the server action and the schema expect", () => {
     view = mount(<ProfessionalApplicationForm application={application()} categories={categories} requirements={requirements} />);
     const names = [...draftForm().querySelectorAll("[name]")].map((node) => node.getAttribute("name"));
-    for (const name of ["city", "headline", "coverage", "specialties", "bio", "categories", "primaryCategory", "years", "price", "availability", "portfolio"]) expect(names, name).toContain(name);
+    for (const name of ["city", "headline", "coverageAreas", "specialties", "bio", "categories", "primaryCategory", "years", "price", "availability", "portfolio"]) expect(names, name).toContain(name);
   });
 });
 

@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
+import { CoverageFields } from "@/components/technicians/coverage-fields";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Checkbox, CheckboxRow, Field, Input } from "@/components/ui/field";
@@ -47,7 +48,7 @@ function RegistrationForm({ technician = false, categories = [] }: { technician?
     <form className="space-y-5" noValidate onSubmit={async (event) => {
       event.preventDefault();
       const data = new FormData(event.currentTarget);
-      const raw = { ...Object.fromEntries(data), acceptTerms: data.get("acceptTerms") === "on", categoryIds: data.getAll("categoryIds"), coverageAreas: String(data.get("city") ?? "") };
+      const raw = { ...Object.fromEntries(data), acceptTerms: data.get("acceptTerms") === "on", categoryIds: data.getAll("categoryIds"), coverageAreas: data.getAll("coverageAreas").map(String).join(", ") };
       const parsed = technician ? technicianRegistrationInputSchema.safeParse(raw) : customerRegistrationInputSchema.safeParse(raw);
       if (!parsed.success) { setErrors(firstIssuePerField(parsed.error.issues)); return; }
       setErrors({}); setMessage(""); setPending(true);
@@ -68,9 +69,7 @@ function RegistrationForm({ technician = false, categories = [] }: { technician?
       <p className="text-xs leading-5 text-muted-foreground">Contraseña: al menos 12 caracteres, mayúscula, minúscula y número.</p>
       {technician ? (
         <>
-          <Field error={errors.city} htmlFor="city" label="Comuna de cobertura">
-            <Input aria-describedby="city-msg" aria-invalid={errors.city ? true : undefined} id="city" maxLength={80} name="city" required />
-          </Field>
+          <CoverageFields errors={{ city: errors.city, coverageAreas: errors.coverageAreas }} idPrefix="registro" />
           <fieldset className="rounded-2xl border border-border p-4">
             <legend className="px-2 text-sm font-semibold">Especialidades</legend>
             <div className="grid gap-x-4 sm:grid-cols-2">

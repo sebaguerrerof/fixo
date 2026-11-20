@@ -30,7 +30,11 @@ export function matchesClientFilters(technician: Technician, filters: Technician
     if (!haystack.includes(normalise(filters.query))) return false;
   }
   if (filters.categoryId && !technician.categoryIds.includes(filters.categoryId)) return false;
-  if (filters.city && !normalise(technician.coverageAreas.join(" ")).includes(normalise(filters.city))) return false;
+  // Exact commune (accent/case-insensitive), not a substring.
+  if (filters.city) {
+    const wanted = normalise(filters.city).trim();
+    if (![technician.city, ...technician.coverageAreas].some((area) => normalise(area).trim() === wanted)) return false;
+  }
   if (filters.emergenciesOnly && !technician.emergencyEnabled) return false;
   if (filters.minimumRating && technician.metrics.rating < filters.minimumRating) return false;
   return true;
