@@ -99,6 +99,22 @@ describe("CreateServiceRequestForm: a visitor without an account", () => {
     expect(window.localStorage.getItem("fixo.service-request-draft.v1")).toBeNull();
   });
 
+  it("keeps the form on screen and explains when the draft cannot be saved", async () => {
+    const setItem = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new Error("QuotaExceededError"); });
+    try {
+      view = mount(<CreateServiceRequestForm categories={categories} signedIn={false} />);
+      fillAll();
+      chooseCommune("Metropolitana de Santiago", "Ñuñoa");
+      submit(form()); await flush();
+      expect(router.push).not.toHaveBeenCalled();
+      expect(view.container.textContent).toContain("No pudimos guardar tu borrador");
+      expect((field(view.container, "¿Qué necesitas resolver?") as HTMLInputElement).value).toBe("Revisión de tablero eléctrico");
+      const anyway = [...view.container.querySelectorAll("button")].find((button) => button.textContent === "Ingresar de todos modos")!;
+      anyway.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      expect(router.push).toHaveBeenCalledWith("/login?continuar=%2Fsolicitar");
+    } finally { setItem.mockRestore(); }
+  });
+
   it("starts from the service and commune of the page the visitor came from", async () => {
     view = mount(<CreateServiceRequestForm categories={categories} initial={{ categoryId: "electricidad", locationLabel: "Providencia" }} signedIn={false} />);
     await flush();

@@ -370,3 +370,14 @@ Comandos utiles: `git show fb191c1 --stat`, `git diff main..feat/customer-commun
 **Ya verificado en cada PR:** `tsc`, `eslint`, vitest (641 PASS / 8 omitidos en #21), auditor de UI (`npm run ui:audit`) y CI (`application`, `database`, `ui-audit`). Cada PR tiene su seccion de HANDOFF con lo NO verificado.
 
 **Ramas locales sin subir:** `design/customer-nav` (PR #16, abierto, sin mergear) y `design/profile-in-shell` (perfil dentro del panel de cada rol y cambio de contrasena, apilada sobre la anterior). Aun sin PR propio ni revision.
+
+## Correcciones a la revision de Codex sobre "pedir sin cuenta" (2026-11-20, rama `feat/request-without-account`, PR #21)
+
+Codex reviso el PR #21 y dejo 3 hallazgos. Estado de cada uno:
+
+1. **MEDIO, perdida del formulario si falla el almacenamiento: corregido.** `saveDraft` ahora devuelve `true/false` y relee lo guardado (algunos navegadores aceptan la escritura y no conservan nada). Si falla, el formulario **no navega**: se queda en pantalla con el aviso "No pudimos guardar tu borrador" y el boton "Ingresar de todos modos" (el usuario decide, sabiendo que tendra que reescribir). Tests: `setItem` que lanza, escritura que no se conserva, y el flujo del formulario con `Storage.prototype.setItem` fallando.
+2. **MEDIO, el registro no conserva la continuacion: resuelto con otro mecanismo, NO con `continuar` en el registro.** El borrador ya sobrevive en el navegador; ahora el panel del cliente (`/cliente`, donde aterriza el enlace de confirmacion del correo) muestra el aviso "Tienes una solicitud sin enviar" con "Retomar solicitud" (-> `/solicitar`, que restaura el borrador) y "Descartar borrador" (`resume-request-banner.tsx`, con tests). **Decision y por que:** pasar `continuar` por `emailRedirectTo` obligaria a que el enlace de Supabase coincida con la lista de URLs permitidas incluyendo el parametro; si no coincide, Supabase cae al `site_url` y se rompe la confirmacion de TODAS las cuentas nuevas. Eso toca autenticacion y configuracion de Supabase (local y remota) y no pude validarlo (Docker apagado), asi que no lo hice. Si el owner prefiere la continuacion exacta, hay que (a) agregar el destino a `additional_redirect_urls`, (b) validarlo con `safeContinuation` en `/api/auth` y en `confirmAuthLink`, y (c) probar el ciclo real con una cuenta nueva.
+3. **BAJO, el estado vacio perdia servicio y comuna: corregido.** `ServiceListing` recibe `requestHref`; las paginas de rubro y de rubro+comuna pasan el mismo destino que el boton superior. Test de ambos enlaces y del valor por defecto.
+
+- **Verificado:** `tsc` y `eslint` limpios; vitest **647 PASS / 8 omitidos**.
+- **NO verificado:** el ciclo completo con una cuenta nueva y correo de confirmacion contra Supabase (Docker apagado); en particular, que tras confirmar el correo el usuario aterrice en `/cliente` y vea el aviso. El comportamiento del aviso solo esta probado con tests de componente.

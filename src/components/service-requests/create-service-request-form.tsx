@@ -30,6 +30,7 @@ export function CreateServiceRequestForm({ categories, signedIn = true, initial 
   const router = useRouter();
   const [feedback, setFeedback] = useState<string | null>(null);
   const [restored, setRestored] = useState(false);
+  const [draftNotSaved, setDraftNotSaved] = useState(false);
   const form = useForm<ServiceRequestInput>({
     resolver: zodResolver(serviceRequestInputSchema),
     defaultValues: { title: "", categoryId: "", description: "", locationLabel: "", priority: "standard", scheduledFor: "", address: "", reference: "", preferredSlot: "", complementaryInfo: "" },
@@ -45,12 +46,14 @@ export function CreateServiceRequestForm({ categories, signedIn = true, initial 
   }, []);
 
   function continueToSignIn(input: ServiceRequestInput) {
-    saveDraft(input);
+    // Do not navigate away if the draft could not be kept: the form stays on screen and the visitor decides.
+    if (!saveDraft(input)) { setDraftNotSaved(true); return; }
     router.push(LOGIN_URL);
   }
 
   async function onSubmit(input: ServiceRequestInput) {
     setFeedback(null);
+    setDraftNotSaved(false);
     if (!signedIn) { continueToSignIn(input); return; }
     const result = await submitServiceRequest(input);
     if (!result.ok) {
@@ -117,6 +120,12 @@ export function CreateServiceRequestForm({ categories, signedIn = true, initial 
         <Textarea aria-describedby={`${f("complementaryInfo")}-msg`} aria-invalid={invalid("complementaryInfo")} id={f("complementaryInfo")} {...form.register("complementaryInfo")} />
       </Field>
       <p className="text-xs leading-5 text-muted-foreground">Prioridad normal. La dirección y referencias solo están disponibles para ti, administración y el técnico adjudicado mientras conserve su habilitación.</p>
+      {draftNotSaved ? (
+        <Alert title="No pudimos guardar tu borrador" tone="warning">
+          Este navegador no permite guardar datos, así que si ingresas ahora tendrás que escribir la solicitud de nuevo. Puedes copiar tu texto antes de continuar.
+          <div className="mt-4"><Button onClick={() => router.push(LOGIN_URL)} size="sm" type="button" variant="outline">Ingresar de todos modos</Button></div>
+        </Alert>
+      ) : null}
       {feedback ? <Alert tone="danger">{feedback}</Alert> : null}
       <Button className="w-full" loading={form.formState.isSubmitting} size="lg" type="submit"><Send aria-hidden="true" className="size-4" />{signedIn ? "Registrar solicitud" : "Continuar y enviar"}</Button>
     </form>

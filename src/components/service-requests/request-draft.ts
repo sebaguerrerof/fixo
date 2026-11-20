@@ -26,15 +26,21 @@ function browserStorage(): StorageLike | null {
   try { return typeof window === "undefined" ? null : window.localStorage; } catch { return null; }
 }
 
-export function saveDraft(values: Partial<Record<keyof RequestDraft, unknown>>, storage: StorageLike | null = browserStorage(), now = Date.now()): void {
-  if (!storage) return;
+/** True when the draft is safe in the browser (or there was nothing worth keeping); false when it could not be saved. */
+export function saveDraft(values: Partial<Record<keyof RequestDraft, unknown>>, storage: StorageLike | null = browserStorage(), now = Date.now()): boolean {
+  if (!storage) return false;
   const draft: Record<string, string> = {};
   for (const field of fields) {
     const value = values[field];
     draft[field] = typeof value === "string" ? value.slice(0, maxLength) : "";
   }
-  if (!draft.title && !draft.description) return; // nothing worth keeping
-  try { storage.setItem(DRAFT_KEY, JSON.stringify({ savedAt: now, draft })); } catch { /* storage full or blocked: the form still works */ }
+  if (!draft.title && !draft.description) return true; // nothing worth keeping
+  try {
+    storage.setItem(DRAFT_KEY, JSON.stringify({ savedAt: now, draft }));
+    return storage.getItem(DRAFT_KEY) !== null; // read it back: some blocked storages accept writes and keep nothing
+  } catch {
+    return false; // storage full or blocked
+  }
 }
 
 export function loadDraft(storage: StorageLike | null = browserStorage(), now = Date.now()): RequestDraft | null {

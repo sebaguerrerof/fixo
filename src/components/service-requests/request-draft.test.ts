@@ -44,6 +44,15 @@ describe("service request draft", () => {
     expect(loadDraft(null)).toBeNull();
   });
 
+  it("reports whether it could keep the draft", () => {
+    const storage = memoryStorage();
+    expect(saveDraft(values, storage)).toBe(true);
+    expect(saveDraft(values, null)).toBe(false);
+    expect(saveDraft(values, { ...storage, setItem: () => { throw new Error("QuotaExceededError"); } })).toBe(false);
+    expect(saveDraft(values, { ...storage, setItem: () => undefined, getItem: () => null })).toBe(false); // accepts the write, keeps nothing
+    expect(saveDraft({ ...values, title: "", description: "" }, storage)).toBe(true);
+  });
+
   it("clears the draft", () => {
     const storage = memoryStorage();
     saveDraft(values, storage);
