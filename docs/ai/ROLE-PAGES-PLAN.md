@@ -6,8 +6,8 @@ Leyenda: **[S]** pequeno, sin esquema ni dependencias; **[M]** mediano, solo cod
 
 ## Transversal (los tres roles)
 
-- [ ] **X1 [M] `/perfil` esta fuera del panel.** Es una pagina con cabecera propia (logo + "Mi panel"), no usa el shell de cada rol: al editar la cuenta se pierde la navegacion. Solo edita nombre, apellido y telefono (y, para tecnicos en borrador, los datos de la postulacion). Moverla dentro del shell de cada rol.
-- [ ] **X2 [M] No se puede cambiar la contrasena con la sesion iniciada.** `/auth/update-password` solo se alcanza desde el enlace de recuperacion (`auth/callback`). Agregar "Cambiar contrasena" en la cuenta.
+- [x] **X1 [M] `/perfil` esta fuera del panel.** Es una pagina con cabecera propia (logo + "Mi panel"), no usa el shell de cada rol: al editar la cuenta se pierde la navegacion. Solo edita nombre, apellido y telefono (y, para tecnicos en borrador, los datos de la postulacion). Ahora vive dentro del shell de cada rol (cliente, tecnico, admin) y el auditor cubre las tres vistas. Limite: con datos reales el formulario solo se verifica por tests; en demo muestra "Perfil no disponible".
+- [x] **X2 [M] No se puede cambiar la contrasena con la sesion iniciada.** `/auth/update-password` solo se alcanza desde el enlace de recuperacion (`auth/callback`). Hecho: "Cambiar contrasena" en `/perfil` pide la contrasena actual, la nueva y su repeticion, y cierra las otras sesiones (decision del owner). Limite: no se ejecuto contra un Supabase real (demo lo desactiva); solo tests con el proveedor simulado.
 - [ ] **X3 [D+E] Sin eliminar ni exportar la cuenta/datos.** No hay UI ni accion. Depende de la politica de privacidad y de la retencion de datos (pagos, auditoria): decision del owner antes de disenar.
 - [ ] **X4 [E] Sin notificaciones visibles.** Existe `private.notification_outbox` (migracion de operaciones de trabajos) pero ninguna pagina lista avisos al usuario.
 - [ ] **X5 [D+E] Sin resenas.** No hay tabla de resenas; el sitio dice "todavia no publicamos evaluaciones" (`/como-funciona`, `/tecnicos/[slug]`). Define si entran antes del lanzamiento.

@@ -42,6 +42,8 @@ const routes = [
   { path: "/cliente/trabajos", as: "customer", migrated: true, identify: { selector: "h1", text: "No pudimos cargar la información" } },
   { path: "/solicitar", as: "customer", migrated: true, identify: { selector: "h1", text: "Solicitud de servicio" } },
   { path: "/perfil", as: "customer", migrated: true, identify: { selector: "h1", text: "Mi perfil" } },
+  { path: "/perfil", as: "technician", migrated: true, identify: { selector: "h1", text: "Mi perfil" } },
+  { path: "/perfil", as: "admin", migrated: true, identify: { selector: "h1", text: "Mi perfil" } },
   { path: "/urgencia", as: "customer", migrated: true, identify: { selector: "h1", text: "Necesito ayuda urgente" } },
   { path: "/tecnico", as: "technician", migrated: true, identify: { selector: "h1", text: "Hola, Camila" } },
   { path: "/tecnico/oportunidades", as: "technician", migrated: true, identify: { selector: "h1", text: "Nuevas solicitudes" } },
