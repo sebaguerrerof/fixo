@@ -11,6 +11,7 @@ import { Rating } from "@/components/shared/rating";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Quote } from "@/domain/entities/quote";
+import { customerNavigation } from "@/features/customer/customer-navigation";
 import { CredentialCard } from "@/components/technicians/credential-card";
 import type { Technician } from "@/domain/entities/technician";
 import { formatClp } from "@/lib/utils";
@@ -18,12 +19,6 @@ import { getTechnicianRepository, getJobRepository, getServiceRequestRepository,
 import { getServerAuthenticatedUser } from "@/services/auth/server-authentication-service";
 
 const dateFormatter = new Intl.DateTimeFormat("es-CL", { dateStyle: "medium", timeStyle: "short" });
-
-const customerNavigation = [
-  { href: "/cliente", label: "Resumen" },
-  { href: "/cliente#solicitudes", label: "Mis solicitudes" },
-  { href: "/cliente#pagos", label: "Pagos" },
-];
 
 function QuoteCard({ quote, technician, canAccept }: { readonly quote: Quote; readonly technician: Technician | null; readonly canAccept: boolean }) {
   return <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">{technician ? <CredentialCard headingLevel={3} technician={technician} /> : null}<Card key={quote.id}><CardHeader><div className="flex flex-wrap items-start justify-between gap-3"><div><CardTitle>{technician ? "Cotización" : "Técnico"}</CardTitle>{technician ? <div className="mt-1"><Rating rating={technician.metrics.rating} reviewCount={technician.metrics.reviewCount} /></div> : null}</div><div className="text-right"><p className="text-2xl font-bold">{formatClp(quote.priceClp)}</p><StatusBadge status={quote.status} /></div></div></CardHeader><CardContent><p className="text-sm leading-6 text-muted-foreground">{quote.description}</p><dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2"><div><dt className="font-semibold">Desglose CLP</dt><dd className="text-muted-foreground">Mano de obra: {formatClp(quote.laborClp ?? quote.priceClp)} · materiales: {formatClp(quote.materialsClp ?? 0)} · diagnóstico: {formatClp(quote.diagnosticClp ?? 0)}</dd></div><div><dt className="font-semibold">Tiempo estimado</dt><dd className="text-muted-foreground">{quote.estimatedDuration}</dd></div><div><dt className="font-semibold">Disponible desde</dt><dd className="text-muted-foreground">{dateFormatter.format(new Date(quote.availableDate))}</dd></div><div><dt className="font-semibold">Válida hasta</dt><dd className="text-muted-foreground">{dateFormatter.format(new Date(quote.expiresAt))}</dd></div><div><dt className="font-semibold">Visita de diagnóstico</dt><dd className="text-muted-foreground">{quote.diagnosticVisit ? "Sí" : "No"}</dd></div>{quote.materialsIncluded ? <div className="sm:col-span-2"><dt className="font-semibold">Materiales incluidos</dt><dd className="text-muted-foreground">{quote.materialsIncluded}</dd></div> : null}{quote.materialsNotIncluded ? <div className="sm:col-span-2"><dt className="font-semibold">Materiales no incluidos</dt><dd className="text-muted-foreground">{quote.materialsNotIncluded}</dd></div> : null}{quote.conditions ? <div className="sm:col-span-2"><dt className="font-semibold">Condiciones</dt><dd className="text-muted-foreground">{quote.conditions}</dd></div> : null}</dl>{canAccept ? <div className="mt-5"><AcceptQuoteButton revision={quote.revision ?? 1} quoteId={quote.id} serviceRequestId={quote.serviceRequestId} /></div> : null}</CardContent></Card></div>;

@@ -14,11 +14,11 @@ Leyenda: **[S]** pequeno, sin esquema ni dependencias; **[M]** mediano, solo cod
 
 ## Cliente (`/cliente`, `/solicitar`, `/urgencia`, trabajos)
 
-- [ ] **C1 [S] Navegacion inconsistente.** Hay tres menus distintos: `/cliente` (Perfil, Solicitudes, Trabajos), trabajos (`job-shell.tsx`: Solicitudes, Trabajos, Perfil) y detalle de solicitud (Resumen, Mis solicitudes, Pagos; sin Trabajos). Unificar en una sola definicion.
-- [ ] **C2 [S] Enlace roto `/cliente#pagos`.** El menu del detalle de solicitud apunta a un ancla que no existe en `/cliente` (solo existe `#solicitudes`).
+- [x] **C1 [S] Navegacion inconsistente.** Hay tres menus distintos: `/cliente` (Perfil, Solicitudes, Trabajos), trabajos (`job-shell.tsx`: Solicitudes, Trabajos, Perfil) y detalle de solicitud (Resumen, Mis solicitudes, Pagos; sin Trabajos). Unificar en una sola definicion.
+- [x] **C2 [S] Enlace roto `/cliente#pagos`.** El menu del detalle de solicitud apunta a un ancla que no existe en `/cliente` (solo existe `#solicitudes`).
 - [ ] **C3 [M] Sin vista propia de pagos.** Los pagos solo se ven dentro de cada trabajo; no hay resumen de pagos del cliente. (Hoy es Sandbox: confirmar alcance con el owner.)
 - [ ] **C4 [M] Detalle de solicitud sin migrar al design system.** Usa titulos y tarjetas sueltas (`text-xl font-bold`, `Card` crudas) y no esta en el auditor de UI; solo se reviso en escritorio.
-- [ ] **C5 [S] Direccion del carne partida en dos lineas** en las cotizaciones (cosmetico, PR #13).
+- [x] **C5 [S] Direccion del carne partida en dos lineas** en las cotizaciones (cosmetico, PR #13).
 - [ ] **C6 [D] Direcciones guardadas.** El formulario de perfil no guarda direcciones; cada solicitud pide la suya. Decidir si se quiere libreta de direcciones.
 
 ## Tecnico (`/tecnico/*`)

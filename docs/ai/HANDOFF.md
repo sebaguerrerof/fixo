@@ -381,3 +381,13 @@ Codex reviso el PR #21 y dejo 3 hallazgos. Estado de cada uno:
 
 - **Verificado:** `tsc` y `eslint` limpios; vitest **647 PASS / 8 omitidos**.
 - **NO verificado:** el ciclo completo con una cuenta nueva y correo de confirmacion contra Supabase (Docker apagado); en particular, que tras confirmar el correo el usuario aterrice en `/cliente` y vea el aviso. El comportamiento del aviso solo esta probado con tests de componente.
+
+## Menu unico del cliente, sin anclas muertas, y direccion del carne entera (2026-11-20, rama `design/customer-nav`, PR #16)
+
+- **Origen:** `docs/ai/ROLE-PAGES-PLAN.md`, items C1, C2 y C5 (ya marcados hechos en el plan). Sin decisiones de producto pendientes.
+- **C1, tres menus distintos para el cliente:** ahora hay UNA definicion, `customerNavigation` en `src/features/customer/customer-navigation.ts` (Mis solicitudes `/cliente`, Mis trabajos `/cliente/trabajos`, Mi perfil `/perfil`), usada por el panel (`/cliente`), el detalle de solicitud (`/cliente/solicitudes/[id]`) y los trabajos (`job-shell.tsx`). Test del contenido y orden del menu.
+- **C2, enlace roto `/cliente#pagos`:** desaparece con la unificacion (el menu del detalle apuntaba a un ancla que no existe; tambien se va `/cliente#solicitudes` como entrada de menu).
+- **C5, direccion del carne partida en dos lineas** (cosmetico): el pie de `credential-card.tsx` usa `flex-wrap` con `items-end`, de modo que la direccion no se corta a media palabra.
+- **Integracion con `main`:** se actualizo la rama con `main` (PR #19, #20 y #21) sin conflictos; en `/cliente` conviven el menu unico y el aviso "Tienes una solicitud sin enviar" del PR #21.
+- **Verificado:** `tsc` y `eslint` limpios; vitest **648 PASS / 8 omitidos** tras la actualizacion; CI del PR (`application`, `database`, `ui-audit`) en verde antes de actualizar la rama; el auditor de UI cubre las paginas del cliente.
+- **NO verificado / limites:** no se miraron las paginas del cliente con datos reales (solo demo y auditor); el CI debe volver a pasar tras la actualizacion con `main`. Quedan del plan C3, C4 y C6 (necesitan decisiones o cambios de esquema) y el resto de roles.

@@ -8,10 +8,10 @@ import { Pagination } from "@/components/shared/pagination";
 import { ResumeRequestBanner } from "@/components/service-requests/resume-request-banner";
 import { ServiceRequestCard } from "@/components/service-requests/service-request-card";
 import { buttonVariants } from "@/components/ui/button";
+import { customerNavigation } from "@/features/customer/customer-navigation";
 import { getServiceRequestRepository } from "@/repositories/repository-factory";
 import { requireServerRole } from "@/services/auth/server-authentication-service";
 
-const navigation = [{ href: "/perfil", label: "Mi perfil" }, { href: "/cliente", label: "Mis solicitudes" }, { href: "/cliente/trabajos", label: "Mis trabajos" }];
 const PAGE_SIZE = 20;
 
 export default async function CustomerDashboardPage({ searchParams }: { readonly searchParams: Promise<{ page?: string }> }) {
@@ -21,7 +21,7 @@ export default async function CustomerDashboardPage({ searchParams }: { readonly
   const repository = getServiceRequestRepository();
   const result = repository.listPageForCustomer ? await repository.listPageForCustomer(page) : { items: await repository.listForCustomer(user.id), total: 0 };
   return (
-    <DashboardShell activeHref="/cliente" navigation={navigation} requiredRole="customer" roleLabel="Espacio cliente" userName={user.name}>
+    <DashboardShell activeHref="/cliente" navigation={customerNavigation} requiredRole="customer" roleLabel="Espacio cliente" userName={user.name}>
       <PageHeader
         actions={<Link className={buttonVariants()} href="/solicitar">Solicitar servicio</Link>}
         description={`Hola, ${user.name.split(" ")[0]}. Compara propuestas y consulta tus adjudicaciones. Pagos y ejecución pendientes de habilitación.`}
