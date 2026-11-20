@@ -22,6 +22,17 @@ describe("MockTechnicianRepository", () => {
     expect(adminResults.some((technician) => technician.status === "temporarily_suspended")).toBe(true);
   });
 
+  it("filters by commune exactly, ignoring accents and case", async () => {
+    const repository = new MockTechnicianRepository();
+    const all = await repository.search();
+    const commune = all[0]!.coverageAreas[0]!;
+    const found = await repository.search({ city: commune.toUpperCase() });
+    expect(found.length).toBeGreaterThan(0);
+    expect(found.every((technician) => [technician.city, ...technician.coverageAreas].some((area) => area.toLowerCase() === commune.toLowerCase()))).toBe(true);
+    expect(await repository.search({ city: "Atlántida" })).toHaveLength(0);
+    expect(await repository.search({ city: commune.slice(0, 3) })).toHaveLength(0);
+  });
+
   it("filters by category id", async () => {
     const technicians = await new MockTechnicianRepository().search({ categoryId: "cat-gasfiteria" });
     expect(technicians.length).toBeGreaterThan(0);
