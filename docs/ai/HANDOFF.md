@@ -391,3 +391,12 @@ Codex reviso el PR #21 y dejo 3 hallazgos. Estado de cada uno:
 - **Integracion con `main`:** se actualizo la rama con `main` (PR #19, #20 y #21) sin conflictos; en `/cliente` conviven el menu unico y el aviso "Tienes una solicitud sin enviar" del PR #21.
 - **Verificado:** `tsc` y `eslint` limpios; vitest **648 PASS / 8 omitidos** tras la actualizacion; CI del PR (`application`, `database`, `ui-audit`) en verde antes de actualizar la rama; el auditor de UI cubre las paginas del cliente.
 - **NO verificado / limites:** no se miraron las paginas del cliente con datos reales (solo demo y auditor); el CI debe volver a pasar tras la actualizacion con `main`. Quedan del plan C3, C4 y C6 (necesitan decisiones o cambios de esquema) y el resto de roles.
+
+## Cuenta dentro del panel del rol y cambio de contrasena (2026-11-20, rama `design/profile-in-shell`)
+
+- **X1, `/perfil` fuera del panel:** la pagina de cuenta ahora se muestra dentro del shell de cada rol (cliente, tecnico, moderador/superadmin) en vez de como pagina suelta (`src/app/perfil/page.tsx`, commit `fde2ab3`).
+- **X2, cambio de contrasena** (commit `21604ca`): formulario con contrasena actual + nueva + repetir (`change-password-form.tsx`) y server action `changePasswordAction` (`src/app/perfil/password-actions.ts`). Verifica la actual con `signInWithPassword` antes de `updateUser`, exige que la nueva cumpla `newPasswordSchema`, sea distinta de la actual y coincida, y despues revoca las OTRAS sesiones (`signOut({scope:"others"})`). No devuelve ni registra secretos. En modo demo responde que no esta disponible.
+- **Sin cambios de esquema, dependencias ni API publica.** Auditor de UI: se agrego la ruta correspondiente en `scripts/ui/audit-ui.mjs`.
+- **Integracion con `main`:** la rama se actualizo con `main` (incluye PR #16) sin conflictos.
+- **Verificado:** `tsc` y `eslint` limpios; vitest **664 PASS / 8 omitidos**; tests del formulario y de la action (credencial incorrecta, misma contrasena, no coincide, demo, fallo de revocacion).
+- **NO verificado / limites:** el cambio de contrasena no se probo contra Supabase local real (Docker apagado); `signInWithPassword` dentro de la action puede contar contra los limites de intentos de Auth (revisar en el proyecto real); el CI debe pasar en el PR.
