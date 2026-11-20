@@ -338,3 +338,35 @@ Solo presentacion: se conservan nombres de campos, `FormData`, acciones del serv
 - **Ajuste de `CommuneSelect`:** la region sigue a la comuna cuando esta llega despues del montaje (borrador/precarga).
 - **Verificado:** `tsc` y `eslint` limpios; vitest **641 PASS / 8 omitidos** (nuevos: borrador, flujo de visitante, precarga); navegador real (modo demo): servicio+comuna -> `/solicitar` precargado -> "Continuar y enviar" -> `/login?continuar=%2Fsolicitar` -> al volver, borrador restaurado; auditor de UI OK en `/solicitar` y `/servicios`.
 - **NO verificado / limites:** (1) el ciclo completo con cuenta nueva y correo de confirmacion contra Supabase local (Docker estaba apagado). (2) Tras crear cuenta y confirmar, el usuario entra por `/login` y debe volver a `/solicitar` (el registro no arrastra `continuar`); el borrador sigue ahi hasta 24 h. (3) El borrador es por dispositivo y navegador; en equipo compartido queda visible hasta vencer o enviarse. (4) El flujo de urgencia (`/urgencia`) no cambia.
+
+## Guia de auditoria para Codex: que commits revisar y que ignorar (2026-11-20, rama `feat/request-without-account`)
+
+**Por que existe:** una revision de Codex solo vio `git diff` del arbol local (`docs/ai/PLAN.md` y `next-env.d.ts`) y no pudo auditar nada, porque el trabajo ya esta commiteado. Para auditar hay que dar un commit, PR o rango; aqui estan.
+
+**No es parte del trabajo de Claude (no revisar como tal, nunca se commitea):**
+- `docs/ai/PLAN.md` modificado: es el Sprint 06 puesto por el owner/Codex. Claude no lo toca.
+- `next-env.d.ts`: lo regenera `next dev`; apunta a `.next-dev` porque `next.config.ts` usa `distDir` distinto en desarrollo. No es un error.
+- `AGENTS.md` y `CLAUDE.md`: sin seguimiento, ajenos.
+
+**Trabajo de producto a auditar (todo sobre `main`; el rango se pide con `git diff <base>..<cabeza>`):**
+
+| PR | Que es | Estado | Commit / rango |
+|---|---|---|---|
+| #17 | Region y comunas del tecnico | mergeado | `7d56108` |
+| #18 | Entorno local, puertos 573xx y script de admin local | mergeado | `597e074` |
+| #19 | Catalogo publico de servicios (`/servicios`) | mergeado | commit `fb191c1`, merge `6188f93` |
+| #20 | Cliente elige la comuna de la lista | abierto | `main..feat/customer-commune-selector` (commit `48daa98`) |
+| #21 | Pedir sin cuenta (borrador en el dispositivo) | abierto, apilado sobre #20 | `feat/customer-commune-selector..feat/request-without-account` (commit `6b52b8b`) |
+
+Comandos utiles: `git show fb191c1 --stat`, `git diff main..feat/customer-commune-selector`, `git diff feat/customer-commune-selector..feat/request-without-account`, `gh pr diff 20`, `gh pr diff 21`.
+
+**Que mirar con atencion (riesgos conocidos):**
+1. **#21, privacidad del borrador:** `src/components/service-requests/request-draft.ts` guarda en `localStorage` solo campos publicos y nunca direccion, referencia ni informacion privada (hay un test). Revisar que ningun otro lugar escriba datos del formulario en el navegador.
+2. **#21, autenticacion:** no cambia `submitServiceRequest` ni la sesion; sigue exigiendo cliente con sesion en el servidor. Revisar que `src/app/solicitar/page.tsx` no exponga nada nuevo a un visitante (solo categorias, publicas) y que tecnicos/admin sigan redirigidos a `/perfil`.
+3. **#20, datos:** `serviceRequestInputSchema.locationLabel` pasa a `communeSchema` (comuna oficial, canonicalizada). Las solicitudes antiguas con texto libre no se migran. Lista de 346 comunas transcrita de memoria: pendiente de verificar contra SUBDERE.
+4. **#19, comportamiento:** el filtro `city` de `matchesClientFilters` pasa de "contiene" a comuna exacta. El sitemap (`src/app/sitemap.ts`) usa `brand.url`: confirmar que es el dominio de produccion. Las paginas publicas no prometen pagos ni contratacion.
+5. **#18, seguridad local:** el script `scripts/dev/create-local-admin.mjs` solo opera si la API y el contenedor son el mismo stack local; la contrasena no se imprime ni se guarda.
+
+**Ya verificado en cada PR:** `tsc`, `eslint`, vitest (641 PASS / 8 omitidos en #21), auditor de UI (`npm run ui:audit`) y CI (`application`, `database`, `ui-audit`). Cada PR tiene su seccion de HANDOFF con lo NO verificado.
+
+**Ramas locales sin subir:** `design/customer-nav` (PR #16, abierto, sin mergear) y `design/profile-in-shell` (perfil dentro del panel de cada rol y cambio de contrasena, apilada sobre la anterior). Aun sin PR propio ni revision.
