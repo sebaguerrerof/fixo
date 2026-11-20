@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { isDemoModeEnabled } from "@/config/demo-mode";
 
 const navigation = [
+  { href: "/servicios", label: "Servicios" },
   { href: "/tecnicos", label: "Buscar técnicos" },
   { href: "/como-funciona", label: "Cómo funciona" },
   { href: "/registro/tecnico", label: "Soy técnico" },
