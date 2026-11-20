@@ -86,19 +86,28 @@ describe("Customer registration", () => {
   });
 });
 
+function pickCommunes(container: HTMLElement, region: string, base: string, more: string[] = []) {
+  const regionId = (label: string | RegExp) => (field(container, label) as HTMLSelectElement);
+  const byName = (name: string) => [...container.querySelectorAll("label")].find((label) => label.textContent === name)!.querySelector("input")!;
+  const regionSelect = regionId(/^Región$/);
+  setValue(regionSelect, [...regionSelect.options].find((option) => option.textContent === region)!.value);
+  setValue(field(container, "Comuna base") as HTMLSelectElement, base);
+  for (const name of more) check(byName(name));
+}
+
 describe("Technician application registration", () => {
   const categories = [{ id: "electricidad", slug: "electricidad", name: "Electricidad", description: "", icon: "zap" as never, technicianCount: 0 }, { id: "gasfiteria", slug: "gasfiteria", name: "Gasfitería", description: "", icon: "droplet" as never, technicianCount: 0 }];
 
   it("needs at least one trade and a coverage commune, and sends the selected trade ids", async () => {
     auth.registerTechnician.mockResolvedValue(undefined);
     view = mount(<TechnicianSignUpForm categories={categories} />);
-    fillCustomer(); setValue(field(view.container, "Comuna de cobertura") as HTMLInputElement, "Providencia");
+    fillCustomer(); pickCommunes(view.container, "Metropolitana de Santiago", "Providencia", ["Ñuñoa"]);
     check(view.container.querySelector<HTMLInputElement>("input[name=acceptTerms]")!); submit(form()); await flush();
     expect(auth.registerTechnician).not.toHaveBeenCalled();
     expect(view.container.textContent).toContain("Selecciona al menos un rubro.");
     check(view.container.querySelector<HTMLInputElement>("input[name=categoryIds][value=electricidad]")!); submit(form()); await flush();
     expect(auth.registerTechnician).toHaveBeenCalledTimes(1);
-    expect(auth.registerTechnician.mock.calls[0][0]).toMatchObject({ categoryIds: ["electricidad"], city: "Providencia", coverageAreas: "Providencia", email: "ana@ejemplo.cl", acceptTerms: true });
+    expect(auth.registerTechnician.mock.calls[0][0]).toMatchObject({ categoryIds: ["electricidad"], city: "Providencia", coverageAreas: "Providencia, Ñuñoa", email: "ana@ejemplo.cl", acceptTerms: true });
   });
 
   it("says that the application stays pending until an administrative review", () => {

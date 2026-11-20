@@ -10,6 +10,6 @@ export default defineConfig({
   oxc: { jsx: { runtime: "automatic" } },
   test: {
     env: { NEXT_PUBLIC_DEMO_MODE: "true" },
-    include: ["src/**/*.test.{ts,tsx}"],
+    include: ["src/**/*.test.{ts,tsx}", "scripts/dev/**/*.test.mjs"],
   },
 });
