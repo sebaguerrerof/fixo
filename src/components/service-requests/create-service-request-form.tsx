@@ -9,29 +9,55 @@ import { submitServiceRequest } from "@/app/solicitar/actions";
 import { CommuneSelect } from "@/components/shared/commune-select";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { clearDraft, loadDraft, saveDraft } from "@/components/service-requests/request-draft";
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import type { Category } from "@/domain/entities/category";
 import { serviceRequestInputSchema, type ServiceRequestInput } from "@/domain/validation/service-request-input";
 
-export function CreateServiceRequestForm({ categories }: { readonly categories: readonly Category[] }) {
+const LOGIN_URL = "/login?continuar=%2Fsolicitar";
+
+interface CreateServiceRequestFormProps {
+  readonly categories: readonly Category[];
+  /** False for a visitor without a session: they can fill the form, and are asked to sign in only when they send it. */
+  readonly signedIn?: boolean;
+  /** Starting values, e.g. from the service page the visitor came from. */
+  readonly initial?: { readonly categoryId?: string; readonly locationLabel?: string };
+}
+
+export function CreateServiceRequestForm({ categories, signedIn = true, initial }: CreateServiceRequestFormProps) {
   const uid = useId();
   const f = (name: string) => `${uid}-${name}`;
   const router = useRouter();
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [restored, setRestored] = useState(false);
   const form = useForm<ServiceRequestInput>({
     resolver: zodResolver(serviceRequestInputSchema),
     defaultValues: { title: "", categoryId: "", description: "", locationLabel: "", priority: "standard", scheduledFor: "", address: "", reference: "", preferredSlot: "", complementaryInfo: "" },
   });
   const errors = form.formState.errors;
-  useEffect(() => { form.setValue("operationId", crypto.randomUUID()); }, [form]);
+  useEffect(() => {
+    // Starting point: what the visitor was writing before signing in, then whatever the page they came from picked.
+    const draft = loadDraft();
+    if (draft) { form.reset({ ...form.getValues(), ...draft }); setRestored(true); }
+    if (initial?.categoryId && categories.some((category) => category.id === initial.categoryId)) form.setValue("categoryId", initial.categoryId);
+    if (initial?.locationLabel) form.setValue("locationLabel", initial.locationLabel);
+    form.setValue("operationId", crypto.randomUUID());
+  }, []);
+
+  function continueToSignIn(input: ServiceRequestInput) {
+    saveDraft(input);
+    router.push(LOGIN_URL);
+  }
 
   async function onSubmit(input: ServiceRequestInput) {
     setFeedback(null);
+    if (!signedIn) { continueToSignIn(input); return; }
     const result = await submitServiceRequest(input);
     if (!result.ok) {
-      if (result.message === "unauthenticated") { router.push("/login?continuar=%2Fsolicitar"); return; }
+      if (result.message === "unauthenticated") { continueToSignIn(input); return; }
       setFeedback(result.message ?? "No pudimos registrar tu solicitud."); return;
     }
+    clearDraft(); setRestored(false);
     setFeedback("success"); form.reset(); form.setValue("operationId", crypto.randomUUID()); router.refresh();
   }
 
@@ -50,6 +76,8 @@ export function CreateServiceRequestForm({ categories }: { readonly categories: 
   const invalid = (name: keyof ServiceRequestInput) => (errors[name] ? true : undefined);
   return (
     <form className="space-y-5" noValidate onSubmit={form.handleSubmit(onSubmit)}>
+      {!signedIn ? <Alert tone="info" title="Cuéntanos qué necesitas">Llena el formulario ahora. Para enviarlo te pediremos ingresar o crear una cuenta, y lo que escribiste (sin dirección ni referencias) quedará guardado en este dispositivo para que no lo repitas.</Alert> : null}
+      {restored ? <Alert tone="info" title="Recuperamos tu borrador">Lo guardamos en este dispositivo. Revísalo y completa lo que falte; la dirección y las referencias no se guardan, ingrésalas de nuevo si las necesitas.</Alert> : null}
       <Field error={errors.title?.message} htmlFor={f("title")} label="¿Qué necesitas resolver?">
         <Input aria-describedby={`${f("title")}-msg`} aria-invalid={invalid("title")} id={f("title")} {...form.register("title")} />
       </Field>
@@ -90,7 +118,7 @@ export function CreateServiceRequestForm({ categories }: { readonly categories: 
       </Field>
       <p className="text-xs leading-5 text-muted-foreground">Prioridad normal. La dirección y referencias solo están disponibles para ti, administración y el técnico adjudicado mientras conserve su habilitación.</p>
       {feedback ? <Alert tone="danger">{feedback}</Alert> : null}
-      <Button className="w-full" loading={form.formState.isSubmitting} size="lg" type="submit"><Send aria-hidden="true" className="size-4" />Registrar solicitud</Button>
+      <Button className="w-full" loading={form.formState.isSubmitting} size="lg" type="submit"><Send aria-hidden="true" className="size-4" />{signedIn ? "Registrar solicitud" : "Continuar y enviar"}</Button>
     </form>
   );
 }

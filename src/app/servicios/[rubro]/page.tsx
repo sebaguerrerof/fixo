@@ -46,7 +46,7 @@ export default async function ServicePage({ params, searchParams }: { readonly p
         <div className="animate-enter">
           <SectionHeading as="h1" description={category.description} title={`${category.name} a domicilio`} />
         </div>
-        <div className="mt-6"><Link className={buttonVariants({ size: "lg" })} href="/solicitar">Solicitar este servicio</Link></div>
+        <div className="mt-6"><Link className={buttonVariants({ size: "lg" })} href={`/solicitar?rubro=${category.slug}`}>Solicitar este servicio</Link></div>
 
         <section aria-labelledby="tecnicos" className="mt-12">
           <h2 className="text-2xl" id="tecnicos">Técnicos de {category.name.toLowerCase()}</h2>
