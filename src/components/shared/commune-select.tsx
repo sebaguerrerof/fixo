@@ -17,12 +17,14 @@ interface CommuneSelectProps {
 
 /** One commune of Chile chosen by region first: region select, then the commune select of that region. */
 export function CommuneSelect({ idPrefix, value, onChange, onBlur, error, label = "Comuna" }: CommuneSelectProps) {
-  const [region, setRegion] = useState(regionOfCommune(value)?.id ?? "");
+  // A chosen commune decides the region (also when the value arrives later, e.g. a restored draft); otherwise the region picked so far.
+  const [pickedRegion, setPickedRegion] = useState("");
+  const region = regionOfCommune(value)?.id ?? pickedRegion;
   const id = (name: string) => `${idPrefix}-${name}`;
   return (
     <div className="grid gap-5 sm:grid-cols-2">
       <Field htmlFor={id("region")} label="Región">
-        <Select id={id("region")} onChange={(event) => { setRegion(event.target.value); onChange(""); }} value={region}>
+        <Select id={id("region")} onChange={(event) => { setPickedRegion(event.target.value); onChange(""); }} value={region}>
           <option value="">Selecciona una región</option>
           {CHILE_REGIONS.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
         </Select>

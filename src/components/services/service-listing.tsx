@@ -7,11 +7,11 @@ import { buttonVariants } from "@/components/ui/button";
 import type { Technician } from "@/domain/entities/technician";
 
 /** Published technicians for a service (and optionally a commune). Public: no account needed to look. */
-export function ServiceListing({ technicians, emptyTitle, emptyDescription, headingLevel = 3 }: { readonly technicians: readonly Technician[]; readonly emptyTitle: string; readonly emptyDescription: string; readonly headingLevel?: 2 | 3 }) {
+export function ServiceListing({ technicians, emptyTitle, emptyDescription, requestHref = "/solicitar", headingLevel = 3 }: { readonly technicians: readonly Technician[]; readonly emptyTitle: string; readonly emptyDescription: string; readonly requestHref?: string; readonly headingLevel?: 2 | 3 }) {
   if (!technicians.length) {
     return (
       <EmptyState
-        action={<Link className={buttonVariants({ variant: "outline" })} href="/solicitar">Pedir este servicio igual</Link>}
+        action={<Link className={buttonVariants({ variant: "outline" })} href={requestHref}>Pedir este servicio igual</Link>}
         description={emptyDescription}
         icon={SearchX}
         title={emptyTitle}

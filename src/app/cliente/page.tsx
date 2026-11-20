@@ -5,6 +5,7 @@ import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { Pagination } from "@/components/shared/pagination";
+import { ResumeRequestBanner } from "@/components/service-requests/resume-request-banner";
 import { ServiceRequestCard } from "@/components/service-requests/service-request-card";
 import { buttonVariants } from "@/components/ui/button";
 import { getServiceRequestRepository } from "@/repositories/repository-factory";
@@ -26,6 +27,7 @@ export default async function CustomerDashboardPage({ searchParams }: { readonly
         description={`Hola, ${user.name.split(" ")[0]}. Compara propuestas y consulta tus adjudicaciones. Pagos y ejecución pendientes de habilitación.`}
         title="Mis solicitudes"
       />
+      <ResumeRequestBanner />
       <section className="mt-8" id="solicitudes">
         <h2 className="text-lg font-semibold">Solicitudes e historial</h2>
         {result.items.length ? (

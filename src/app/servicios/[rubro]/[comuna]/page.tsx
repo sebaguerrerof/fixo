@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { ServiceListing } from "@/components/services/service-listing";
 import { SectionHeading } from "@/components/shared/section-heading";
 import { buttonVariants } from "@/components/ui/button";
-import { communeFromSlug } from "@/domain/geo/commune-slug";
+import { communeFromSlug, communeSlug } from "@/domain/geo/commune-slug";
 import { TechnicianDirectoryService } from "@/services/technicians/technician-directory-service";
 
 type Params = Promise<{ readonly rubro: string; readonly comuna: string }>;
@@ -42,10 +42,10 @@ export default async function ServiceInCommunePage({ params }: { readonly params
         <div className="animate-enter">
           <SectionHeading as="h1" description={`Técnicos verificados de ${category.name.toLowerCase()} que atienden en ${commune}. No necesitas una cuenta para ver sus perfiles.`} title={`${category.name} en ${commune}`} />
         </div>
-        <div className="mt-6"><Link className={buttonVariants({ size: "lg" })} href="/solicitar">Solicitar este servicio</Link></div>
+        <div className="mt-6"><Link className={buttonVariants({ size: "lg" })} href={`/solicitar?rubro=${category.slug}&comuna=${communeSlug(commune)}`}>Solicitar este servicio</Link></div>
         <section aria-label="Técnicos" className="mt-12">
           <p className="mb-5 text-sm text-muted-foreground"><span className="tabular font-semibold text-foreground">{technicians.length}</span> {technicians.length === 1 ? "perfil verificado" : "perfiles verificados"} en {commune}. La contratación y los pagos todavía no están habilitados.</p>
-          <ServiceListing headingLevel={2} emptyDescription={`Todavía no hay perfiles de ${category.name.toLowerCase()} que atiendan en ${commune}. Puedes dejar tu solicitud o mirar el servicio en otras comunas.`} emptyTitle={`Sin técnicos en ${commune} por ahora`} technicians={technicians} />
+          <ServiceListing headingLevel={2} requestHref={`/solicitar?rubro=${category.slug}&comuna=${communeSlug(commune)}`} emptyDescription={`Todavía no hay perfiles de ${category.name.toLowerCase()} que atiendan en ${commune}. Puedes dejar tu solicitud o mirar el servicio en otras comunas.`} emptyTitle={`Sin técnicos en ${commune} por ahora`} technicians={technicians} />
           <div className="mt-6"><Link className={buttonVariants({ variant: "outline" })} href={`/servicios/${category.slug}`}>Ver {category.name.toLowerCase()} en otras comunas</Link></div>
         </section>
       </main>

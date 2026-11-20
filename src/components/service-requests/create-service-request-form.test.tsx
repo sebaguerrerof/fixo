@@ -12,7 +12,7 @@ import { CreateServiceRequestForm } from "@/components/service-requests/create-s
 
 const categories = [{ id: "electricidad", slug: "electricidad", name: "Electricidad", description: "", icon: "zap" as never, technicianCount: 0 }];
 let view: ReturnType<typeof mount> | null = null;
-beforeEach(() => { actions.submitServiceRequest.mockReset(); router.push.mockReset(); router.refresh.mockReset(); });
+beforeEach(() => { window.localStorage.clear(); actions.submitServiceRequest.mockReset(); router.push.mockReset(); router.refresh.mockReset(); });
 afterEach(() => { view?.unmount(); view = null; });
 const form = () => view!.container.querySelector("form")!;
 const select = (label: string) => field(view!.container, label) as HTMLSelectElement;
@@ -54,5 +54,78 @@ describe("CreateServiceRequestForm: the commune is chosen from the official list
     setValue(select("Región"), optionValue(select("Región"), "Valparaíso"));
     submit(form()); await flush();
     expect(actions.submitServiceRequest).not.toHaveBeenCalled();
+  });
+});
+
+describe("CreateServiceRequestForm: a visitor without an account", () => {
+  it("fills the form, is sent to sign in on submit and keeps the public part of the draft", async () => {
+    view = mount(<CreateServiceRequestForm categories={categories} signedIn={false} />);
+    expect(view.container.textContent).toContain("Para enviarlo te pediremos ingresar o crear una cuenta");
+    fillAll();
+    chooseCommune("Metropolitana de Santiago", "Ñuñoa");
+    setValue(field(view!.container, "Dirección privada (opcional)") as HTMLInputElement, "Calle Secreta 123");
+    submit(form()); await flush();
+    expect(actions.submitServiceRequest).not.toHaveBeenCalled();
+    expect(router.push).toHaveBeenCalledWith("/login?continuar=%2Fsolicitar");
+    const stored = window.localStorage.getItem("fixo.service-request-draft.v1")!;
+    expect(stored).toContain("Revisión de tablero eléctrico");
+    expect(stored).toContain("Ñuñoa");
+    expect(stored).not.toContain("Secreta");
+  });
+
+  it("does not ask for sign-in while the form is still invalid", async () => {
+    view = mount(<CreateServiceRequestForm categories={categories} signedIn={false} />);
+    submit(form()); await flush();
+    expect(router.push).not.toHaveBeenCalled();
+    expect(window.localStorage.getItem("fixo.service-request-draft.v1")).toBeNull();
+  });
+
+  it("restores the draft after signing in, then sends the request and clears the draft", async () => {
+    actions.submitServiceRequest.mockResolvedValue({ ok: true });
+    view = mount(<CreateServiceRequestForm categories={categories} signedIn={false} />);
+    fillAll();
+    chooseCommune("Valparaíso", "Viña del Mar");
+    submit(form()); await flush();
+    view.unmount();
+
+    view = mount(<CreateServiceRequestForm categories={categories} />);
+    await flush();
+    expect(view.container.textContent).toContain("Recuperamos tu borrador");
+    expect((field(view.container, "¿Qué necesitas resolver?") as HTMLInputElement).value).toBe("Revisión de tablero eléctrico");
+    expect(select("Comuna").value).toBe("Viña del Mar");
+    expect(select("Región").options[select("Región").selectedIndex]!.textContent).toBe("Valparaíso");
+    submit(form()); await flush();
+    expect(actions.submitServiceRequest.mock.calls[0]![0]).toMatchObject({ locationLabel: "Viña del Mar", categoryId: "electricidad" });
+    expect(window.localStorage.getItem("fixo.service-request-draft.v1")).toBeNull();
+  });
+
+  it("keeps the form on screen and explains when the draft cannot be saved", async () => {
+    const setItem = vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => { throw new Error("QuotaExceededError"); });
+    try {
+      view = mount(<CreateServiceRequestForm categories={categories} signedIn={false} />);
+      fillAll();
+      chooseCommune("Metropolitana de Santiago", "Ñuñoa");
+      submit(form()); await flush();
+      expect(router.push).not.toHaveBeenCalled();
+      expect(view.container.textContent).toContain("No pudimos guardar tu borrador");
+      expect((field(view.container, "¿Qué necesitas resolver?") as HTMLInputElement).value).toBe("Revisión de tablero eléctrico");
+      const anyway = [...view.container.querySelectorAll("button")].find((button) => button.textContent === "Ingresar de todos modos")!;
+      anyway.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      expect(router.push).toHaveBeenCalledWith("/login?continuar=%2Fsolicitar");
+    } finally { setItem.mockRestore(); }
+  });
+
+  it("starts from the service and commune of the page the visitor came from", async () => {
+    view = mount(<CreateServiceRequestForm categories={categories} initial={{ categoryId: "electricidad", locationLabel: "Providencia" }} signedIn={false} />);
+    await flush();
+    expect(select("Rubro").value).toBe("electricidad");
+    expect(select("Comuna").value).toBe("Providencia");
+    expect(select("Comuna").disabled).toBe(false);
+  });
+
+  it("ignores a starting service that does not exist", async () => {
+    view = mount(<CreateServiceRequestForm categories={categories} initial={{ categoryId: "inventado" }} />);
+    await flush();
+    expect(select("Rubro").value).toBe("");
   });
 });

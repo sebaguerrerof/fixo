@@ -327,3 +327,57 @@ Solo presentacion: se conservan nombres de campos, `FormData`, acciones del serv
 - **Decision:** el flujo de **urgencia** (`emergency-wizard.tsx`, "Donde te encuentras?") NO se cambio a proposito: es una descripcion libre de hasta 180 caracteres, solo funciona en demo y hoy su matching no usa la comuna; exigir region + comuna agrega pasos justo donde importa la rapidez. Reevaluar cuando la urgencia se habilite de verdad.
 - **Verificado:** `eslint`, `tsc` limpios; vitest **627 PASS / 8 omitidos** (tests nuevos: `CommuneSelect`, el formulario de solicitud sin y con comuna, y el esquema); registro real de un cliente en el Supabase local + solicitud creada desde el navegador: quedo `location_label = Nunoa` (con tilde), status `submitted`; auditor de UI en `/solicitar` OK en los 4 casos tema x viewport. Los datos de prueba se borraron.
 - **NO VERIFICADO / limites:** el cruce completo con un tecnico aprobado (que esa solicitud aparezca en sus oportunidades) no se probo de punta a punta; solo se verifico que el nombre guardado es el oficial. La lista de comunas sigue pendiente de revision contra la fuente oficial (SUBDERE). El buscador publico `/tecnicos` ("buscar por problema, especialista o comuna") sigue siendo texto libre.
+
+## Pedir un servicio sin cuenta: la cuenta se pide al enviar (2026-11-20, rama `feat/request-without-account`, apilada sobre `feat/customer-commune-selector` / PR #20)
+
+- **Pedido del owner:** como 2x3.cl, ver y empezar un servicio sin estar logueado. Aprobado por el owner ("tienes mi aprobacion para todo lo que me dijiste").
+- **Que cambia:** `/solicitar` ya no redirige al login: cualquiera ve y llena el formulario (tecnicos y admin siguen yendo a `/perfil`). Al enviar sin sesion (boton "Continuar y enviar") se guarda un **borrador en este dispositivo** y se lleva a `/login?continuar=%2Fsolicitar`; al volver, el formulario lo restaura con el aviso "Recuperamos tu borrador". Si la sesion expira justo al enviar, pasa lo mismo.
+- **Sin cambios de servidor, esquema ni autenticacion:** la accion `submitServiceRequest` sigue exigiendo cliente con sesion (rechaza sin sesion y a otros roles); no se guarda nada en la base hasta que hay cuenta.
+- **Borrador (`src/components/service-requests/request-draft.ts`):** `localStorage` (clave `fixo.service-request-draft.v1`), vence a las 24 h, se borra al registrar la solicitud. **Guarda solo la parte publica** (titulo, rubro, descripcion, comuna, fecha y horario). **Nunca guarda direccion, referencia ni informacion privada**: se reingresan. Elegido localStorage (no sessionStorage) porque el correo de confirmacion de una cuenta nueva abre otra pestana.
+- **Precarga desde las paginas de servicio:** "Solicitar este servicio" lleva a `/solicitar?rubro=<slug>[&comuna=<slug>]` con rubro y comuna elegidos (valores invalidos se ignoran).
+- **Ajuste de `CommuneSelect`:** la region sigue a la comuna cuando esta llega despues del montaje (borrador/precarga).
+- **Verificado:** `tsc` y `eslint` limpios; vitest **641 PASS / 8 omitidos** (nuevos: borrador, flujo de visitante, precarga); navegador real (modo demo): servicio+comuna -> `/solicitar` precargado -> "Continuar y enviar" -> `/login?continuar=%2Fsolicitar` -> al volver, borrador restaurado; auditor de UI OK en `/solicitar` y `/servicios`.
+- **NO verificado / limites:** (1) el ciclo completo con cuenta nueva y correo de confirmacion contra Supabase local (Docker estaba apagado). (2) Tras crear cuenta y confirmar, el usuario entra por `/login` y debe volver a `/solicitar` (el registro no arrastra `continuar`); el borrador sigue ahi hasta 24 h. (3) El borrador es por dispositivo y navegador; en equipo compartido queda visible hasta vencer o enviarse. (4) El flujo de urgencia (`/urgencia`) no cambia.
+
+## Guia de auditoria para Codex: que commits revisar y que ignorar (2026-11-20, rama `feat/request-without-account`)
+
+**Por que existe:** una revision de Codex solo vio `git diff` del arbol local (`docs/ai/PLAN.md` y `next-env.d.ts`) y no pudo auditar nada, porque el trabajo ya esta commiteado. Para auditar hay que dar un commit, PR o rango; aqui estan.
+
+**No es parte del trabajo de Claude (no revisar como tal, nunca se commitea):**
+- `docs/ai/PLAN.md` modificado: es el Sprint 06 puesto por el owner/Codex. Claude no lo toca.
+- `next-env.d.ts`: lo regenera `next dev`; apunta a `.next-dev` porque `next.config.ts` usa `distDir` distinto en desarrollo. No es un error.
+- `AGENTS.md` y `CLAUDE.md`: sin seguimiento, ajenos.
+
+**Trabajo de producto a auditar (todo sobre `main`; el rango se pide con `git diff <base>..<cabeza>`):**
+
+| PR | Que es | Estado | Commit / rango |
+|---|---|---|---|
+| #17 | Region y comunas del tecnico | mergeado | `7d56108` |
+| #18 | Entorno local, puertos 573xx y script de admin local | mergeado | `597e074` |
+| #19 | Catalogo publico de servicios (`/servicios`) | mergeado | commit `fb191c1`, merge `6188f93` |
+| #20 | Cliente elige la comuna de la lista | abierto | `main..feat/customer-commune-selector` (commit `48daa98`) |
+| #21 | Pedir sin cuenta (borrador en el dispositivo) | abierto, apilado sobre #20 | `feat/customer-commune-selector..feat/request-without-account` (commit `6b52b8b`) |
+
+Comandos utiles: `git show fb191c1 --stat`, `git diff main..feat/customer-commune-selector`, `git diff feat/customer-commune-selector..feat/request-without-account`, `gh pr diff 20`, `gh pr diff 21`.
+
+**Que mirar con atencion (riesgos conocidos):**
+1. **#21, privacidad del borrador:** `src/components/service-requests/request-draft.ts` guarda en `localStorage` solo campos publicos y nunca direccion, referencia ni informacion privada (hay un test). Revisar que ningun otro lugar escriba datos del formulario en el navegador.
+2. **#21, autenticacion:** no cambia `submitServiceRequest` ni la sesion; sigue exigiendo cliente con sesion en el servidor. Revisar que `src/app/solicitar/page.tsx` no exponga nada nuevo a un visitante (solo categorias, publicas) y que tecnicos/admin sigan redirigidos a `/perfil`.
+3. **#20, datos:** `serviceRequestInputSchema.locationLabel` pasa a `communeSchema` (comuna oficial, canonicalizada). Las solicitudes antiguas con texto libre no se migran. Lista de 346 comunas transcrita de memoria: pendiente de verificar contra SUBDERE.
+4. **#19, comportamiento:** el filtro `city` de `matchesClientFilters` pasa de "contiene" a comuna exacta. El sitemap (`src/app/sitemap.ts`) usa `brand.url`: confirmar que es el dominio de produccion. Las paginas publicas no prometen pagos ni contratacion.
+5. **#18, seguridad local:** el script `scripts/dev/create-local-admin.mjs` solo opera si la API y el contenedor son el mismo stack local; la contrasena no se imprime ni se guarda.
+
+**Ya verificado en cada PR:** `tsc`, `eslint`, vitest (641 PASS / 8 omitidos en #21), auditor de UI (`npm run ui:audit`) y CI (`application`, `database`, `ui-audit`). Cada PR tiene su seccion de HANDOFF con lo NO verificado.
+
+**Ramas locales sin subir:** `design/customer-nav` (PR #16, abierto, sin mergear) y `design/profile-in-shell` (perfil dentro del panel de cada rol y cambio de contrasena, apilada sobre la anterior). Aun sin PR propio ni revision.
+
+## Correcciones a la revision de Codex sobre "pedir sin cuenta" (2026-11-20, rama `feat/request-without-account`, PR #21)
+
+Codex reviso el PR #21 y dejo 3 hallazgos. Estado de cada uno:
+
+1. **MEDIO, perdida del formulario si falla el almacenamiento: corregido.** `saveDraft` ahora devuelve `true/false` y relee lo guardado (algunos navegadores aceptan la escritura y no conservan nada). Si falla, el formulario **no navega**: se queda en pantalla con el aviso "No pudimos guardar tu borrador" y el boton "Ingresar de todos modos" (el usuario decide, sabiendo que tendra que reescribir). Tests: `setItem` que lanza, escritura que no se conserva, y el flujo del formulario con `Storage.prototype.setItem` fallando.
+2. **MEDIO, el registro no conserva la continuacion: resuelto con otro mecanismo, NO con `continuar` en el registro.** El borrador ya sobrevive en el navegador; ahora el panel del cliente (`/cliente`, donde aterriza el enlace de confirmacion del correo) muestra el aviso "Tienes una solicitud sin enviar" con "Retomar solicitud" (-> `/solicitar`, que restaura el borrador) y "Descartar borrador" (`resume-request-banner.tsx`, con tests). **Decision y por que:** pasar `continuar` por `emailRedirectTo` obligaria a que el enlace de Supabase coincida con la lista de URLs permitidas incluyendo el parametro; si no coincide, Supabase cae al `site_url` y se rompe la confirmacion de TODAS las cuentas nuevas. Eso toca autenticacion y configuracion de Supabase (local y remota) y no pude validarlo (Docker apagado), asi que no lo hice. Si el owner prefiere la continuacion exacta, hay que (a) agregar el destino a `additional_redirect_urls`, (b) validarlo con `safeContinuation` en `/api/auth` y en `confirmAuthLink`, y (c) probar el ciclo real con una cuenta nueva.
+3. **BAJO, el estado vacio perdia servicio y comuna: corregido.** `ServiceListing` recibe `requestHref`; las paginas de rubro y de rubro+comuna pasan el mismo destino que el boton superior. Test de ambos enlaces y del valor por defecto.
+
+- **Verificado:** `tsc` y `eslint` limpios; vitest **647 PASS / 8 omitidos**.
+- **NO verificado:** el ciclo completo con una cuenta nueva y correo de confirmacion contra Supabase (Docker apagado); en particular, que tras confirmar el correo el usuario aterrice en `/cliente` y vea el aviso. El comportamiento del aviso solo esta probado con tests de componente.

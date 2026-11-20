@@ -46,12 +46,12 @@ export default async function ServicePage({ params, searchParams }: { readonly p
         <div className="animate-enter">
           <SectionHeading as="h1" description={category.description} title={`${category.name} a domicilio`} />
         </div>
-        <div className="mt-6"><Link className={buttonVariants({ size: "lg" })} href="/solicitar">Solicitar este servicio</Link></div>
+        <div className="mt-6"><Link className={buttonVariants({ size: "lg" })} href={`/solicitar?rubro=${category.slug}`}>Solicitar este servicio</Link></div>
 
         <section aria-labelledby="tecnicos" className="mt-12">
           <h2 className="text-2xl" id="tecnicos">Técnicos de {category.name.toLowerCase()}</h2>
           <p className="mb-5 mt-1 text-sm text-muted-foreground"><span className="tabular font-semibold text-foreground">{technicians.length}</span> {technicians.length === 1 ? "perfil verificado" : "perfiles verificados"}. La contratación y los pagos todavía no están habilitados.</p>
-          <ServiceListing emptyDescription="Aún no hay perfiles publicados en este servicio. Puedes dejar tu solicitud y los técnicos de tu comuna podrán responderla." emptyTitle="Todavía no hay técnicos publicados" technicians={technicians} />
+          <ServiceListing requestHref={`/solicitar?rubro=${category.slug}`} emptyDescription="Aún no hay perfiles publicados en este servicio. Puedes dejar tu solicitud y los técnicos de tu comuna podrán responderla." emptyTitle="Todavía no hay técnicos publicados" technicians={technicians} />
         </section>
 
         <section aria-labelledby="comunas" className="mt-14">
