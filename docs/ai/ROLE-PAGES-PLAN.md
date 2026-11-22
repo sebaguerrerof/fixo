@@ -25,9 +25,9 @@ Leyenda: **[S]** pequeno, sin esquema ni dependencias; **[M]** mediano, solo cod
 
 - [ ] **T1 [M+D] `/tecnico/perfil` es solo lectura y el perfil aprobado no se puede editar.** La edicion existe solo en `/perfil` y unicamente con estado `draft`, `pending_verification` o `needs_information`. Una vez aprobado, el tecnico no puede corregir presentacion, cobertura ni rubros. Definir el flujo de "cambios sujetos a nueva revision".
 - [ ] **T2 [M] Agenda es un marcador de posicion** (`/tecnico/agenda`: "Agenda aun no disponible"). Depende de que los trabajos tengan fechas programadas; revisar que ya ofrece `job-operations` antes de disenar.
-- [ ] **T3 [M] El perfil no muestra documentos ni verificaciones.** La postulacion recibe documentos (cuarentena), pero el perfil propio no los lista ni muestra su estado de revision.
+- [x] **T3 [M] El perfil no muestra documentos ni verificaciones.** La postulacion recibe documentos (cuarentena), pero el perfil propio no los lista ni muestra su estado de revision.
 - [ ] **T4 [D] Origen del "Valor ref." del carne.** El carne muestra `startingPriceClp` o "A convenir"; confirmar de donde lo declara el tecnico y si es editable.
-- [ ] **T5 [S] Duplicidad `/tecnico/postulacion` vs `/tecnico/perfil` vs `/perfil`.** Tres lugares para el mismo perfil; ordenar el recorrido (estado, edicion, vista publica).
+- [ ] **T5 [S] (parcial: la pagina indica donde editar cada cosa; falta decidir si se fusionan) Duplicidad `/tecnico/postulacion` vs `/tecnico/perfil` vs `/perfil`.** Tres lugares para el mismo perfil; ordenar el recorrido (estado, edicion, vista publica).
 - [x] Carne propio en el panel (PR #10).
 
 ## Administrador (`/admin/*`)
