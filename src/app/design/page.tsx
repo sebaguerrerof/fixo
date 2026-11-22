@@ -51,7 +51,7 @@ export default function DesignCatalogPage() {
       <main className="container space-y-12 py-10 pb-28">
         <header className="max-w-2xl"><h1 className="text-balance text-4xl leading-tight sm:text-5xl">Catálogo de componentes</h1><p className="mt-3 leading-7 text-muted-foreground">Formularios y paneles con datos de ejemplo. Solo existe en desarrollo con el modo demo activo; sirve para revisar el diseño y para que la auditoría de interfaz llegue a pantallas que normalmente requieren sesión o persistencia real.</p></header>
         <Section title="Postulación del técnico"><ProfessionalApplicationForm application={application} categories={categories} requirements={requirements} /></Section>
-        <Section title="Perfil"><ProfileForm categories={categories} profile={profile} /></Section>
+        <Section title="Perfil"><ProfileForm profile={profile} /></Section>
         <Section title="Cotización"><CreateQuoteForm serviceRequestId={ID(7)} /></Section>
         <Section title="Pagos">
           <div className="grid gap-5 lg:grid-cols-2">
