@@ -39,6 +39,7 @@ const routes = [
   // (jobs, applications, several admin lists) render their error state in demo mode, so that state is what gets audited there;
   // their real content needs the local Supabase stack and is NOT covered by this audit.
   { path: "/cliente", as: "customer", migrated: true, identify: { selector: "h1", text: "Mis solicitudes" } },
+  { path: "/cliente/solicitudes/req-02", as: "customer", migrated: true, identify: { selector: "h1", text: "Revisión de tablero eléctrico" } },
   { path: "/cliente/trabajos", as: "customer", migrated: true, identify: { selector: "h1", text: "No pudimos cargar la información" } },
   { path: "/solicitar", as: "customer", migrated: true, identify: { selector: "h1", text: "Solicitud de servicio" } },
   { path: "/perfil", as: "customer", migrated: true, identify: { selector: "h1", text: "Mi perfil" } },

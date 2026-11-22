@@ -400,3 +400,11 @@ Codex reviso el PR #21 y dejo 3 hallazgos. Estado de cada uno:
 - **Integracion con `main`:** la rama se actualizo con `main` (incluye PR #16) sin conflictos.
 - **Verificado:** `tsc` y `eslint` limpios; vitest **664 PASS / 8 omitidos**; tests del formulario y de la action (credencial incorrecta, misma contrasena, no coincide, demo, fallo de revocacion).
 - **NO verificado / limites:** el cambio de contrasena no se probo contra Supabase local real (Docker apagado); `signInWithPassword` dentro de la action puede contar contra los limites de intentos de Auth (revisar en el proyecto real); el CI debe pasar en el PR.
+
+## Detalle de solicitud del cliente en el design system (2026-11-22, rama `design/request-detail`)
+
+- **C4, detalle sin migrar:** `/cliente/solicitudes/[id]` usa ahora `PageHeader` (un solo h1 con la descripcion), secciones con el mismo titulo que `/cliente` (`text-lg font-semibold`) y el titulo de cada cotizacion como h3 bajo "Cotizaciones recibidas" (antes saltaba de nivel). El estado y la comuna quedan en una linea bajo el titulo. Sin cambios de logica, datos, esquema ni dependencias.
+- **Auditor de UI:** se agrego `/cliente/solicitudes/req-02` (solicitud demo con varias cotizaciones). Resultado local: OK en claro/oscuro y movil/escritorio (390 y 1280 px).
+- **Plan de paginas por rol:** se marcan hechos X1, X2 y A3 (PR #22) y C4.
+- **Verificado:** `tsc` y `eslint` limpios; el auditor pasa en las 4 combinaciones.
+- **NO verificado / limites:** solo con datos demo; el detalle con solicitud real (fotos, datos privados, trabajo adjudicado, cotizaciones aceptadas) necesita el stack local de Supabase (Docker estaba apagado). El CI debe pasar en el PR.
