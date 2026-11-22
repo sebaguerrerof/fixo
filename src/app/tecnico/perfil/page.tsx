@@ -5,8 +5,10 @@ import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { TechnicianDashboardShell } from "@/components/technicians/technician-dashboard-shell";
 import { VerificationSummary } from "@/components/technicians/verification-summary";
+import { Alert } from "@/components/ui/alert";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { isDemoModeEnabled } from "@/config/demo-mode";
 import type { ProfessionalApplication } from "@/domain/technicians/application";
 import { loadProfessionalApplication } from "@/services/technicians/professional-application-service";
 import { getServerAuthenticatedUser } from "@/services/auth/server-authentication-service";
@@ -19,9 +21,11 @@ export default async function TechnicianProfilePage() {
   if (!overview) return <TechnicianDashboardShell activeHref="/tecnico/perfil"><EmptyState title="Perfil técnico no disponible" description="No encontramos una postulación asociada a tu cuenta." /></TechnicianDashboardShell>;
   const { technician } = overview;
   const published = ["verified", "active"].includes(technician.status);
-  // The application (documents and review state) needs the real database; without it the summary is simply left out.
+  // The application (documents and review state) needs the real database. Demo mode has none, so there the summary is left out;
+  // anywhere else a failed load is said out loud instead of hiding the section.
   let application: ProfessionalApplication | null = null;
-  try { application = await loadProfessionalApplication(); } catch { application = null; }
+  let loadFailed = false;
+  try { application = await loadProfessionalApplication(); } catch { loadFailed = !isDemoModeEnabled(); }
   return (
     <TechnicianDashboardShell activeHref="/tecnico/perfil">
       <PageHeader
@@ -46,6 +50,7 @@ export default async function TechnicianProfilePage() {
           </CardContent>
         </Card>
         {application ? <VerificationSummary application={application} /> : null}
+        {loadFailed ? <Alert tone="warning" title="No pudimos cargar tu verificación">Inténtalo de nuevo en unos minutos. Tu postulación y tus documentos siguen guardados; también puedes revisarlos en Mi postulación.</Alert> : null}
       </div>
     </TechnicianDashboardShell>
   );
