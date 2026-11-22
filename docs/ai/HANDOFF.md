@@ -391,3 +391,11 @@ Codex reviso el PR #21 y dejo 3 hallazgos. Estado de cada uno:
 - **Integracion con `main`:** se actualizo la rama con `main` (PR #19, #20 y #21) sin conflictos; en `/cliente` conviven el menu unico y el aviso "Tienes una solicitud sin enviar" del PR #21.
 - **Verificado:** `tsc` y `eslint` limpios; vitest **648 PASS / 8 omitidos** tras la actualizacion; CI del PR (`application`, `database`, `ui-audit`) en verde antes de actualizar la rama; el auditor de UI cubre las paginas del cliente.
 - **NO verificado / limites:** no se miraron las paginas del cliente con datos reales (solo demo y auditor); el CI debe volver a pasar tras la actualizacion con `main`. Quedan del plan C3, C4 y C6 (necesitan decisiones o cambios de esquema) y el resto de roles.
+
+## Detalle de solicitud del cliente en el design system (2026-11-22, rama `design/request-detail`)
+
+- **C4, detalle sin migrar:** `/cliente/solicitudes/[id]` usa ahora `PageHeader` (un solo h1 con la descripcion), secciones con el mismo titulo que `/cliente` (`text-lg font-semibold`) y el titulo de cada cotizacion como h3 bajo "Cotizaciones recibidas" (antes saltaba de nivel). El estado y la comuna quedan en una linea bajo el titulo. Sin cambios de logica, datos, esquema ni dependencias.
+- **Auditor de UI:** se agrego `/cliente/solicitudes/req-02` (solicitud demo con varias cotizaciones). Resultado local: OK en claro/oscuro y movil/escritorio (390 y 1280 px).
+- **Plan de paginas por rol:** se marcan hechos X1, X2 y A3 (PR #22) y C4.
+- **Verificado:** `tsc` y `eslint` limpios; el auditor pasa en las 4 combinaciones.
+- **NO verificado / limites:** solo con datos demo; el detalle con solicitud real (fotos, datos privados, trabajo adjudicado, cotizaciones aceptadas) necesita el stack local de Supabase (Docker estaba apagado). El CI debe pasar en el PR.

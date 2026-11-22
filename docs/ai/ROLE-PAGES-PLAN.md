@@ -6,8 +6,8 @@ Leyenda: **[S]** pequeno, sin esquema ni dependencias; **[M]** mediano, solo cod
 
 ## Transversal (los tres roles)
 
-- [ ] **X1 [M] `/perfil` esta fuera del panel.** Es una pagina con cabecera propia (logo + "Mi panel"), no usa el shell de cada rol: al editar la cuenta se pierde la navegacion. Solo edita nombre, apellido y telefono (y, para tecnicos en borrador, los datos de la postulacion). Moverla dentro del shell de cada rol.
-- [ ] **X2 [M] No se puede cambiar la contrasena con la sesion iniciada.** `/auth/update-password` solo se alcanza desde el enlace de recuperacion (`auth/callback`). Agregar "Cambiar contrasena" en la cuenta.
+- [x] **X1 [M] `/perfil` esta fuera del panel.** Es una pagina con cabecera propia (logo + "Mi panel"), no usa el shell de cada rol: al editar la cuenta se pierde la navegacion. Solo edita nombre, apellido y telefono (y, para tecnicos en borrador, los datos de la postulacion). Moverla dentro del shell de cada rol.
+- [x] **X2 [M] No se puede cambiar la contrasena con la sesion iniciada.** `/auth/update-password` solo se alcanza desde el enlace de recuperacion (`auth/callback`). Agregar "Cambiar contrasena" en la cuenta.
 - [ ] **X3 [D+E] Sin eliminar ni exportar la cuenta/datos.** No hay UI ni accion. Depende de la politica de privacidad y de la retencion de datos (pagos, auditoria): decision del owner antes de disenar.
 - [ ] **X4 [E] Sin notificaciones visibles.** Existe `private.notification_outbox` (migracion de operaciones de trabajos) pero ninguna pagina lista avisos al usuario.
 - [ ] **X5 [D+E] Sin resenas.** No hay tabla de resenas; el sitio dice "todavia no publicamos evaluaciones" (`/como-funciona`, `/tecnicos/[slug]`). Define si entran antes del lanzamiento.
@@ -17,7 +17,7 @@ Leyenda: **[S]** pequeno, sin esquema ni dependencias; **[M]** mediano, solo cod
 - [x] **C1 [S] Navegacion inconsistente.** Hay tres menus distintos: `/cliente` (Perfil, Solicitudes, Trabajos), trabajos (`job-shell.tsx`: Solicitudes, Trabajos, Perfil) y detalle de solicitud (Resumen, Mis solicitudes, Pagos; sin Trabajos). Unificar en una sola definicion.
 - [x] **C2 [S] Enlace roto `/cliente#pagos`.** El menu del detalle de solicitud apunta a un ancla que no existe en `/cliente` (solo existe `#solicitudes`).
 - [ ] **C3 [M] Sin vista propia de pagos.** Los pagos solo se ven dentro de cada trabajo; no hay resumen de pagos del cliente. (Hoy es Sandbox: confirmar alcance con el owner.)
-- [ ] **C4 [M] Detalle de solicitud sin migrar al design system.** Usa titulos y tarjetas sueltas (`text-xl font-bold`, `Card` crudas) y no esta en el auditor de UI; solo se reviso en escritorio.
+- [x] **C4 [M] Detalle de solicitud sin migrar al design system.** Usa titulos y tarjetas sueltas (`text-xl font-bold`, `Card` crudas) y no esta en el auditor de UI; solo se reviso en escritorio.
 - [x] **C5 [S] Direccion del carne partida en dos lineas** en las cotizaciones (cosmetico, PR #13).
 - [ ] **C6 [D] Direcciones guardadas.** El formulario de perfil no guarda direcciones; cada solicitud pide la suya. Decidir si se quiere libreta de direcciones.
 
@@ -34,7 +34,7 @@ Leyenda: **[S]** pequeno, sin esquema ni dependencias; **[M]** mediano, solo cod
 
 - [ ] **A1 [E+D] Reportes y reclamos es un marcador de posicion** (`/admin/reportes`: "aun no disponible"). No hay tabla de reclamos; existen incidencias de trabajos (`admin/trabajos`). Decidir si reclamos = incidencias o es un modulo nuevo, y definir el canal de soporte (el propio texto lo deja como requisito de lanzamiento).
 - [ ] **A2 [M] `/admin/configuracion` solo cubre pagos** (comision y verificaciones). Faltan parametros operativos si se quieren (rubros/requisitos viven en `/admin/requisitos`).
-- [ ] **A3 [S] "Mi cuenta" lleva a `/perfil` fuera del shell** (ver X1).
+- [x] **A3 [S] "Mi cuenta" lleva a `/perfil` fuera del shell** (ver X1).
 - [ ] **A4 [M] Listas admin en modo demo muestran su estado de error** (`solicitudes`, `trabajos`, etc.); su contenido real solo se verifica con el stack local de Supabase. Agregar una verificacion con datos reales.
 - [x] Carne del tecnico en el detalle (PR #13).
 
