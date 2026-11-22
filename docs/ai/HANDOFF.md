@@ -408,3 +408,11 @@ Codex reviso el PR #21 y dejo 3 hallazgos. Estado de cada uno:
 - **Plan de paginas por rol:** se marcan hechos X1, X2 y A3 (PR #22) y C4.
 - **Verificado:** `tsc` y `eslint` limpios; el auditor pasa en las 4 combinaciones.
 - **NO verificado / limites:** solo con datos demo; el detalle con solicitud real (fotos, datos privados, trabajo adjudicado, cotizaciones aceptadas) necesita el stack local de Supabase (Docker estaba apagado). El CI debe pasar en el PR.
+
+## Perfil del tecnico con verificacion y documentos (2026-11-22, rama `design/technician-profile`)
+
+- **T3, el perfil no mostraba documentos ni verificaciones:** `/tecnico/perfil` ahora incluye "Verificacion y documentos" (`verification-summary.tsx`): estado de la postulacion, la observacion de administracion si pide mas antecedentes, y cada documento vigente con su inspeccion y revision. Es solo lectura: subir o reemplazar documentos sigue en "Mi postulacion". No ofrece descarga (eso sigue en la postulacion, solo para documentos inspeccionados).
+- **T5, recorrido duplicado (parcial):** la pagina usa `PageHeader` y dice donde editar cada cosa (datos profesionales en Mi postulacion, contacto en Editar mi cuenta); el enlace "Ver perfil publico" pasa al encabezado. NO se fusionaron las tres paginas ni se cambio el menu: eso es una decision de producto, por eso T5 queda abierto en el plan.
+- **Sin cambios de esquema, dependencias ni API.** Lee la postulacion con el servicio existente (`loadProfessionalApplication`); si no esta disponible (modo demo, falla de base de datos) el resumen simplemente no se muestra y el resto de la pagina funciona.
+- **Verificado:** `tsc` y `eslint` limpios; 2 tests nuevos del resumen; auditor de UI OK en `/tecnico/perfil` (claro/oscuro, movil/escritorio).
+- **NO verificado / limites:** el resumen con una postulacion real (documentos, observacion) no se vio en navegador: en modo demo no se muestra y Docker estaba apagado. El CI debe pasar en el PR.
