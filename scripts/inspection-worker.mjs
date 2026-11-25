@@ -14,11 +14,13 @@ assert.match(env.FIXO_INSPECTION_PROJECT??'',/^[a-z0-9]{20}$/);
 assert.equal(new URL(env.NEXT_PUBLIC_SUPABASE_URL).hostname,env.FIXO_INSPECTION_PROJECT+'.supabase.co');
 const client=createClient(env.NEXT_PUBLIC_SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
 let stopping=false;process.on('SIGINT',()=>{stopping=true;});process.on('SIGTERM',()=>{stopping=true;});
+// --once: at most one document. --drain: every queued document, then exit (manual runs).
+const once=process.argv.includes('--once'),drain=process.argv.includes('--drain');
 let failures=0;
 do{
  try{
   const claim=await client.rpc('claim_professional_inspection');if(claim.error)throw new Error('claim_failed');
-  if(!claim.data){if(process.argv.includes('--once'))break;await delay(15000);continue;}
+  if(!claim.data){if(drain)console.log(JSON.stringify({event:'queue_empty'}));if(once||drain)break;await delay(15000);continue;}
   const job=claim.data;let result={result:'error'};
   try{
    // Cache-busting avoids scanning stale bytes on repeated Storage downloads.
@@ -29,5 +31,5 @@ do{
   const finished=await client.rpc('finish_professional_inspection',{document_id:job.document_id,lease_token:job.lease_token,result});
   if(finished.error)throw new Error('finish_failed');
   console.log(JSON.stringify({event:'inspection_finished',result:result.result,attempt:job.attempt}));failures=0;
- }catch{failures++;console.error(JSON.stringify({event:'worker_unavailable',retry:failures}));if(process.argv.includes('--once')){process.exitCode=1;break;}await delay(Math.min(60000,5000*failures));}
-}while(!stopping&&!process.argv.includes('--once'));
+ }catch{failures++;console.error(JSON.stringify({event:'worker_unavailable',retry:failures}));if(once||drain){process.exitCode=1;break;}await delay(Math.min(60000,5000*failures));}
+}while(!stopping&&!once);
