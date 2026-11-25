@@ -436,3 +436,35 @@ Decision del owner: que el perfil se vea aunque no haya rubros, y fusionar si es
 - **Sin cambios de esquema, dependencias ni API publica.** Cambios de rutas visibles al usuario: ver arriba.
 - **Verificado:** `tsc` y `eslint` limpios; vitest 664 PASS / 8 omitidos; auditor OK en `/tecnico/perfil` y `/perfil`. Probado en navegador real contra el Supabase local (tecnico sintetico): sin rubros se ve el formulario y el estado Borrador; `/tecnico/postulacion` redirige; el menu ya no tiene "Mi postulacion"; `/perfil` muestra solo contacto; con rubro, observacion y documento se ven; y guardar un cambio desde la pagina persiste en BD ("Borrador guardado"). Los usuarios sinteticos y sus eventos se borraron de la base local (0 restos).
 - **NO verificado / limites:** no se ejecuto la subida real de documentos ni el envio a revision por la UI; en modo demo `/tecnico/perfil` solo muestra el estado de error (como ya pasaba con la postulacion); el CI debe pasar en el PR.
+
+## Preparacion del MVP para invitar tecnicos (2026-11-25, rama `launch/mvp-readiness`)
+
+Pedido del owner: antes de enviar invitaciones por WhatsApp, tener en produccion una version MVP. Decisiones del owner: Zoho para casillas, Resend para correos automaticos; seguir la recomendacion (primera tanda se registra y completa perfil; inspeccion de documentos desde su equipo, sin servidor por ahora). Tiene acceso a Supabase y Cloudflare. **Nada remoto se modifico ni desplego.**
+
+Fuera del alcance del `PLAN.md` actual (Sprint 06 documenta; no autoriza recursos remotos): publicar, configurar DNS/Auth/SMTP y migrar siguen requiriendo autorizacion especifica.
+
+### Estado observado (solo lectura, 25-11)
+- `www.soyfixo.cl` sirve el despliegue `dpl_6iKVzhNq9JRrC1J4KhdbqTfGjfqU` (12-11, referencia de rollback): marca "Fixo" en `/registro/tecnico` y `/servicios` responde 404.
+- No se observaron registros MX ni TXT en `soyfixo.cl`.
+- En Vercel (Production) existen los nombres de las variables que el codigo actual necesita; `FIXO_INVITATIONS_ENABLED` y `FIXO_TRUSTED_IP_HEADER` no estan definidas (la segunda solo afecta pagos). No se leyeron valores.
+- Migraciones locales: 14 (ultima `20261112120000`), el mismo numero que el inventario de produccion del 13-11. Reconfirmar antes de publicar.
+- La conexion MCP de Supabase de esta sesion no incluye el proyecto Fixo: Auth, SMTP, administradores y requisitos de produccion estan SIN VERIFICAR.
+
+### Entregado en la rama
+- `docs/production/MAIL_SETUP_GUIDE.md`: Zoho, Resend, DMARC, Supabase Auth, consultas de solo lectura y prueba completa. NOT TESTED.
+- `supabase/templates/*.html` y asuntos en `supabase/config.toml`: marca SoyFixo y color turquesa (decian "fixo"). En produccion hay que pegarlas a mano en el panel.
+- `scripts/inspection-worker.mjs`: opcion nueva `--drain` (procesa la cola y termina). `--once` y el modo continuo no cambian.
+- `scripts/ops/inspeccionar-documentos.ps1` y `docs/production/LOCAL_INSPECTION_GUIDE.md`: ejecucion manual en Windows; configuracion y clave fuera del repositorio; no toma documentos de la cola si faltan firmas o tienen mas de 47 h.
+- `docs/production/LEGAL_DRAFTS.md`: borradores de privacidad y terminos, SIN aprobar y NO publicados en la web.
+
+### Verificado / NO verificado
+- Verificado: sintaxis del worker; con un proyecto inexistente `--drain` termina con codigo 1 sin repetir; el script de PowerShell 5.1 corta con mensaje claro ante falta de configuracion, de variables, de firmas y firmas vencidas, y `-SoloComprobar` no procesa nada (con binarios falsos).
+- NO verificado: inspeccion real (ClamAV no esta instalado), `--drain` con cola real, envio de correo, plantillas en un cliente de correo.
+
+### Pendientes antes de invitar
+1. Correo, DNS y Auth segun la guia (owner).
+2. Datos del responsable y aprobacion legal; publicar los textos. La ley 21.719 tenia vigencia 2026-12-01; fuentes secundarias informan postergacion despachada por el Congreso sin confirmar publicacion: verificar.
+3. La version de terminos esta fija en la base (`'2026-11-08'` en `handle_new_user`): publicar textos nuevos requiere una migracion (autorizacion del owner).
+4. Definir eliminacion de cuentas (`professional_events` impide borrado en cascada).
+5. Respaldo de produccion antes de publicar; copia fuera del equipo. Vercel Hobby no admite uso comercial.
+6. Publicar `main` (autorizacion), humo y prueba completa con correo externo.
