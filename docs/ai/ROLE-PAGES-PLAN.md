@@ -27,7 +27,7 @@ Leyenda: **[S]** pequeno, sin esquema ni dependencias; **[M]** mediano, solo cod
 - [ ] **T2 [M] Agenda es un marcador de posicion** (`/tecnico/agenda`: "Agenda aun no disponible"). Depende de que los trabajos tengan fechas programadas; revisar que ya ofrece `job-operations` antes de disenar.
 - [x] **T3 [M] El perfil no muestra documentos ni verificaciones.** La postulacion recibe documentos (cuarentena), pero el perfil propio no los lista ni muestra su estado de revision.
 - [ ] **T4 [D] Origen del "Valor ref." del carne.** El carne muestra `startingPriceClp` o "A convenir"; confirmar de donde lo declara el tecnico y si es editable.
-- [ ] **T5 [S] (parcial: la pagina indica donde editar cada cosa; falta decidir si se fusionan) Duplicidad `/tecnico/postulacion` vs `/tecnico/perfil` vs `/perfil`.** Tres lugares para el mismo perfil; ordenar el recorrido (estado, edicion, vista publica).
+- [x] **T5 [S] Duplicidad `/tecnico/postulacion` vs `/tecnico/perfil` vs `/perfil`.** Tres lugares para el mismo perfil; ordenar el recorrido (estado, edicion, vista publica).
 - [x] Carne propio en el panel (PR #10).
 
 ## Administrador (`/admin/*`)

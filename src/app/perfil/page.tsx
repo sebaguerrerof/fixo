@@ -17,19 +17,17 @@ export const metadata = { title: "Mi perfil" };
 export default async function ProfilePage() {
   const user = await requireServerRole(["customer", "technician", "moderator", "superadmin"]);
   let profile: OwnProfile | null = null;
-  let categories: { id: string; name: string }[] = [];
   try {
     const client = await getSupabaseServerClient();
-    const [own, rubros] = await Promise.all([client.rpc("my_profile"), client.from("categories").select("id,name").order("name")]);
+    const own = await client.rpc("my_profile");
     if (!own.error) profile = own.data;
-    if (!rubros.error) categories = rubros.data ?? [];
   } catch { /* controlled unavailable */ }
   return (
     <ProfileShell role={user!.role} userName={user!.name}>
       <PageHeader description="Tus datos de contacto. El correo y el rol los gestiona la plataforma." title="Mi perfil" />
       <div className="mt-8 max-w-3xl">
         {profile
-          ? <section className="rounded-lg border border-border bg-card p-5 sm:p-8"><ProfileForm categories={categories} profile={profile} /></section>
+          ? <section className="rounded-lg border border-border bg-card p-5 sm:p-8"><ProfileForm profile={profile} /></section>
           : <EmptyState description="No pudimos consultar tus datos. Inténtalo más tarde." title="Perfil no disponible" />}
       </div>
       <section className="mt-6 max-w-3xl rounded-lg border border-border bg-card p-5 sm:p-8">

@@ -5,7 +5,7 @@ import { getSupabaseServerClient } from "@/integrations/supabase/server-client";
 import { requireServerRole } from "@/services/auth/server-authentication-service";
 import { requirementInputSchema } from "@/domain/technicians/application";
 const reasonSchema=z.string().trim().min(3).max(1000);
-function refresh(){for(const p of ["/admin/postulaciones","/admin/requisitos","/tecnico/postulacion","/tecnicos"])revalidatePath(p,"layout");}
+function refresh(){for(const p of ["/admin/postulaciones","/admin/requisitos","/tecnico/postulacion","/tecnico/perfil","/tecnicos"])revalidatePath(p,"layout");}
 export async function decideProfessionalApplication(raw:unknown){
  try{await requireServerRole(["moderator","superadmin"]);const args=z.object({target:z.uuid(),decision:z.enum(["approved","rejected","needs_information","suspended"]),expected_revision:z.number().int().positive(),reason:reasonSchema,operation_id:z.uuid()}).strict().parse(raw);
  const client=await getSupabaseServerClient();const r=await client.rpc("admin_decide_professional_application",args);if(r.error)throw r.error;refresh();return{ok:true,message:"Decisión registrada con historial."};}

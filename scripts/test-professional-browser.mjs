@@ -40,7 +40,7 @@ try{
   const rules=await superadmin.api.rpc("professional_requirements",{category:"gasfiteria"});assert.equal(rules.error,null);manifest.requirements.push(rules.data.find(r=>r.requirement_key===key).id);await persist();
  });
  await test("technician saves a draft through Next.js server actions",async()=>{
-  await page.goto(origin+"/tecnico/postulacion");await expect(page.getByRole("heading",{name:"Mi postulación profesional",exact:true})).toBeVisible();
+  await page.goto(origin+"/tecnico/perfil");await expect(page.getByRole("heading",{name:"Mi perfil profesional",exact:true})).toBeVisible();
   await page.getByLabel("Comuna base",{exact:true}).fill("Ñuñoa");await page.getByLabel("Presentación profesional",{exact:true}).fill("Postulación sintética de navegador");await page.getByLabel("Comunas de cobertura, separadas por coma",{exact:true}).fill("Ñuñoa, Providencia");await page.getByLabel("Experiencia y servicios",{exact:true}).fill("Antecedentes sintéticos de navegador para validar persistencia y revisión real.");await page.getByLabel("Gasfitería",{exact:true}).check();await page.getByLabel("Rubro principal",{exact:true}).selectOption("gasfiteria");await page.getByLabel("Disponibilidad",{exact:true}).fill("Lunes a viernes de 9 a 18 horas");await page.getByRole("button",{name:"Guardar borrador",exact:true}).click();await expect(page.getByRole("status")).toContainText("Borrador guardado",{timeout:90000});
   assert.equal((await application(technician)).primary_category,"gasfiteria");await page.screenshot({path:"docs/production/sprint-02-evidence/browser-desktop-application.png",fullPage:true});
  });
@@ -68,11 +68,11 @@ try{
   await adminPage.screenshot({path:"docs/production/sprint-02-evidence/browser-admin-review.png",fullPage:true});
  });
  await test("mobile layout and keyboard navigation work with a real session",async()=>{
-  await mobile.addCookies(await desktop.cookies());const p=await mobile.newPage();p.on("pageerror",e=>errors.push(String(e)));await p.goto(origin+"/tecnico/postulacion");await expect(p.getByRole("heading",{name:"Mi postulación profesional",exact:true})).toBeVisible();await noOverflow(p);await p.getByLabel("Comuna base",{exact:true}).focus();await expect(p.getByLabel("Comuna base",{exact:true})).toBeFocused();await p.keyboard.press("Tab");await expect(p.getByLabel("Presentación profesional",{exact:true})).toBeFocused();await p.screenshot({path:"docs/production/sprint-02-evidence/browser-mobile-application.png",fullPage:true});
+  await mobile.addCookies(await desktop.cookies());const p=await mobile.newPage();p.on("pageerror",e=>errors.push(String(e)));await p.goto(origin+"/tecnico/perfil");await expect(p.getByRole("heading",{name:"Mi perfil profesional",exact:true})).toBeVisible();await noOverflow(p);await p.getByLabel("Comuna base",{exact:true}).focus();await expect(p.getByLabel("Comuna base",{exact:true})).toBeFocused();await p.keyboard.press("Tab");await expect(p.getByLabel("Presentación profesional",{exact:true})).toBeFocused();await p.screenshot({path:"docs/production/sprint-02-evidence/browser-mobile-application.png",fullPage:true});
  });
  await test("old browser session loses access immediately after global suspension",async()=>{
   assert.equal((await superadmin.api.rpc("admin_change_account",{target_user:technician.id,new_status:"suspended",new_role:null,change_reason:"Synthetic browser suspension",operation_id:randomUUID()})).error,null);
-  assert.equal((await desktop.request.get(origin+"/api/technician-documents/"+document.id)).status(),404);await page.goto(origin+"/tecnico/postulacion");await expect(page).toHaveURL(/cuenta-no-disponible/,{timeout:90000});
+  assert.equal((await desktop.request.get(origin+"/api/technician-documents/"+document.id)).status(),404);await page.goto(origin+"/tecnico/perfil");await expect(page).toHaveURL(/cuenta-no-disponible/,{timeout:90000});
  });
  assert.equal(errors.length,0,"Unexpected browser runtime errors");manifest.status="PASS";
 }catch(error){manifest.status="FAIL";await writeFile(dir+"/failure.txt",String(error.stack));console.error(JSON.stringify({status:"FAIL",check:manifest.currentCheck,checksPassed:checks.length}));process.exitCode=1;}
