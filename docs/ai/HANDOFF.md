@@ -468,3 +468,13 @@ Fuera del alcance del `PLAN.md` actual (Sprint 06 documenta; no autoriza recurso
 4. Definir eliminacion de cuentas (`professional_events` impide borrado en cascada).
 5. Respaldo de produccion antes de publicar; copia fuera del equipo. Vercel Hobby no admite uso comercial.
 6. Publicar `main` (autorizacion), humo y prueba completa con correo externo.
+
+## Despliegue de produccion de `main` en Vercel (2026-11-25, autorizado por el owner: "hagamos deploy en vercel tambien")
+
+- **Publicado:** `main` en `c5919cd`, con Vercel CLI 50.27.1 desde un worktree limpio (sin archivos locales ni `.env*.local`), `vercel deploy --prod -m gitSha=...`.
+- **Despliegue nuevo:** `dpl_GUqHTCfjV8qFM5FxP7YHeSUFMHeU` (`fixo-marketplace-2zvo7oonf-...`), Ready, alias `www.soyfixo.cl`.
+- **Rollback:** despliegue anterior `dpl_6iKVzhNq9JRrC1J4KhdbqTfGjfqU` (12-11). Solo aplicacion: no hubo cambios de base, variables ni DNS.
+- **Precondiciones:** `application` y `database` verdes en `main` para `c5919cd`; PR #25 con los seis checks verdes; sin commits en `supabase/migrations` desde el despliegue anterior. NO se consultaron las migraciones aplicadas en produccion (sin acceso al proyecto desde esta sesion) y NO se hizo respaldo previo (cambio solo de aplicacion).
+- **Humo (solo lectura, sin crear datos):** 200 en `/`, `/servicios`, rubro y comuna, `/tecnicos`, `/registro`, `/registro/tecnico`, `/login`, `/recuperar-contrasena`, `/privacidad`, `/terminos`, `/solicitar`, `/como-funciona`, `/sitemap.xml`; `/design` 404; `/cliente`, `/tecnico`, `/tecnico/perfil`, `/tecnico/postulacion`, `/perfil`, `/admin` redirigen (307) a `/login`, tambien con cookie falsa; apex 308 a `www`; login con credencial inexistente responde el error de credenciales (400), y con origen ajeno 403; confirmacion de Flow 503 con token invalido (interruptor apagado) y retorno 303. Sin modo demostracion.
+- **NO verificado en produccion:** registro real, correo de confirmacion, sesion iniciada, subida de documentos, panel admin, salud del worker de Flow (`payment_worker_health()`), prueba de navegador completa.
+- **Estado para invitar:** NO listo. Faltan correo/SMTP/Auth, textos legales (la web aun muestra "Version de desarrollo"), administrador y requisitos verificados, inspeccion de documentos y la prueba completa. El registro publico ya esta abierto en la web (tambien lo estaba antes).
